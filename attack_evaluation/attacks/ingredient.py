@@ -13,7 +13,7 @@ attack_ingredient = Ingredient('attack')
 @attack_ingredient.named_config
 def alma():
     name = 'alma'
-    origin = 'adv_lib'
+    origin = 'adv_lib'  # available: ['adv_lib']
     distance = 'l2'
     steps = 1000
     alpha = 0.9
@@ -23,7 +23,7 @@ def alma():
 @attack_ingredient.named_config
 def ddn():
     name = 'ddn'
-    origin = 'adv_lib'
+    origin = 'adv_lib'  # available: ['adv_lib']
     steps = 1000
     init_norm = 1
     gamma = 0.05
@@ -32,7 +32,7 @@ def ddn():
 @attack_ingredient.named_config
 def fmn():
     name = 'fmn'
-    origin = 'original'
+    origin = 'original'  # available: ['original', 'adv_lib']
     norm = 2
     steps = 1000
     max_stepsize = 1
