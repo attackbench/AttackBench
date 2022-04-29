@@ -12,7 +12,7 @@ from datasets.ingredient import dataset_ingredient, get_loader
 from models.ingredient import get_model, model_ingredient
 from utils import run_attack
 
-ex = Experiment('segmentation_attack', ingredients=[dataset_ingredient, model_ingredient, attack_ingredient])
+ex = Experiment('attack_evaluation', ingredients=[dataset_ingredient, model_ingredient, attack_ingredient])
 
 
 @ex.config
