@@ -21,9 +21,14 @@ python attack_evaluation/run.py -F results/mnist with attack.ddn dataset.mnist m
 
 | Attack | Original | Advertorch | Adv_lib | ART | CleverHans | DeepRobust | Foolbox | Torchattacks |
 |--------|:--------:|:----------:|:-------:|:---:|:----------:|:----------:|:-------:|:------------:|
-| DDN    |          |            |    ✓    |     |            |            |         |              |
-| ALMA   |          |            |    ✓    |     |            |            |         |              |
-| FMN    |    ✓     |            |    ✓    |     |            |            |         |              |
+| DDN    |    ☒     |            |    ✓    |  ☒  |     ☒      |     ☒      |         |      ☒       |
+| ALMA   |    ☒     |     ☒      |    ✓    |  ☒  |     ☒      |     ☒      |    ☒    |      ☒       |
+| FMN    |    ✓     |     ☒      |    ✓    |  ☒  |     ☒      |     ☒      |         |      ☒       |
+
+Legend: 
+- _empty_ : not implemented yet 
+- ☒ : not available (see google sheet)
+- ✓ : implemented
 
 ## Attack format
 
