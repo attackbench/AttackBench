@@ -14,7 +14,7 @@ attack_ingredient = Ingredient('attack')
 def alma():
     name = 'alma'
     origin = 'adv_lib'  # available: ['adv_lib']
-    norm = 'l2'
+    distance = 'l2'
     steps = 1000
     alpha = 0.9
     init_lr_distance = 1
@@ -49,8 +49,8 @@ def foolbox():
 
 
 @attack_ingredient.capture
-def get_alma(norm: float, steps: int, alpha: float, init_lr_distance: float) -> Callable:
-    return partial(alma_attack, distance=norm, num_steps=steps, α=alpha, init_lr_distance=init_lr_distance)
+def get_alma(distance: float, steps: int, alpha: float, init_lr_distance: float) -> Callable:
+    return partial(alma_attack, distance=distance, num_steps=steps, α=alpha, init_lr_distance=init_lr_distance)
 
 
 @attack_ingredient.capture

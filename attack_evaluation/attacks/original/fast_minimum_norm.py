@@ -411,7 +411,7 @@ _fmn_attacks = {
     0: L0FMNAttack,
     1: L1FMNAttack,
     2: L2FMNAttack,
-    float('inf'): LInfFMNAttack,
+    'inf': LInfFMNAttack,
 }
 
 
