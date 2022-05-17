@@ -6,7 +6,7 @@ from sacred import Ingredient
 
 from .adversarial_library import adv_lib_wrapper
 from .original.fast_minimum_norm import fmn_attack
-
+from .foolbox.foolbox_attacks import foolbox_attack
 attack_ingredient = Ingredient('attack')
 
 
@@ -14,7 +14,7 @@ attack_ingredient = Ingredient('attack')
 def alma():
     name = 'alma'
     origin = 'adv_lib'  # available: ['adv_lib']
-    distance = 'l2'
+    norm = 'l2'
     steps = 1000
     alpha = 0.9
     init_lr_distance = 1
@@ -39,9 +39,18 @@ def fmn():
     gamma = 0.05
 
 
+@attack_ingredient.named_config
+def foolbox():
+    # Use default config from foolbox. By default pgd with l2 is executed.
+    name = 'pgd'
+    origin = 'foolbox'  # available: ['foolbox']
+    norm = 2
+    epsilon = 0.3
+
+
 @attack_ingredient.capture
-def get_alma(norm: float, num_steps: int, alpha: float, init_lr_distance: float) -> Callable:
-    return partial(alma_attack, norm=norm, num_steps=num_steps, α=alpha, init_lr_distance=init_lr_distance)
+def get_alma(norm: float, steps: int, alpha: float, init_lr_distance: float) -> Callable:
+    return partial(alma_attack, distance=norm, num_steps=steps, α=alpha, init_lr_distance=init_lr_distance)
 
 
 @attack_ingredient.capture
@@ -57,6 +66,11 @@ def get_fmn(norm: float, steps: int, max_stepsize: float, gamma: float) -> Calla
 @attack_ingredient.capture
 def get_adv_lib_fmn(norm: float, steps: int, max_stepsize: float, gamma: float) -> Callable:
     return partial(fmn_adv_lib_attack, norm=norm, steps=steps, α_init=max_stepsize, γ_init=gamma)
+
+
+@attack_ingredient.capture
+def get_foolbox(name: str, norm: float, epsilon: float) -> Callable:
+    return partial(foolbox_attack, name=name, norm=norm, eps=epsilon)
 
 
 _original = {
@@ -85,6 +99,7 @@ def get_adv_lib_attack(name: str) -> Callable:
 _libraries = {
     'original': get_original_attack,
     'adv_lib': get_adv_lib_attack,
+    'foolbox': get_foolbox
 }
 
 

@@ -1,10 +1,5 @@
-import math
-from abc import abstractmethod
-from typing import Any, Optional, Tuple, Union
-
-import eagerpy as ep
-from eagerpy.astensor import T
-from foolbox import Misclassification, Model, PyTorchModel, TargetedMisclassification
+from typing import Optional
+from foolbox import Misclassification, PyTorchModel, TargetedMisclassification
 import foolbox.attacks
 from torch import Tensor, nn
 
@@ -45,14 +40,15 @@ def foolbox_attack(model: nn.Module,
                    labels: Tensor,
                    targets: Optional[Tensor] = None,
                    targeted: bool = False,
-                   attack: str = "pgd",
-                   norm: float = 2, **kwargs) -> Tensor:
-    name = str(_foolbox_attacks[attack][norm])
-    attack = getattr(foolbox.attacks, name, None)(**kwargs)
+                   name: str = "pgd",
+                   norm: float = 2,
+                   eps: float = 0.3, **kwargs) -> Tensor:
+    attack_class = str(_foolbox_attacks[name][norm])
+    attack = getattr(foolbox.attacks, attack_class)(**kwargs)
     fb_model = PyTorchModel(model=model, bounds=(0, 1))
     if targeted:
         criterion = TargetedMisclassification(targets)
     else:
         criterion = Misclassification(labels)
-    adv_inputs = attack.run(model=fb_model, inputs=inputs, criterion=criterion)
+    adv_inputs = attack.run(model=fb_model, inputs=inputs, criterion=criterion, epsilon=eps)
     return adv_inputs
