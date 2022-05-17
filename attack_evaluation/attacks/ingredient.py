@@ -102,7 +102,7 @@ _libraries = {
     'foolbox': get_foolbox
 }
 
-
 @attack_ingredient.capture
 def get_attack(origin: str) -> Callable:
     return _libraries[origin]()
+

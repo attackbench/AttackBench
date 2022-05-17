@@ -2,6 +2,7 @@ from typing import Optional
 from foolbox import Misclassification, PyTorchModel, TargetedMisclassification
 import foolbox.attacks
 from torch import Tensor, nn
+from inspect import signature
 
 _pgd_attacks = {
     2: "L2ProjectedGradientDescentAttack",
@@ -10,7 +11,7 @@ _pgd_attacks = {
 
 _deepfool_attacks = {
     2: "L2DeepFoolAttack",
-    float('inf'): "LinfDeepFoolAttack",
+    'inf': "LinfDeepFoolAttack",
 }
 
 _bb_attacks = {
@@ -30,7 +31,6 @@ _fmn_attacks = {
 _foolbox_attacks = {
     "pgd": _pgd_attacks,
     "deepfool": _deepfool_attacks,
-    "BB": _bb_attacks,
     "fmn": _fmn_attacks
 }
 
@@ -50,5 +50,11 @@ def foolbox_attack(model: nn.Module,
         criterion = TargetedMisclassification(targets)
     else:
         criterion = Misclassification(labels)
-    adv_inputs = attack.run(model=fb_model, inputs=inputs, criterion=criterion, epsilon=eps)
+    if 'epsilon' in signature(attack.run).parameters:
+        adv_inputs = attack.run(model=fb_model, inputs=inputs, criterion=criterion, epsilon=eps)
+    else:
+        # minimum distance attacks
+        adv_inputs = attack.run(model=fb_model, inputs=inputs, criterion=criterion)
     return adv_inputs
+
+
