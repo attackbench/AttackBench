@@ -5,7 +5,7 @@ from torch import Tensor, nn
 
 _pgd_attacks = {
     2: "L2ProjectedGradientDescentAttack",
-    float('inf'): "LinfProjectedGradientDescentAttack",
+    'inf': "LinfProjectedGradientDescentAttack",
 }
 
 _deepfool_attacks = {
@@ -17,14 +17,14 @@ _bb_attacks = {
     0: "L0BrendelBethgeAttack",
     1: "L1BrendelBethgeAttack",
     2: "L2BrendelBethgeAttack",
-    float('inf'): "LinfinityBrendelBethgeAttack",
+    'inf': "LinfinityBrendelBethgeAttack",
 }
 
 _fmn_attacks = {
     0: "L0FMNAttack",
     1: "L1FMNAttack",
     2: "L2FMNAttack",
-    float('inf'): "LInfFMNAttack",
+    'inf': "LInfFMNAttack",
 }
 
 _foolbox_attacks = {
