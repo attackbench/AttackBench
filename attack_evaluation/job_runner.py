@@ -59,7 +59,6 @@ if __name__ == "__main__":
                   f"model.{victim} "\
                   f"model.threat_model=L{norm[1:]} "\
                   f"attack.{attack} "\
-                  f"attack.steps=1 "\
                   f"attack.{_attacks_keywords[attack]['distance']}={_attacks_keywords[attack]['encode'](norm)}\n"
 
         with open(job_file, 'w') as fh:
