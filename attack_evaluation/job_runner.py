@@ -19,7 +19,6 @@ args = parser.parse_args()
 
 _conda_env_name = 'atkbench'
 
-
 _attacks_keywords = {'fmn': {'distance': 'norm', 'encode': lambda x: x[1:]},
                      'alma': {'distance': 'distance', 'encode': lambda x: x},
                      'ddn': {'distance': 'norm', 'encode': lambda x: x[1:]}
@@ -52,14 +51,14 @@ if __name__ == "__main__":
 
         job_file = Path(exp_dir) / Path(f'{attack_name}-runner.job')
         Path(logs_dir) / attack_name
-        command = f"python run.py -F {Path(exp_dir) / exp_name} with "\
-                  f"save_adv "\
-                  f"dataset.{dataset} "\
-                  f"dataset.batch_size={batch_size} "\
-                  f"model.{victim} "\
-                  f"model.threat_model=L{norm[1:]} "\
-                  f"attack.{attack} "\
+        command = f"python run.py -F {Path(exp_dir) / exp_name} with " \
+                  f"save_adv " \
+                  f"dataset.{dataset} " \
+                  f"dataset.batch_size={batch_size} " \
+                  f"model.{victim} " \
+                  f"attack.{attack} " \
                   f"attack.{_attacks_keywords[attack]['distance']}={_attacks_keywords[attack]['encode'](norm)}\n"
+        # f"model.threat_model=L{norm[1:]} "\
 
         with open(job_file, 'w') as fh:
             fh.writelines("#!/bin/bash\n")
