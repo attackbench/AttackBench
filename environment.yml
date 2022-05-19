@@ -13,6 +13,8 @@ dependencies:
   - libgomp=9.3.0=h5101ec6_17
   - libstdcxx-ng=9.3.0=hd4cf53a_17
   - libuuid=1.0.3=h7f8727e_2
+  - matplotlib=3.5.1=py39h06a4308_1
+  - matplotlib-base=3.5.1=py39ha18d171_1
   - ncurses=6.3=h7f8727e_2
   - openssl=1.1.1o=h7f8727e_0
   - python=3.9.12=h12debd9_0
@@ -55,6 +57,7 @@ dependencies:
     - git+https://github.com/RobustBench/robustbench.git
     - sacred==0.8.2
     - scipy==1.8.0
+    - seaborn==0.11.2
     - setuptools==61.2.0
     - six==1.16.0
     - smmap==5.0.0

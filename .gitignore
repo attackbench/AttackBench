@@ -6,6 +6,9 @@ __pycache__/
 # Pycharm 
 .idea
 
+# project
+figs/
+
 # C extensions
 *.so
 

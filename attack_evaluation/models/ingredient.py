@@ -15,6 +15,7 @@ model_ingredient = Ingredient('model')
 @model_ingredient.named_config
 def config():
     requires_grad = False  # if some model requires gradient computations in the forward pass
+    threat_model = 'Linf'
 
 
 @model_ingredient.named_config
@@ -32,13 +33,19 @@ def wideresnet_28_10():
 
 @model_ingredient.named_config
 def carmon_2019():
-    name = 'Carmon2019'
+    name = 'Carmon2019Unlabeled'  # 'Carmon2019'
     origin = 'robustbench'
 
 
 @model_ingredient.named_config
 def augustin_2020():
     name = 'Augustin2020'
+    origin = 'robustbench'
+
+
+@model_ingredient.named_config
+def standard():
+    name = 'Standard'
     origin = 'robustbench'
 
 
@@ -70,8 +77,8 @@ def get_local_model(name: str) -> nn.Module:
 
 
 @model_ingredient.capture
-def get_robustbench_model(name: str) -> nn.Module:
-    model = load_model(model_name=name)
+def get_robustbench_model(threat_model: str, name: str) -> nn.Module:
+    model = load_model(model_name=name, threat_model=threat_model)
     return model
 
 

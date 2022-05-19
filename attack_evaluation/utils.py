@@ -87,11 +87,12 @@ def run_attack(model: nn.Module,
     }
 
     if return_adv:
-        shapes = [img.shape for img in inputs]
-        if len(set(shapes)) == 1:
-            inputs = torch.cat(inputs, dim=0)
-            adv_inputs = torch.cat(adv_inputs, dim=0)
-        data['inputs'] = inputs
-        data['adv_inputs'] = adv_inputs
+        #shapes = [img.shape for img in all_inputs]
+        #if len(set(shapes)) == 1:
+        if len(all_inputs) > 1:
+            all_inputs = torch.cat(all_inputs, dim=0)
+            all_adv_inputs = torch.cat(all_adv_inputs, dim=0)
+        data['inputs'] = all_inputs
+        data['adv_inputs'] = all_adv_inputs
 
     return data
