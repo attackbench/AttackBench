@@ -52,6 +52,16 @@ if __name__ == "__main__":
 
         job_file = Path(exp_dir) / Path(f'{attack_name}-runner.job')
         Path(logs_dir) / attack_name
+        command = f"python run.py -F {Path(exp_dir) / exp_name} with "\
+                  f"save_adv "\
+                  f"dataset.{dataset} "\
+                  f"dataset.batch_size={batch_size} "\
+                  f"model.{victim} "\
+                  f"model.threat_model=L{norm[1:]} "\
+                  f"attack.{attack} "\
+                  f"attack.steps=1 "\
+                  f"attack.{_attacks_keywords[attack]['distance']}={_attacks_keywords[attack]['encode'](norm)}\n"
+
         with open(job_file, 'w') as fh:
             fh.writelines("#!/bin/bash\n")
             fh.writelines(f"#SBATCH --job-name={dataset}-{attack}.job\n")
@@ -59,14 +69,7 @@ if __name__ == "__main__":
             fh.writelines("#SBATCH --mem=128gb\n")
             fh.writelines("#SBATCH --ntasks=%d\n" % cpu_count)
             fh.writelines(f"#SBATCH --gres gpu:{device}:{gpu_count}\n")
-            fh.writelines(f"python run.py -F {Path(exp_dir)/exp_name} with "
-                          f"save_adv "
-                          f"dataset.{dataset} "
-                          f"dataset.batch_size={batch_size} "
-                          f"model.{victim} "
-                          f"model.threat_model=L{norm[1:]} "
-                          f"attack.{attack} "
-                          f"attack.steps=1 "
-                          f"attack.{_attacks_keywords[attack]['distance']}={_attacks_keywords[attack]['encode'](norm)}\n")
-
+            fh.writelines(command)
+        print(f'Running {command} ...')
         os.system("sbatch %s" % job_file)
+        print(f'Job Started')
