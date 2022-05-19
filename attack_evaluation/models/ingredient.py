@@ -15,7 +15,7 @@ model_ingredient = Ingredient('model')
 @model_ingredient.named_config
 def config():
     requires_grad = False  # if some model requires gradient computations in the forward pass
-    threat_model = 'Linf'
+    #threat_model = 'Linf'
 
 
 @model_ingredient.named_config
@@ -77,8 +77,8 @@ def get_local_model(name: str) -> nn.Module:
 
 
 @model_ingredient.capture
-def get_robustbench_model(threat_model: str, name: str) -> nn.Module:
-    model = load_model(model_name=name, threat_model=threat_model)
+def get_robustbench_model(name: str) -> nn.Module:
+    model = load_model(model_name=name)
     return model
 
 
