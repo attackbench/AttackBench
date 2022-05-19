@@ -64,4 +64,4 @@ def main(cpu: bool,
         del attack_data['inputs'], attack_data['adv_inputs']
     _run.info = attack_data
 
-    _log.info(pformat(attack_data, compact=True))
+    # _log.info(pformat(attack_data, compact=True))

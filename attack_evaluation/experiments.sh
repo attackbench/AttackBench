@@ -1,19 +1,6 @@
 #!/bin/bash
 
-attacks='fmn ddn alma'
-dist_name='norm'
+python job_runner.py --model='carmon_2019' # cifar10
+python job_runner.py --model='wideresnet_28_10' # cifar10
 
-for attack in $attacks
-do
-  for n in 0 1 2 'inf'
-  do
-    if [[ $attack == 'alma' ]]
-    then
-      dist_name='distance'
-      n="l$n"
-    fi
-
-    python run.py -F "mnist-mnist_smallcnn-$attack-l$n" with save_adv dataset.mnist model.mnist_smallcnn attack.$attack attack.$dist_name=$n
-  done
-  echo ''
-done
+python job_runner.py --dataset="mnist" --model='mnist_smallcnn' # mnist

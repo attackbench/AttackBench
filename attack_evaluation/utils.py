@@ -9,6 +9,13 @@ from torch import Tensor, nn
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
+import os
+
+
+def mkdir_p(dir):
+    if not os.path.exists(dir):
+        os.makedirs(dir)
+
 
 def run_attack(model: nn.Module,
                loader: DataLoader,
@@ -87,8 +94,8 @@ def run_attack(model: nn.Module,
     }
 
     if return_adv:
-        #shapes = [img.shape for img in all_inputs]
-        #if len(set(shapes)) == 1:
+        # shapes = [img.shape for img in all_inputs]
+        # if len(set(shapes)) == 1:
         if len(all_inputs) > 1:
             all_inputs = torch.cat(all_inputs, dim=0)
             all_adv_inputs = torch.cat(all_adv_inputs, dim=0)
