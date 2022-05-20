@@ -39,13 +39,16 @@ def main(root, dataset, model, attacks, norm, exp_id, _config, _run, _log):
 
             adv_distances = np.array(attack_data['distances'][dist_key])
             success = np.array(attack_data['adv_success'])
-            adv_distances[~success] = float('inf')
+            adv_distances[~success] = float('inf')  # set the failed attacks as infinite distance
             distances = np.sort(np.unique(adv_distances[success]))
 
             if 0 not in distances:
                 distances = np.insert(distances, 0, 0)
 
+            # Compute the robust accuracy by check all distances for successful attacks that are larger than the unique
+            # distances. This is safer than using a linspace for instance, which requires some indexing and offset.
             robust_acc = (adv_distances[None, :] > distances[:, None]).mean(axis=1)
+            # compute the area under the curve for now => will need to replace that by the sub-optimality metric later
             curve_area = np.trapz(robust_acc, distances)
 
             ax.plot(distances, robust_acc, linestyle='--',
