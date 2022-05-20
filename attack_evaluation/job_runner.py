@@ -14,6 +14,7 @@ parser.add_argument('--device', type=str, default='quadro_rtx_8000',
 parser.add_argument('--batch_size', type=int, default=512, help='Batch size')
 parser.add_argument('--gpu_count', type=int, default=1, help='Number of gpus for trial')
 parser.add_argument('--cpu_count', type=int, default=10, help='Number of cpus for trial')
+parser.add_argument('--memory', '--mem', type=int, default=128, help='Number of GB to allocate')
 args = parser.parse_args()
 
 _conda_env_name = 'atkbench'
@@ -29,6 +30,7 @@ if __name__ == "__main__":
     device = args.device
     gpu_count = args.gpu_count
     cpu_count = args.cpu_count
+    memory = args.memory
 
     # exp setup
     root = Path('experimental_results')
@@ -63,8 +65,8 @@ if __name__ == "__main__":
             "#!/bin/bash",
             f"#SBATCH --job-name={dataset}-{attack}.job",
             f"#SBATCH --output={Path(logs_dir) / attack_name}-log.out",
-            "#SBATCH --mem=128gb",
-            f"#SBATCH --ntasks={cpu_count:d}",
+            f"#SBATCH --mem={memory}gb",
+            f"#SBATCH --ntasks={cpu_count}",
             f"#SBATCH --gres gpu:{device}:{gpu_count}",
             command,
         ]
