@@ -37,11 +37,11 @@ def main(root, dataset, model, attacks, norm, exp_id, _config, _run, _log):
         j = 1
         fig, ax = plt.subplots(figsize=(5, 4))
         for attack in attacks.split(','):
-            attack_dir = exp_dir / f'{dataset}-{model}-{attack}-{norm}' / Path(f'{exp_id}')
+            attack_dir = exp_dir / f'{dataset}-{model}-{attack}-{norm}' / f'{exp_id}'
             filename = attack_dir / f'attack_data.pt'
 
             attack_data = torch.load(filename)
-            mkdir_p(fig_path)
+            fig_path.mkdir(exist_ok=True)
 
             perturbation_size = np.array(attack_data['distances'][dist_key])
             idx_sorted = np.argsort(perturbation_size)
