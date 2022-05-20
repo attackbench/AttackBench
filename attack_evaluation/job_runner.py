@@ -1,7 +1,6 @@
+import argparse
 import os
 from pathlib import Path
-import argparse
-from utils import mkdir_p
 
 parser = argparse.ArgumentParser(description='Slurm runner for attacks benchmark.')
 parser.add_argument('--dataset', type=str, default='cifar10', choices=['cifar10', 'mnist'], help='Dataset')
@@ -31,7 +30,7 @@ if __name__ == "__main__":
     cpu_count = args.cpu_count
 
     # exp setup
-    root = 'experimental_results'
+    root = Path('experimental_results')
     dataset = args.dataset
     batch_size = args.batch_size
     attacks = args.attacks
@@ -40,18 +39,17 @@ if __name__ == "__main__":
 
     for attack in attacks:
         attack_name = f'{attack}-{norm}'
-        exp_dir = f'{root}/{dataset}'
+        exp_dir = root / dataset
         exp_name = f'{dataset}-{victim}-{attack_name}'
-        logs_dir = Path(exp_dir) / 'logs'
+        logs_dir = exp_dir / 'logs'
 
         # folder setup
-        mkdir_p(root)
-        mkdir_p(exp_dir)
-        mkdir_p(logs_dir)
+        root.mkdir(exist_ok=True)
+        exp_dir.mkdir(exist_ok=True)
+        logs_dir.mkdir(exist_ok=True)
 
-        job_file = Path(exp_dir) / Path(f'{attack_name}-runner.job')
-        Path(logs_dir) / attack_name
-        command = f"python run.py -F {Path(exp_dir) / exp_name} with " \
+        job_file = exp_dir / f'{attack_name}-runner.job'
+        command = f"python run.py -F {exp_dir / exp_name} with " \
                   f"save_adv " \
                   f"dataset.{dataset} " \
                   f"dataset.batch_size={batch_size} " \
