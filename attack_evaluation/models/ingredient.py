@@ -24,7 +24,6 @@ def mnist_smallcnn():
     origin = 'local'
     robust = None
 
-
 @model_ingredient.named_config
 def wideresnet_28_10():
     name = 'Standard'

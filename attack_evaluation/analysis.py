@@ -51,7 +51,7 @@ def main(root, dataset, model, attacks, norm, exp_id, _config, _run, _log):
             y_axis = ASR_values[idx_sorted].cumsum()
             robust_acc = 1 - y_axis / len(y_axis)
 
-            curve_area = 1 - np.trapz(x=distances, y=robust_acc)
+            curve_area = 1 - (robust_acc.sum()/len(robust_acc))
 
             cnt = sns.lineplot(x=distances, y=robust_acc, ax=ax, linestyle='--',
                                label=f'{attack} $%s$ %.2f' % (_eval_distances[dist_key], curve_area))
