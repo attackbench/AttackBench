@@ -51,7 +51,7 @@ def main(root, dataset, model, attacks, norm, exp_id, _config, _run, _log):
             y_axis = ASR_values[idx_sorted].cumsum()
             robust_acc = 1 - y_axis / len(y_axis)
 
-            curve_area = 1 - (robust_acc.sum()/len(robust_acc))
+            curve_area = 1 - (robust_acc.sum() / len(robust_acc))
 
             cnt = sns.lineplot(x=distances, y=robust_acc, ax=ax, linestyle='--',
                                label=f'{attack} ${_eval_distances[dist_key]}$ {curve_area:.2f}')
@@ -61,7 +61,7 @@ def main(root, dataset, model, attacks, norm, exp_id, _config, _run, _log):
                 eps_0 = distances[lower_thr][0]
                 c = ax.get_lines()[-1].get_c()
                 plt.axvline(eps_0, -0.1, 0.1, color=c, linewidth=1)
-                plt.text(eps_0, 0.1*j, "$\epsilon_0$", horizontalalignment='center', size='small', color=c)
+                plt.text(eps_0, 0.1 * j, "$\epsilon_0$", horizontalalignment='center', size='small', color=c)
                 j *= -1
             cnt.yaxis.set_major_locator(ticker.MultipleLocator(0.1))
             # cnt.xaxis.set_major_locator(ticker.MultipleLocator(0.5))
