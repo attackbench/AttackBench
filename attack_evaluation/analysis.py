@@ -4,12 +4,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import numpy as np
-import seaborn as sns
 from sacred import Experiment
-
-sns.set_style("whitegrid")
-sns.set_context("paper", font_scale=1.5, rc={"lines.linewidth": 3})
-sns.despine(left=True)
 
 ex = Experiment('attack_evaluation_curves')
 
@@ -53,8 +48,8 @@ def main(root, dataset, model, attacks, norm, exp_id, _config, _run, _log):
 
             curve_area = 1 - (robust_acc.sum() / len(robust_acc))
 
-            cnt = sns.lineplot(x=distances, y=robust_acc, ax=ax, linestyle='--',
-                               label=f'{attack} ${_eval_distances[dist_key]}$ {curve_area:.2f}')
+            ax.plot(distances, robust_acc, linestyle='--',
+                    label=f'{attack} ${_eval_distances[dist_key]}$ {curve_area:.2f}')
 
             lower_thr = np.where(robust_acc < eps_threshold)[0]
             if len(lower_thr) > 0:
@@ -63,14 +58,21 @@ def main(root, dataset, model, attacks, norm, exp_id, _config, _run, _log):
                 plt.axvline(eps_0, -0.1, 0.1, color=c, linewidth=1)
                 plt.text(eps_0, 0.1 * j, "$\epsilon_0$", horizontalalignment='center', size='small', color=c)
                 j *= -1
-            cnt.yaxis.set_major_locator(ticker.MultipleLocator(0.1))
-            # cnt.xaxis.set_major_locator(ticker.MultipleLocator(0.5))
-            cnt.axhline(attack_data['accuracy'], linestyle="--", color="black", linewidth=1)
 
-        ax.set_ylabel('Robust Accuracy')
+        ax.grid(True, linestyle='--', c='lightgray', which='major')
+        ax.yaxis.set_major_formatter(ticker.PercentFormatter(1))
+        ax.set_xlim(left=0)
+        ax.set_ylim(bottom=0, top=1)
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+
+        ax.set_ylabel('Robust Accuracy (%)')
         ax.set_xlabel(f'Perturbation Size ${_eval_distances[dist_key]}$')
-        plt.text(distances.mean(), attack_data['accuracy'] + 0.01, "Clean accuracy",
-                 horizontalalignment='left', size='small', color='black', weight='normal')
+
+        ax.axhline(attack_data['accuracy'], linestyle='--', color='black', linewidth=1)
+        ax.annotate(text=f'Clean accuracy: {attack_data["accuracy"]:.2%}', xy=(0.5, attack_data['accuracy']),
+                    xycoords='axes fraction', xytext=(0, -3), textcoords='offset points',
+                    horizontalalignment='center', verticalalignment='top')
 
         plt.legend(loc='center right', labelspacing=.1, handletextpad=0.5)
         plt.tight_layout()
