@@ -1,10 +1,10 @@
+import json
 from pathlib import Path
 
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import numpy as np
 import seaborn as sns
-import torch
 from sacred import Experiment
 
 sns.set_style("whitegrid")
@@ -37,9 +37,10 @@ def main(root, dataset, model, attacks, norm, exp_id, _config, _run, _log):
         fig, ax = plt.subplots(figsize=(5, 4))
         for attack in attacks.split(','):
             attack_dir = exp_dir / f'{dataset}-{model}-{attack}-{norm}' / f'{exp_id}'
-            filename = attack_dir / f'attack_data.pt'
+            info_file = attack_dir / f'info.json'
 
-            attack_data = torch.load(filename)
+            with open(info_file, 'r') as f:
+                attack_data = json.load(f)
             fig_path.mkdir(exist_ok=True)
 
             perturbation_size = np.array(attack_data['distances'][dist_key])
