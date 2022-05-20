@@ -28,6 +28,11 @@ def config():
     exp_id = 1
 
 
+def area(x, y):
+    p = x[1:] - x[:-1]
+    k = y[1:] + y[:-1]
+    return 1 - (p @ k) / (2 * x.max())
+
 @ex.automain
 def main(root, dataset, model, attacks, norm, exp_id, _config, _run, _log):
     exp_dir = Path(root) / dataset
@@ -51,7 +56,7 @@ def main(root, dataset, model, attacks, norm, exp_id, _config, _run, _log):
             y_axis = ASR_values[idx_sorted].cumsum()
             robust_acc = 1 - y_axis / len(y_axis)
 
-            curve_area = 1 - (robust_acc.sum()/len(robust_acc))
+            curve_area = area(distances, robust_acc) #1 - (robust_acc.sum() / len(robust_acc))
 
             cnt = sns.lineplot(x=distances, y=robust_acc, ax=ax, linestyle='--',
                                label=f'{attack} $%s$ %.2f' % (_eval_distances[dist_key], curve_area))
@@ -61,7 +66,7 @@ def main(root, dataset, model, attacks, norm, exp_id, _config, _run, _log):
                 eps_0 = distances[lower_thr][0]
                 c = ax.get_lines()[-1].get_c()
                 plt.axvline(eps_0, -0.1, 0.1, color=c, linewidth=1)
-                plt.text(eps_0, 0.1*j, "$%s_{%s}$" % ('\epsilon', '0\%'), horizontalalignment='center',
+                plt.text(eps_0, 0.1 * j, "$%s_{%s}$" % ('\epsilon', '0\%'), horizontalalignment='center',
                          size='small', color=c)
                 j *= -1
             cnt.yaxis.set_major_locator(ticker.MultipleLocator(0.1))
