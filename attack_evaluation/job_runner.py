@@ -59,13 +59,13 @@ if __name__ == "__main__":
         # f"model.threat_model=L{norm[1:]} "\
 
         with open(job_file, 'w') as fh:
-            fh.writelines("#!/bin/bash\n")
-            fh.writelines(f"#SBATCH --job-name={dataset}-{attack}.job\n")
-            fh.writelines(f"#SBATCH --output={Path(logs_dir) / attack_name}-log.out\n")
-            fh.writelines("#SBATCH --mem=128gb\n")
-            fh.writelines("#SBATCH --ntasks=%d\n" % cpu_count)
-            fh.writelines(f"#SBATCH --gres gpu:{device}:{gpu_count}\n")
-            fh.writelines(command)
+            fh.write("#!/bin/bash\n")
+            fh.write(f"#SBATCH --job-name={dataset}-{attack}.job\n")
+            fh.write(f"#SBATCH --output={Path(logs_dir) / attack_name}-log.out\n")
+            fh.write("#SBATCH --mem=128gb\n")
+            fh.write("#SBATCH --ntasks=%d\n" % cpu_count)
+            fh.write(f"#SBATCH --gres gpu:{device}:{gpu_count}\n")
+            fh.write(command)
         print(f'Running {command} ...')
         os.system("sbatch %s" % job_file)
         print(f'Job Started')
