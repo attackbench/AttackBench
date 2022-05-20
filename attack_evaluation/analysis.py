@@ -64,12 +64,12 @@ def main(root, dataset, model, attacks, norm, exp_id, _config, _run, _log):
         ax.set_ylabel('Robust Accuracy (%)')
         ax.set_xlabel(f'Perturbation Size ${_eval_distances[dist_key]}$')
 
-        ax.axhline(attack_data['accuracy'], linestyle='--', color='black', linewidth=1)
-        ax.annotate(text=f'Clean accuracy: {attack_data["accuracy"]:.2%}', xy=(0.5, attack_data['accuracy']),
-                    xycoords='axes fraction', xytext=(0, -3), textcoords='offset points',
-                    horizontalalignment='center', verticalalignment='top')
+        ax.annotate(text=f'Clean accuracy: {attack_data["accuracy"]:.2%}', xy=(0, attack_data['accuracy']),
+                    xytext=(0.5, attack_data['accuracy']), textcoords='axes fraction',
+                    horizontalalignment='left', verticalalignment='center',
+                    arrowprops={'arrowstyle': '-', 'linestyle': '--'})
 
-        plt.legend(loc='center right', labelspacing=.1, handletextpad=0.5)
-        plt.tight_layout()
-        plt.savefig(fig_path / f'{model}-{norm}-{exp_id}-rbst_curves_{dist_key}.pdf', bbox_inches='tight')
+        ax.legend(loc='center right', labelspacing=.1, handletextpad=0.5)
+        fig.tight_layout()
+        fig.savefig(fig_path / f'{model}-{norm}-{exp_id}-rbst_curves_{dist_key}.pdf', bbox_inches='tight')
         plt.show()
