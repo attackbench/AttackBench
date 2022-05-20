@@ -28,7 +28,6 @@ def main(root, dataset, model, attacks, norm, exp_id, _config, _run, _log):
     fig_path = exp_dir / 'figs'
 
     for dist_key in _eval_distances.keys():
-        j = 1
         fig, ax = plt.subplots(figsize=(5, 4))
         for attack in attacks.split(','):
             attack_dir = exp_dir / f'{dataset}-{model}-{attack}-{norm}' / f'{exp_id}'
@@ -38,15 +37,16 @@ def main(root, dataset, model, attacks, norm, exp_id, _config, _run, _log):
                 attack_data = json.load(f)
             fig_path.mkdir(exist_ok=True)
 
-            perturbation_size = np.array(attack_data['distances'][dist_key])
-            idx_sorted = np.argsort(perturbation_size)
-            distances = perturbation_size[idx_sorted]
+            adv_distances = np.array(attack_data['distances'][dist_key])
+            success = np.array(attack_data['adv_success'])
+            adv_distances[~success] = float('inf')
+            distances = np.sort(np.unique(adv_distances[success]))
 
-            ASR_values = np.array(attack_data['adv_success'])
-            y_axis = ASR_values[idx_sorted].cumsum()
-            robust_acc = 1 - y_axis / len(y_axis)
+            if 0 not in distances:
+                distances = np.insert(distances, 0, 0)
 
-            curve_area = 1 - (robust_acc.sum() / len(robust_acc))
+            robust_acc = (adv_distances[None, :] > distances[:, None]).mean(axis=1)
+            curve_area = np.trapz(robust_acc, distances)
 
             ax.plot(distances, robust_acc, linestyle='--',
                     label=f'{attack} ${_eval_distances[dist_key]}$ {curve_area:.2f}')
