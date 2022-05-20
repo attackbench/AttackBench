@@ -18,10 +18,11 @@ args = parser.parse_args()
 
 _conda_env_name = 'atkbench'
 
-_attacks_keywords = {'fmn': {'distance': 'norm', 'encode': lambda x: x[1:]},
-                     'alma': {'distance': 'distance', 'encode': lambda x: x},
-                     'ddn': {'distance': 'norm', 'encode': lambda x: x[1:]}
-                     }
+_attacks_keywords = {
+    'fmn': {'distance': 'norm', 'encode': lambda x: x[1:]},
+    'alma': {'distance': 'distance', 'encode': lambda x: x},
+    'ddn': {'distance': 'norm', 'encode': lambda x: x[1:]}
+}
 
 if __name__ == "__main__":
     # machine setup
