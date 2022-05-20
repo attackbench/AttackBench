@@ -55,17 +55,22 @@ if __name__ == "__main__":
                   f"dataset.batch_size={batch_size} " \
                   f"model.{victim} " \
                   f"attack.{attack} " \
-                  f"attack.{_attacks_keywords[attack]['distance']}={_attacks_keywords[attack]['encode'](norm)}\n"
+                  f"attack.{_attacks_keywords[attack]['distance']}={_attacks_keywords[attack]['encode'](norm)}"
         # f"model.threat_model=L{norm[1:]} "\
 
+        lines = [
+            "#!/bin/bash",
+            f"#SBATCH --job-name={dataset}-{attack}.job",
+            f"#SBATCH --output={Path(logs_dir) / attack_name}-log.out",
+            "#SBATCH --mem=128gb",
+            f"#SBATCH --ntasks={cpu_count:d}",
+            f"#SBATCH --gres gpu:{device}:{gpu_count}",
+            command,
+        ]
+
         with open(job_file, 'w') as fh:
-            fh.write("#!/bin/bash\n")
-            fh.write(f"#SBATCH --job-name={dataset}-{attack}.job\n")
-            fh.write(f"#SBATCH --output={Path(logs_dir) / attack_name}-log.out\n")
-            fh.write("#SBATCH --mem=128gb\n")
-            fh.write("#SBATCH --ntasks=%d\n" % cpu_count)
-            fh.write(f"#SBATCH --gres gpu:{device}:{gpu_count}\n")
-            fh.write(command)
+            fh.write('\n'.join(lines))
+
         print(f'Running {command} ...')
         os.system("sbatch %s" % job_file)
         print(f'Job Started')
