@@ -54,22 +54,21 @@ def main(root, dataset, model, attacks, norm, exp_id, _config, _run, _log):
             curve_area = 1 - (robust_acc.sum()/len(robust_acc))
 
             cnt = sns.lineplot(x=distances, y=robust_acc, ax=ax, linestyle='--',
-                               label=f'{attack} $%s$ %.2f' % (_eval_distances[dist_key], curve_area))
+                               label=f'{attack} ${_eval_distances[dist_key]}$ {curve_area:.2f}')
 
             lower_thr = np.where(robust_acc < eps_threshold)[0]
             if len(lower_thr) > 0:
                 eps_0 = distances[lower_thr][0]
                 c = ax.get_lines()[-1].get_c()
                 plt.axvline(eps_0, -0.1, 0.1, color=c, linewidth=1)
-                plt.text(eps_0, 0.1*j, "$%s_{%s}$" % ('\epsilon', '0\%'), horizontalalignment='center',
-                         size='small', color=c)
+                plt.text(eps_0, 0.1*j, "$\epsilon_0$", horizontalalignment='center', size='small', color=c)
                 j *= -1
             cnt.yaxis.set_major_locator(ticker.MultipleLocator(0.1))
             # cnt.xaxis.set_major_locator(ticker.MultipleLocator(0.5))
             cnt.axhline(attack_data['accuracy'], linestyle="--", color="black", linewidth=1)
 
         ax.set_ylabel('Robust Accuracy')
-        ax.set_xlabel('Perturbation Size $%s$' % _eval_distances[dist_key])
+        ax.set_xlabel(f'Perturbation Size ${_eval_distances[dist_key]}$')
         plt.text(distances.mean(), attack_data['accuracy'] + 0.01, "Clean accuracy",
                  horizontalalignment='left', size='small', color='black', weight='normal')
 
