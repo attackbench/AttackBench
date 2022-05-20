@@ -51,14 +51,6 @@ def main(root, dataset, model, attacks, norm, exp_id, _config, _run, _log):
             ax.plot(distances, robust_acc, linestyle='--',
                     label=f'{attack} ${_eval_distances[dist_key]}$ {curve_area:.2f}')
 
-            lower_thr = np.where(robust_acc < eps_threshold)[0]
-            if len(lower_thr) > 0:
-                eps_0 = distances[lower_thr][0]
-                c = ax.get_lines()[-1].get_c()
-                plt.axvline(eps_0, -0.1, 0.1, color=c, linewidth=1)
-                plt.text(eps_0, 0.1 * j, "$\epsilon_0$", horizontalalignment='center', size='small', color=c)
-                j *= -1
-
         ax.grid(True, linestyle='--', c='lightgray', which='major')
         ax.yaxis.set_major_formatter(ticker.PercentFormatter(1))
         ax.set_xlim(left=0)
