@@ -39,15 +39,9 @@ def main(root, dataset, model, attacks, norm, exp_id, _config, _run, _log):
 
             adv_distances = np.array(attack_data['distances'][dist_key])
             success = np.array(attack_data['adv_success'])
-            adv_distances[~success] = float('inf')  # set the failed attacks as infinite distance
-            distances = np.sort(np.unique(adv_distances[success]))
+            distances, counts = np.unique(adv_distances[success], return_counts=True)
 
-            if 0 not in distances:
-                distances = np.insert(distances, 0, 0)
-
-            # Compute the robust accuracy by check all distances for successful attacks that are larger than the unique
-            # distances. This is safer than using a linspace for instance, which requires some indexing and offset.
-            robust_acc = (adv_distances[None, :] > distances[:, None]).mean(axis=1)
+            robust_acc = 1 - counts.cumsum() / len(success)
             # compute the area under the curve for now => will need to replace that by the sub-optimality metric later
             curve_area = np.trapz(robust_acc, distances)
 
@@ -65,8 +59,7 @@ def main(root, dataset, model, attacks, norm, exp_id, _config, _run, _log):
         ax.set_xlabel(f'Perturbation Size ${_eval_distances[dist_key]}$')
 
         ax.annotate(text=f'Clean accuracy: {attack_data["accuracy"]:.2%}', xy=(0, attack_data['accuracy']),
-                    xytext=(0.5, attack_data['accuracy']), textcoords='axes fraction',
-                    horizontalalignment='left', verticalalignment='center',
+                    xytext=(ax.get_xlim()[1] / 2, attack_data['accuracy']), ha='left', va='center',
                     arrowprops={'arrowstyle': '-', 'linestyle': '--'})
 
         ax.legend(loc='center right', labelspacing=.1, handletextpad=0.5)
