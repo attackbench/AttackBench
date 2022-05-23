@@ -18,7 +18,7 @@ ex = Experiment('attack_evaluation', ingredients=[dataset_ingredient, model_ingr
 @ex.config
 def config():
     cpu = False  # force experiment to run on CPU
-    save_adv = False
+    save_adv = False  # save the inputs and perturbed inputs; not to be used with large datasets
     targeted = False
     cudnn_flag = 'deterministic'  # choose between "deterministic" and "benchmark"
 
