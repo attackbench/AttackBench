@@ -1,16 +1,10 @@
-# %%
-import matplotlib.pyplot as plt
+import json
 from pathlib import Path
-import matplotlib.ticker as ticker
-from sacred import Experiment
-import torch
-import numpy as np
-import seaborn as sns
-from utils import mkdir_p
 
-sns.set_style("whitegrid")
-sns.set_context("paper", font_scale=1.5, rc={"lines.linewidth": 3})
-sns.despine(left=True)
+import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
+import numpy as np
+from sacred import Experiment
 
 ex = Experiment('attack_evaluation_curves')
 
@@ -42,11 +36,12 @@ def main(root, dataset, model, attacks, norm, exp_id, _config, _run, _log):
         j = 1
         fig, ax = plt.subplots(figsize=(5, 4))
         for attack in attacks.split(','):
-            attack_dir = exp_dir / f'{dataset}-{model}-{attack}-{norm}' / Path(f'{exp_id}')
-            filename = attack_dir / f'attack_data.pt'
+            attack_dir = exp_dir / f'{dataset}-{model}-{attack}-{norm}' / f'{exp_id}'
+            info_file = attack_dir / f'info.json'
 
-            attack_data = torch.load(filename)
-            mkdir_p(fig_path)
+            with open(info_file, 'r') as f:
+                attack_data = json.load(f)
+            fig_path.mkdir(exist_ok=True)
 
             perturbation_size = np.array(attack_data['distances'][dist_key])
             idx_sorted = np.argsort(perturbation_size)
@@ -55,29 +50,25 @@ def main(root, dataset, model, attacks, norm, exp_id, _config, _run, _log):
             ASR_values = np.array(attack_data['adv_success'])
             y_axis = ASR_values[idx_sorted].cumsum()
             robust_acc = 1 - y_axis / len(y_axis)
+            curve_area = 1 - (robust_acc.sum() / len(robust_acc))
 
-            curve_area = area(distances, robust_acc) #1 - (robust_acc.sum() / len(robust_acc))
+            ax.plot(distances, robust_acc, linestyle='--',
+                    label=f'{attack} ${_eval_distances[dist_key]}$ {curve_area:.3f}')
 
-            cnt = sns.lineplot(x=distances, y=robust_acc, ax=ax, linestyle='--',
-                               label=f'{attack} $%s$ %.2f' % (_eval_distances[dist_key], curve_area))
+        ax.grid(True, linestyle='--', c='lightgray', which='major')
+        ax.yaxis.set_major_formatter(ticker.PercentFormatter(1))
+        ax.set_xlim(left=0)
+        ax.set_ylim(bottom=0, top=1)
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
 
-            lower_thr = np.where(robust_acc < eps_threshold)[0]
-            if len(lower_thr) > 0:
-                eps_0 = distances[lower_thr][0]
-                c = ax.get_lines()[-1].get_c()
-                plt.axvline(eps_0, -0.1, 0.1, color=c, linewidth=1)
-                plt.text(eps_0, 0.1 * j, "$%s_{%s}$" % ('\epsilon', '0\%'), horizontalalignment='center',
-                         size='small', color=c)
-                j *= -1
-            cnt.yaxis.set_major_locator(ticker.MultipleLocator(0.1))
-            # cnt.xaxis.set_major_locator(ticker.MultipleLocator(0.5))
-            cnt.axhline(attack_data['accuracy'], linestyle="--", color="black", linewidth=1)
+        ax.set_ylabel('Robust Accuracy (%)')
+        ax.set_xlabel(f'Perturbation Size ${_eval_distances[dist_key]}$')
 
-        ax.set_ylabel('Robust Accuracy')
-        ax.set_xlabel('Perturbation Size $%s$' % _eval_distances[dist_key])
-        plt.text(distances.mean(), attack_data['accuracy'] + 0.01, "Clean accuracy",
-                 horizontalalignment='left', size='small', color='black', weight='normal')
-
+        ax.axhline(attack_data['accuracy'], linestyle='--', color='black', linewidth=1)
+        ax.annotate(text=f'Clean accuracy: {attack_data["accuracy"]:.2%}', xy=(0.5, attack_data['accuracy']),
+                    xycoords='axes fraction', xytext=(0, -3), textcoords='offset points',
+                    horizontalalignment='center', verticalalignment='top')
         plt.legend(loc='center right', labelspacing=.1, handletextpad=0.5)
         plt.tight_layout()
         plt.savefig(fig_path / f'{model}-{norm}-{exp_id}-rbst_curves_{dist_key}.pdf', bbox_inches='tight')

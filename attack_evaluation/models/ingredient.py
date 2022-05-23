@@ -26,7 +26,7 @@ def mnist_smallcnn():
 
 @model_ingredient.named_config
 def wideresnet_28_10():
-    name = 'Standard'
+    name = 'wideresnet_28_10'
     origin = 'robustbench'
 
 
