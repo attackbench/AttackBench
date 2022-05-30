@@ -14,7 +14,7 @@
 - attacks:
     - Voting Folded Gaussian Attack (VFGA)
     - Primal Dual Proximal Gradient Descent (PDPGD) L0 
-    - baseline for empirical optimal attack
+    - baseline for empirical optimal attack (datasetattack)
 
 ------------------------------------------------
 
