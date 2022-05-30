@@ -1,14 +1,15 @@
 from functools import partial
-from typing import Callable
+from typing import Callable, Optional
+from torch import Tensor
 
 from adv_lib.attacks import alma as alma_attack, ddn as ddn_attack, fmn as fmn_adv_lib_attack
 from adv_lib.attacks import vfga as vfga_attack, pdgd as pdgd_attack
+from .foolbox.dataset_attack import foolbox_dataset_attack
 
 from sacred import Ingredient
 
 from .adversarial_library import adv_lib_wrapper
 from .original.fast_minimum_norm import fmn_attack
-from .foolbox.foolbox_attacks import foolbox_attack
 
 attack_ingredient = Ingredient('attack')
 
@@ -69,6 +70,13 @@ def fmn():
 
 
 @attack_ingredient.named_config
+def dataset_attack():
+    # Use default config from foolbox. By default pgd with l2 is executed.
+    name = 'dataset_attack'
+    origin = 'foolbox'  # available: ['foolbox']
+
+
+@attack_ingredient.named_config
 def foolbox():
     # Use default config from foolbox. By default pgd with l2 is executed.
     name = 'pgd'
@@ -112,8 +120,8 @@ def get_adv_lib_pdgd(num_steps: int, random_init: float, primal_lr: float, prima
 
 
 @attack_ingredient.capture
-def get_foolbox(name: str, norm: float, epsilon: float) -> Callable:
-    return partial(foolbox_attack, name=name, norm=norm, eps=epsilon)
+def get_dataset_attack() -> Callable:
+    return foolbox_dataset_attack
 
 
 _original = {
@@ -141,10 +149,20 @@ def get_adv_lib_attack(name: str) -> Callable:
     return partial(adv_lib_wrapper, attack=attack)
 
 
+_foolbox_lib = {
+    'dataset_attack': get_dataset_attack
+}
+
+
+@attack_ingredient.capture
+def get_foolbox_lib_attack(name: str) -> Callable:
+    return _foolbox_lib[name]()
+
+
 _libraries = {
     'original': get_original_attack,
     'adv_lib': get_adv_lib_attack,
-    'foolbox': get_foolbox
+    'foolbox': get_foolbox_lib_attack
 }
 
 
