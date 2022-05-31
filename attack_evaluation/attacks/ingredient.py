@@ -4,7 +4,7 @@ from torch import Tensor
 
 from adv_lib.attacks import alma as alma_attack, ddn as ddn_attack, fmn as fmn_adv_lib_attack
 from adv_lib.attacks import vfga as vfga_attack, pdgd as pdgd_attack
-from .foolbox.dataset_attack import foolbox_dataset_attack
+from .foolbox.foolbox_attacks import foolbox_dataset_attack
 
 from sacred import Ingredient
 
@@ -74,15 +74,6 @@ def dataset_attack():
     # Use default config from foolbox. By default pgd with l2 is executed.
     name = 'dataset_attack'
     origin = 'foolbox'  # available: ['foolbox']
-
-
-@attack_ingredient.named_config
-def foolbox():
-    # Use default config from foolbox. By default pgd with l2 is executed.
-    name = 'pgd'
-    origin = 'foolbox'  # available: ['foolbox']
-    norm = 2
-    epsilon = 0.3
 
 
 @attack_ingredient.capture

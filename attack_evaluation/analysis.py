@@ -9,8 +9,6 @@ from sacred import Experiment
 ex = Experiment('attack_evaluation_curves')
 
 _eval_distances = {'l2': '\ell_2'}
-eps_threshold = 1e-02
-
 
 @ex.config
 def config():
@@ -21,11 +19,6 @@ def config():
     norm = 'l2'
     exp_id = 1
 
-
-def area(x, y):
-    p = x[1:] - x[:-1]
-    k = y[1:] + y[:-1]
-    return 1 - (p @ k) / (2 * x.max())
 
 @ex.automain
 def main(root, dataset, model, attacks, norm, exp_id, _config, _run, _log):
@@ -42,6 +35,10 @@ def main(root, dataset, model, attacks, norm, exp_id, _config, _run, _log):
                 attack_data = json.load(f)
             fig_path.mkdir(exist_ok=True)
 
+            config_file = attack_dir / f'config.json'
+            with open(config_file, 'r') as f:
+                config = json.load(f)
+
             adv_distances = np.array(attack_data['distances'][dist_key])
             success = np.array(attack_data['adv_success'])
             distances, counts = np.unique(adv_distances[success], return_counts=True)
@@ -51,7 +48,7 @@ def main(root, dataset, model, attacks, norm, exp_id, _config, _run, _log):
             curve_area = np.trapz(robust_acc, distances)
 
             ax.plot(distances, robust_acc, linestyle='--',
-                    label=f'{attack} ${_eval_distances[dist_key]}$ {curve_area:.3f}')
+                    label=f"{config['attack']['name']} ${_eval_distances[dist_key]}$ {curve_area:.3f}")
 
         ax.grid(True, linestyle='--', c='lightgray', which='major')
         ax.yaxis.set_major_formatter(ticker.PercentFormatter(1))
@@ -69,5 +66,6 @@ def main(root, dataset, model, attacks, norm, exp_id, _config, _run, _log):
 
         ax.legend(loc='center right', labelspacing=.1, handletextpad=0.5)
         fig.tight_layout()
-        fig.savefig(fig_path / f'{model}-{norm}-{exp_id}-rbst_curves_{dist_key}.pdf', bbox_inches='tight')
+        fig_name = f"{config['model']['name']}-{config['attack']['norm']}-{exp_id}-rbst_curves_{dist_key}.pdf"
+        fig.savefig(fig_path / fig_name, bbox_inches='tight')
         plt.show()

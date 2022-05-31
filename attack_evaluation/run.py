@@ -19,7 +19,6 @@ ex = Experiment('attack_evaluation', ingredients=[dataset_ingredient, model_ingr
 def config():
     cpu = False  # force experiment to run on CPU
     save_adv = False  # save the inputs and perturbed inputs; not to be used with large datasets
-    targeted = False
     cudnn_flag = 'deterministic'  # choose between "deterministic" and "benchmark"
 
 
@@ -40,7 +39,6 @@ metrics = OrderedDict([
 def main(cpu: bool,
          cudnn_flag: str,
          save_adv: bool,
-         targeted: bool,
          _config, _run, _log):
     device = torch.device('cuda' if torch.cuda.is_available() and not cpu else 'cpu')
     setattr(torch.backends.cudnn, cudnn_flag, True)
