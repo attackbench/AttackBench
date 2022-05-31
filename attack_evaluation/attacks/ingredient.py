@@ -5,7 +5,6 @@ from torch import Tensor
 
 from adv_lib.attacks import alma as alma_attack, ddn as ddn_attack, fmn as fmn_adv_lib_attack
 from adv_lib.attacks import vfga as vfga_attack, pdgd as pdgd_attack
-from art.attacks.evasion import ProjectedGradientDescent as art_lib_pgd, FastGradientMethod as art_lib_fgsm
 from .foolbox.foolbox_attacks import fb_dataset_attack
 from .torchattacks.torch_attacks import sparsefool as sparsefool_attack
 
@@ -14,7 +13,7 @@ from sacred import Ingredient
 from .adversarial_library import adv_lib_wrapper
 from .original.fast_minimum_norm import fmn_attack
 from .torchattacks.torch_attacks import torch_attacks_wrapper
-from .art.art_attacks import art_lib_wrapper
+from .art.art_attacks import art_lib_wrapper, art_lib_pgd, art_lib_fgsm, art_lib_jsma
 
 attack_ingredient = Ingredient('attack')
 
@@ -113,6 +112,14 @@ def fgsm():
     minimal = False
 
 
+@attack_ingredient.named_config
+def jsma():
+    name = 'jsma'
+    origin = 'art'  # available: ['art']
+    theta = 0.1
+    gamma = 1.0
+
+
 @attack_ingredient.capture
 def get_alma(distance: float, steps: int, alpha: float, init_lr_distance: float) -> Callable:
     return partial(alma_attack, distance=distance, num_steps=steps, α=alpha, init_lr_distance=init_lr_distance)
@@ -171,6 +178,11 @@ def get_art_lib_fgsm(norm: float, eps: float, eps_step: float,
                    num_random_init=num_random_init, minimal=minimal)
 
 
+@attack_ingredient.capture
+def get_art_lib_jsma(theta: float, gamma: float):
+    return partial(art_lib_jsma, theta=theta, gamma=gamma)
+
+
 _original = {
     'fmn': get_fmn,
 }
@@ -213,6 +225,7 @@ _torchattacks_lib = {
 _art_lib = {
     'pgd': get_art_lib_pgd,
     'fgsm': get_art_lib_fgsm,
+    'jsma': get_art_lib_jsma,
 }
 
 
