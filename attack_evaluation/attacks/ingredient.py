@@ -4,12 +4,14 @@ from torch import Tensor
 
 from adv_lib.attacks import alma as alma_attack, ddn as ddn_attack, fmn as fmn_adv_lib_attack
 from adv_lib.attacks import vfga as vfga_attack, pdgd as pdgd_attack
-from .foolbox.foolbox_attacks import foolbox_dataset_attack
+from .foolbox.foolbox_attacks import fb_dataset_attack
+from .torchattacks.torch_attacks import sparsefool as sparsefool_attack
 
 from sacred import Ingredient
 
 from .adversarial_library import adv_lib_wrapper
 from .original.fast_minimum_norm import fmn_attack
+from .torchattacks.torch_attacks import torch_attacks_wrapper
 
 attack_ingredient = Ingredient('attack')
 
@@ -76,6 +78,15 @@ def dataset_attack():
     origin = 'foolbox'  # available: ['foolbox']
 
 
+@attack_ingredient.named_config
+def sparsefool():
+    name = 'sparsefool'
+    origin = 'torchattacks'  # available: ['torchattacks']
+    steps = 20
+    lam = 3
+    overshoot = 0.02
+
+
 @attack_ingredient.capture
 def get_alma(distance: float, steps: int, alpha: float, init_lr_distance: float) -> Callable:
     return partial(alma_attack, distance=distance, num_steps=steps, α=alpha, init_lr_distance=init_lr_distance)
@@ -112,7 +123,12 @@ def get_adv_lib_pdgd(num_steps: int, random_init: float, primal_lr: float, prima
 
 @attack_ingredient.capture
 def get_dataset_attack() -> Callable:
-    return foolbox_dataset_attack
+    return fb_dataset_attack
+
+
+@attack_ingredient.capture
+def get_torchattacks_lib_sparsefool(steps: int, lam: float, overshoot: float) -> Callable:
+    return partial(sparsefool_attack, steps=steps, lam=lam, overshoot=overshoot)
 
 
 _original = {
@@ -150,10 +166,22 @@ def get_foolbox_lib_attack(name: str) -> Callable:
     return _foolbox_lib[name]()
 
 
+_torchattacks_lib = {
+    'sparsefool': get_torchattacks_lib_sparsefool
+}
+
+
+@attack_ingredient.capture
+def get_torchattacks_lib_attack(name: str) -> Callable:
+    attack = _torchattacks_lib[name]()
+    return partial(torch_attacks_wrapper, attack=attack)
+
+
 _libraries = {
     'original': get_original_attack,
     'adv_lib': get_adv_lib_attack,
-    'foolbox': get_foolbox_lib_attack
+    'foolbox': get_foolbox_lib_attack,
+    'torchattacks': get_torchattacks_lib_attack
 }
 
 

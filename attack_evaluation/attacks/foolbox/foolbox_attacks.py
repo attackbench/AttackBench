@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Callable
 from foolbox.attacks import DatasetAttack
 from foolbox import Misclassification, PyTorchModel, TargetedMisclassification
 from torch import Tensor, nn
@@ -9,12 +9,12 @@ def to_foolbox_model(model: nn.Module) -> PyTorchModel:
     return fb_model
 
 
-def foolbox_run(attack,
-                fb_model: PyTorchModel,
-                inputs: Tensor,
-                labels: Tensor,
-                targets: Optional[Tensor] = None,
-                targeted: bool = False) -> Tensor:
+def foolbox_wrapper(attack: Callable,
+                    fb_model: PyTorchModel,
+                    inputs: Tensor,
+                    labels: Tensor,
+                    targets: Optional[Tensor] = None,
+                    targeted: bool = False) -> Tensor:
     if targeted:
         criterion = TargetedMisclassification(targets)
     else:
@@ -24,12 +24,12 @@ def foolbox_run(attack,
     return adv_inputs
 
 
-def foolbox_dataset_attack(model: nn.Module,
-                           inputs: Tensor,
-                           labels: Tensor,
-                           targets: Optional[Tensor] = None,
-                           targeted: bool = False) -> Tensor:
+def fb_dataset_attack(model: nn.Module,
+                      inputs: Tensor,
+                      labels: Tensor,
+                      targets: Optional[Tensor] = None,
+                      targeted: bool = False) -> Tensor:
     fb_model = to_foolbox_model(model=model)
     attack = DatasetAttack()
     attack.feed(fb_model, inputs)
-    return foolbox_run(attack, fb_model, inputs, labels, targets, targeted)
+    return foolbox_wrapper(attack, fb_model, inputs, labels, targets, targeted)
