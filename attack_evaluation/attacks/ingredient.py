@@ -93,7 +93,7 @@ def sparsefool():
 @attack_ingredient.named_config
 def pgd():
     name = 'pgd'
-    origin = 'art' # available: ['art']
+    origin = 'art'  # available: ['art']
     norm = inf
     eps = 0.3
     eps_step = 0.1
@@ -101,15 +101,17 @@ def pgd():
     num_random_init = 0
     random_eps = False
 
+
 @attack_ingredient.named_config
 def fgsm():
     name = 'fgsm'
-    origin = 'art' # available: ['art']
+    origin = 'art'  # available: ['art']
     norm = inf
     eps = 0.3
     eps_step = 0.1
     num_random_init = 0
     minimal = False
+
 
 @attack_ingredient.capture
 def get_alma(distance: float, steps: int, alpha: float, init_lr_distance: float) -> Callable:
@@ -161,9 +163,10 @@ def get_art_lib_pgd(norm: float, eps: float, eps_step: float, max_iter: int,
     return partial(art_lib_pgd, norm=norm, eps=eps, eps_step=eps_step,
                    num_random_init=num_random_init, max_iter=max_iter, random_eps=random_eps)
 
+
 @attack_ingredient.capture
 def get_art_lib_fgsm(norm: float, eps: float, eps_step: float,
-                    num_random_init: int, minimal: bool):
+                     num_random_init: int, minimal: bool):
     return partial(art_lib_fgsm, norm=norm, eps=eps, eps_step=eps_step,
                    num_random_init=num_random_init, minimal=minimal)
 
