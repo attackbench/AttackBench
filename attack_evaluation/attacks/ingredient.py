@@ -13,7 +13,7 @@ from sacred import Ingredient
 from .adversarial_library import adv_lib_wrapper
 from .original.fast_minimum_norm import fmn_attack
 from .torchattacks.torch_attacks import torch_attacks_wrapper
-from .art.art_attacks import art_lib_wrapper, art_lib_pgd, art_lib_fgsm, art_lib_jsma
+from .art.art_attacks import art_lib_wrapper, art_lib_pgd, art_lib_fgsm, art_lib_jsma, art_lib_cw_l2
 
 attack_ingredient = Ingredient('attack')
 
@@ -120,6 +120,19 @@ def jsma():
     gamma = 1.0
 
 
+@attack_ingredient.named_config
+def cw():
+    name = 'cw'
+    origin = 'art'  # available: ['art']
+    confidence = 0.0
+    learning_rate = 0.01
+    binary_search_steps = 10
+    max_iter = 10
+    initial_const = 0.01
+    max_halving = 5
+    max_doubling = 5
+
+
 @attack_ingredient.capture
 def get_alma(distance: float, steps: int, alpha: float, init_lr_distance: float) -> Callable:
     return partial(alma_attack, distance=distance, num_steps=steps, α=alpha, init_lr_distance=init_lr_distance)
@@ -183,6 +196,16 @@ def get_art_lib_jsma(theta: float, gamma: float):
     return partial(art_lib_jsma, theta=theta, gamma=gamma)
 
 
+@attack_ingredient.capture
+def get_art_lib_cw_l2(confidence: float, learning_rate: float,
+                      binary_search_steps: int, max_iter: int, initial_const: float,
+                      max_halving: int, max_doubling: int):
+    return partial(art_lib_cw_l2, confidence=confidence,
+                   learning_rate=learning_rate, binary_search_steps=binary_search_steps,
+                   max_iter=max_iter, initial_const=initial_const, max_halving=max_halving,
+                   max_doubling=max_doubling)
+
+
 _original = {
     'fmn': get_fmn,
 }
@@ -226,6 +249,7 @@ _art_lib = {
     'pgd': get_art_lib_pgd,
     'fgsm': get_art_lib_fgsm,
     'jsma': get_art_lib_jsma,
+    'cw': get_art_lib_cw_l2,
 }
 
 
