@@ -1,9 +1,11 @@
+from cmath import inf
 from functools import partial
 from typing import Callable, Optional
 from torch import Tensor
 
 from adv_lib.attacks import alma as alma_attack, ddn as ddn_attack, fmn as fmn_adv_lib_attack
 from adv_lib.attacks import vfga as vfga_attack, pdgd as pdgd_attack
+from art.attacks.evasion import ProjectedGradientDescent as art_lib_pgd
 from .foolbox.foolbox_attacks import fb_dataset_attack
 from .torchattacks.torch_attacks import sparsefool as sparsefool_attack
 
@@ -12,6 +14,7 @@ from sacred import Ingredient
 from .adversarial_library import adv_lib_wrapper
 from .original.fast_minimum_norm import fmn_attack
 from .torchattacks.torch_attacks import torch_attacks_wrapper
+from .art.art_attacks import art_lib_wrapper
 
 attack_ingredient = Ingredient('attack')
 
@@ -87,6 +90,18 @@ def sparsefool():
     overshoot = 0.02
 
 
+@attack_ingredient.named_config
+def pgd():
+    name = 'pgd'
+    origin = 'art' # available: ['art']
+    norm = inf
+    eps = 0.3
+    eps_step = 0.1
+    max_iter = 100
+    num_random_init = 0
+    random_eps = False
+
+
 @attack_ingredient.capture
 def get_alma(distance: float, steps: int, alpha: float, init_lr_distance: float) -> Callable:
     return partial(alma_attack, distance=distance, num_steps=steps, α=alpha, init_lr_distance=init_lr_distance)
@@ -131,6 +146,13 @@ def get_torchattacks_lib_sparsefool(steps: int, lam: float, overshoot: float) ->
     return partial(sparsefool_attack, steps=steps, lam=lam, overshoot=overshoot)
 
 
+@attack_ingredient.capture
+def get_art_lib_pgd(norm: float, eps: float, eps_step: float, max_iter: int,
+                    num_random_init: int, random_eps: bool):
+    return partial(art_lib_pgd, norm=norm, eps=eps, eps_step=eps_step,
+                   num_random_init=num_random_init, max_iter=max_iter, random_eps=random_eps)
+
+
 _original = {
     'fmn': get_fmn,
 }
@@ -170,6 +192,10 @@ _torchattacks_lib = {
     'sparsefool': get_torchattacks_lib_sparsefool
 }
 
+_art_lib = {
+    'pgd': get_art_lib_pgd,
+}
+
 
 @attack_ingredient.capture
 def get_torchattacks_lib_attack(name: str) -> Callable:
@@ -177,11 +203,18 @@ def get_torchattacks_lib_attack(name: str) -> Callable:
     return partial(torch_attacks_wrapper, attack=attack)
 
 
+@attack_ingredient.capture
+def get_art_lib_attack(name: str) -> Callable:
+    attack = _art_lib[name]()
+    return partial(art_lib_wrapper, attack=attack)
+
+
 _libraries = {
     'original': get_original_attack,
     'adv_lib': get_adv_lib_attack,
     'foolbox': get_foolbox_lib_attack,
-    'torchattacks': get_torchattacks_lib_attack
+    'torchattacks': get_torchattacks_lib_attack,
+    'art': get_art_lib_attack,
 }
 
 
