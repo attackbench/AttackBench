@@ -15,7 +15,7 @@ from .adversarial_library import adv_lib_wrapper
 from .original.fast_minimum_norm import fmn_attack
 from .torchattacks.torch_attacks import torch_attacks_wrapper
 from .art.art_attacks import art_lib_wrapper, art_lib_pgd, art_lib_fgsm, art_lib_jsma, art_lib_cw_l2, art_lib_cw_linf, \
-    art_lib_bb, art_lib_deepfool, art_lib_apgd
+    art_lib_bb, art_lib_deepfool, art_lib_apgd, art_lib_bim
 
 attack_ingredient = Ingredient('attack')
 
@@ -259,6 +259,15 @@ def apgd():
     loss_type = None
 
 
+@attack_ingredient.named_config
+def bim():
+    name = 'bim'
+    origin = 'art'  # available: ['art']
+    eps = 0.3
+    eps_step = 0.1
+    max_iter = 100
+
+
 @attack_ingredient.capture
 def get_alma(distance: float, steps: int, alpha: float, init_lr_distance: float) -> Callable:
     return partial(alma_attack, distance=distance, num_steps=steps, α=alpha, init_lr_distance=init_lr_distance)
@@ -347,6 +356,12 @@ def get_art_lib_pgd(norm: float, eps: float, eps_step: float, max_iter: int,
                     num_random_init: int, random_eps: bool):
     return partial(art_lib_pgd, norm=norm, eps=eps, eps_step=eps_step,
                    num_random_init=num_random_init, max_iter=max_iter, random_eps=random_eps)
+
+
+@attack_ingredient.capture
+def get_art_lib_bim(eps: float, eps_step: float, max_iter: int):
+    return partial(art_lib_bim, eps=eps, eps_step=eps_step,
+                   max_iter=max_iter)
 
 
 @attack_ingredient.capture
@@ -462,6 +477,7 @@ _art_lib = {
     'bb': get_art_lib_bb,
     'deepfool': get_art_lib_deepfool,
     'apgd': get_art_lib_apgd,
+    'bim': get_art_lib_bim,
 }
 
 
