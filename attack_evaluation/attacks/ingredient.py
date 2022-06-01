@@ -15,7 +15,7 @@ from .adversarial_library import adv_lib_wrapper
 from .original.fast_minimum_norm import fmn_attack
 from .torchattacks.torch_attacks import torch_attacks_wrapper
 from .art.art_attacks import art_lib_wrapper, art_lib_pgd, art_lib_fgsm, art_lib_jsma, art_lib_cw_l2, art_lib_cw_linf, \
-    art_lib_bb, art_lib_deepfool
+    art_lib_bb, art_lib_deepfool, art_lib_apgd
 
 attack_ingredient = Ingredient('attack')
 
@@ -247,6 +247,18 @@ def deepfool():
     nb_grads = 10
 
 
+@attack_ingredient.named_config
+def apgd():
+    name = 'apgd'
+    origin = 'art'  # available: ['art']
+    norm = inf
+    eps = 0.3
+    eps_step = 0.1
+    max_iter = 100
+    nb_random_init = 5
+    loss_type = None
+
+
 @attack_ingredient.capture
 def get_alma(distance: float, steps: int, alpha: float, init_lr_distance: float) -> Callable:
     return partial(alma_attack, distance=distance, num_steps=steps, α=alpha, init_lr_distance=init_lr_distance)
@@ -387,6 +399,14 @@ def get_art_lib_deepfool(max_iter: int, epsilon: float, nb_grads: int):
                    epsilon=epsilon, nb_grads=nb_grads)
 
 
+@attack_ingredient.capture
+def get_art_lib_apgd(norm: float, eps: float, eps_step: float,
+                     max_iter: int, nb_random_init: int, loss_type: Optional[str]):
+    return partial(art_lib_apgd, norm=norm, eps=eps, eps_step=eps_step,
+                   max_iter=max_iter, nb_random_init=nb_random_init,
+                   loss_type=loss_type)
+
+
 _original = {
     'fmn': get_fmn,
 }
@@ -430,7 +450,7 @@ _torchattacks_lib = {
     'auto_attack': get_torchattacks_lib_auto_attack,
     'pgd_l2': get_torchattacks_lib_pgd_l2,
     'pgd_linf': get_torchattacks_lib_pgd_linf,
-    'fgsm': get_torchattacks_lib_fgsm
+    'fgsm': get_torchattacks_lib_fgsm,
 }
 
 _art_lib = {
@@ -441,6 +461,7 @@ _art_lib = {
     'cw_linf': get_art_lib_cw_linf,
     'bb': get_art_lib_bb,
     'deepfool': get_art_lib_deepfool,
+    'apgd': get_art_lib_apgd,
 }
 
 

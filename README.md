@@ -31,6 +31,7 @@ python attack_evaluation/run.py -F results/mnist with attack.ddn dataset.mnist m
 | FGSM    |    ☒     |            |    ☒    |  ✓  |            |            |         |              |
 | BB      |          |     ☒      |    ☒    |  ✓  |     ☒      |     ☒      |         |      ☒       |
 | DF      |          |     ☒      |    ☒    |  ✓  |     ☒      |            |         |              |
+| APGD    |          |     ☒      |         |  ✓  |     ☒      |     ☒      |    ☒    |              |
 
 
 Legend: 
