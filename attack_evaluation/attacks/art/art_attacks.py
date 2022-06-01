@@ -2,7 +2,8 @@ from typing import Optional, Callable
 from torch import Tensor, nn, from_numpy
 from art.estimators.classification import PyTorchClassifier
 from art.attacks.evasion import ProjectedGradientDescent, FastGradientMethod, SaliencyMapMethod, CarliniL2Method, \
-    CarliniLInfMethod, BrendelBethgeAttack, DeepFool, AutoProjectedGradientDescent, BasicIterativeMethod
+    CarliniLInfMethod, BrendelBethgeAttack, DeepFool, AutoProjectedGradientDescent, BasicIterativeMethod, \
+    ElasticNet
 
 
 def art_lib_pgd(model, targeted, batch_size, **kwargs):
@@ -40,6 +41,11 @@ def art_lib_apgd(model, targeted, batch_size, **kwargs):
 
 def art_lib_bim(model, targeted, batch_size, **kwargs):
     return BasicIterativeMethod(estimator=model, targeted=targeted, batch_size=batch_size, **kwargs)
+
+
+def art_lib_ead(model, targeted, batch_size, **kwargs):
+    return ElasticNet(classifier=model, targeted=targeted,
+                      batch_size=batch_size, **kwargs)
 
 
 def art_lib_wrapper(attack: Callable,

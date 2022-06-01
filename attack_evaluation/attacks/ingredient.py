@@ -15,7 +15,7 @@ from .adversarial_library import adv_lib_wrapper
 from .original.fast_minimum_norm import fmn_attack
 from .torchattacks.torch_attacks import torch_attacks_wrapper
 from .art.art_attacks import art_lib_wrapper, art_lib_pgd, art_lib_fgsm, art_lib_jsma, art_lib_cw_l2, art_lib_cw_linf, \
-    art_lib_bb, art_lib_deepfool, art_lib_apgd, art_lib_bim
+    art_lib_bb, art_lib_deepfool, art_lib_apgd, art_lib_bim, art_lib_ead
 
 attack_ingredient = Ingredient('attack')
 
@@ -268,6 +268,19 @@ def bim():
     max_iter = 100
 
 
+@attack_ingredient.named_config
+def ead():
+    name = 'ead'
+    origin = 'art'  # available: ['art']
+    confidence = 0.0
+    learning_rate = 1e-2
+    binary_search_steps = 9
+    max_iter = 100
+    beta = 1e-3
+    initial_const = 1e-3
+    decision_rule = 'EN'
+
+
 @attack_ingredient.capture
 def get_alma(distance: float, steps: int, alpha: float, init_lr_distance: float) -> Callable:
     return partial(alma_attack, distance=distance, num_steps=steps, α=alpha, init_lr_distance=init_lr_distance)
@@ -422,6 +435,14 @@ def get_art_lib_apgd(norm: float, eps: float, eps_step: float,
                    loss_type=loss_type)
 
 
+@attack_ingredient.capture
+def get_art_lib_ead(confidence: float, learning_rate: float, binary_search_steps: int,
+                    max_iter: int, beta: float, initial_const: float, decision_rule: str):
+    return partial(art_lib_ead, confidence=confidence, learning_rate=learning_rate,
+                   binary_search_steps=binary_search_steps, max_iter=max_iter, beta=beta,
+                   initial_const=initial_const, decision_rule=decision_rule)
+
+
 _original = {
     'fmn': get_fmn,
 }
@@ -478,6 +499,7 @@ _art_lib = {
     'deepfool': get_art_lib_deepfool,
     'apgd': get_art_lib_apgd,
     'bim': get_art_lib_bim,
+    'ead': get_art_lib_ead,
 }
 
 

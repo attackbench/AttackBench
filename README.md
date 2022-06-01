@@ -33,6 +33,7 @@ python attack_evaluation/run.py -F results/mnist with attack.ddn dataset.mnist m
 | DF      |          |     ☒      |    ☒    |  ✓  |     ☒      |            |         |              |
 | APGD    |          |     ☒      |         |  ✓  |     ☒      |     ☒      |    ☒    |              |
 | BIM     |          |            |    ☒    |  ✓  |            |     ☒      |         |      ☒       |
+| EAD     |          |            |    ☒    |  ✓  |     ☒      |     ☒      |         |      ☒       |
 
 
 Legend: 
