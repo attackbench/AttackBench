@@ -13,7 +13,8 @@ from sacred import Ingredient
 from .adversarial_library import adv_lib_wrapper
 from .original.fast_minimum_norm import fmn_attack
 from .torchattacks.torch_attacks import torch_attacks_wrapper
-from .art.art_attacks import art_lib_wrapper, art_lib_pgd, art_lib_fgsm, art_lib_jsma, art_lib_cw_l2, art_lib_cw_linf
+from .art.art_attacks import art_lib_wrapper, art_lib_pgd, art_lib_fgsm, art_lib_jsma, art_lib_cw_l2, art_lib_cw_linf, \
+    art_lib_bb
 
 attack_ingredient = Ingredient('attack')
 
@@ -146,6 +147,21 @@ def cw_linf():
     const_factor = 2.0
 
 
+@attack_ingredient.named_config
+def bb():
+    name = 'bb'
+    origin = 'art'  # available: ['art']
+    norm = inf
+    overshoot = 1.1
+    steps = 1000
+    lr = 1e-3
+    lr_decay = 0.5
+    lr_num_decay = 20
+    momentum = 0.8
+    binary_search_steps = 10
+    init_size = 32
+
+
 @attack_ingredient.capture
 def get_alma(distance: float, steps: int, alpha: float, init_lr_distance: float) -> Callable:
     return partial(alma_attack, distance=distance, num_steps=steps, α=alpha, init_lr_distance=init_lr_distance)
@@ -230,6 +246,17 @@ def get_art_lib_cw_linf(confidence: float, learning_rate: float,
                    const_factor=const_factor)
 
 
+@attack_ingredient.capture
+def get_art_lib_bb(norm: float, overshoot: float, steps: int, lr: float,
+                   lr_decay: float, lr_num_decay: int, momentum: float,
+                   binary_search_steps: int,
+                   init_size: int):
+    return partial(art_lib_bb, norm=norm, overshoot=overshoot, steps=steps,
+                   lr=lr, lr_decay=lr_decay, lr_num_decay=lr_num_decay,
+                   momentum=momentum, binary_search_steps=binary_search_steps,
+                   init_size=init_size)
+
+
 _original = {
     'fmn': get_fmn,
 }
@@ -275,6 +302,7 @@ _art_lib = {
     'jsma': get_art_lib_jsma,
     'cw_l2': get_art_lib_cw_l2,
     'cw_linf': get_art_lib_cw_linf,
+    'bb': get_art_lib_bb,
 }
 
 

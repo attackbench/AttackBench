@@ -29,6 +29,7 @@ python attack_evaluation/run.py -F results/mnist with attack.ddn dataset.mnist m
 | CW-L2   |          |            |         |  ✓  |            |            |         |              |
 | CW-LINF |          |     ☒      |         |  ✓  |     ☒      |     ☒      |    ☒    |      ☒       |
 | FGSM    |    ☒     |            |    ☒    |  ✓  |            |            |         |              |
+| BB      |          |     ☒      |    ☒    |  ✓  |     ☒      |     ☒      |         |      ☒       |
 
 
 Legend: 
