@@ -6,7 +6,8 @@ from torch import Tensor
 from adv_lib.attacks import alma as alma_attack, ddn as ddn_attack, fmn as fmn_adv_lib_attack
 from adv_lib.attacks import vfga as vfga_attack, pdgd as pdgd_attack
 from .foolbox.foolbox_attacks import fb_dataset_attack
-from .torchattacks.torch_attacks import sparsefool as sparsefool_attack
+from .torchattacks.torch_attacks import ta_lib_cw, ta_lib_fab, ta_lib_fgsm, ta_lib_pgd_l2, ta_lib_pgd_linf, \
+    ta_lib_auto_attack, ta_lib_sparsefool, ta_lib_deepfool
 
 from sacred import Ingredient
 
@@ -75,19 +76,94 @@ def fmn():
 
 
 @attack_ingredient.named_config
-def dataset_attack():
+def fb_dataset_attack():
     # Use default config from foolbox. By default pgd with l2 is executed.
     name = 'dataset_attack'
     origin = 'foolbox'  # available: ['foolbox']
 
 
 @attack_ingredient.named_config
-def sparsefool():
-    name = 'sparsefool'
+def ta_deepfool():
+    name = 'ta_deepfool'
+    origin = 'torchattacks'  # available: ['torchattacks', 'art']
+    norm = 2
+    steps = 50
+    overshoot = 0.02
+
+
+@attack_ingredient.named_config
+def ta_sparsefool():
+    name = 'ta_sparsefool'
     origin = 'torchattacks'  # available: ['torchattacks']
+    norm = 0
     steps = 20
     lam = 3
     overshoot = 0.02
+
+
+@attack_ingredient.named_config
+def ta_fab():
+    name = 'ta_fab'
+    origin = 'torchattacks'  # available: ['torchattacks']
+    norm = 2  # available: inf, 2, 1
+    steps = 100
+    eps = None
+    n_restarts = 1
+    alpha_max = 0.1
+    eta = 1.05
+    beta = 0.9
+    targeted = False
+
+
+@attack_ingredient.named_config
+def ta_fgsm():
+    name = 'ta_fgsm'
+    origin = 'torchattacks'  # available: ['torchattacks']
+    norm = 2
+    eps = 0.007
+
+
+@attack_ingredient.named_config
+def ta_cw():
+    name = 'ta_cw'
+    origin = 'torchattacks'  # available: ['torchattacks']
+    norm = 2
+    c = 0.0001
+    steps = 1000
+    kappa = 0
+    lr = 0.01
+
+
+@attack_ingredient.named_config
+def ta_pgd_linf():
+    name = 'ta_pgd_linf'
+    origin = 'torchattacks'  # available: ['torchattacks']
+    norm = inf
+    eps = 0.3
+    alpha = 0.00784313725490196
+    steps = 40
+    random_start = True
+
+
+@attack_ingredient.named_config
+def ta_pgd_l2():
+    name = 'ta_pgd_l2'
+    origin = 'torchattacks'  # available: ['torchattacks']
+    norm = 2
+    eps = 1.0
+    alpha = 0.2
+    steps = 40
+    random_start = True
+    eps_for_division = 1e-10
+
+
+@attack_ingredient.named_config
+def ta_auto_attack():
+    name = 'ta_auto_attack'
+    origin = 'torchattacks'  # available: ['torchattacks']
+    norm = 2  # available: inf, 2
+    eps = 0.3
+    version = 'standard'
 
 
 @attack_ingredient.named_config
@@ -211,8 +287,47 @@ def get_dataset_attack() -> Callable:
 
 
 @attack_ingredient.capture
-def get_torchattacks_lib_sparsefool(steps: int, lam: float, overshoot: float) -> Callable:
-    return partial(sparsefool_attack, steps=steps, lam=lam, overshoot=overshoot)
+def get_torchattacks_lib_deepfool(norm: float, steps: int, overshoot: float) -> Callable:
+    return partial(ta_lib_deepfool, steps=steps, norm=norm, overshoot=overshoot)
+
+
+@attack_ingredient.capture
+def get_torchattacks_lib_sparsefool(norm: float, steps: int, lam: float, overshoot: float) -> Callable:
+    return partial(ta_lib_sparsefool, norm=norm, steps=steps, lam=lam, overshoot=overshoot)
+
+
+@attack_ingredient.capture
+def get_torchattacks_lib_fab(norm: float, eps: float, steps: int, n_restarts: int, alpha_max: float, eta: float,
+                             beta: float, targeted: bool) -> Callable:
+    return partial(ta_lib_fab, steps=steps, norm=norm, eps=eps, n_restarts=n_restarts, alpha_max=alpha_max, eta=eta,
+                   beta=beta, targeted=targeted)
+
+
+@attack_ingredient.capture
+def get_torchattacks_lib_fgsm(norm: float, steps: int) -> Callable:
+    return partial(ta_lib_fgsm, norm=norm, steps=steps)
+
+
+@attack_ingredient.capture
+def get_torchattacks_lib_cw(norm: float, steps: int, c: float, kappa: float, lr: float) -> Callable:
+    return partial(ta_lib_cw, norm=norm, steps=steps, c=c, kappa=kappa, lr=lr)
+
+
+@attack_ingredient.capture
+def get_torchattacks_lib_pgd_linf(norm: float, steps: int, eps: float, alpha: float, random_start: bool) -> Callable:
+    return partial(ta_lib_pgd_linf, norm=norm, steps=steps, eps=eps, alpha=alpha, random_start=random_start)
+
+
+@attack_ingredient.capture
+def get_torchattacks_lib_pgd_l2(norm: float, steps: int, eps: float, alpha: float, random_start: bool,
+                                eps_for_division: float) -> Callable:
+    return partial(ta_lib_pgd_l2, norm=norm, steps=steps, eps=eps, alpha=alpha, random_start=random_start,
+                   eps_for_division=eps_for_division)
+
+
+@attack_ingredient.capture
+def get_torchattacks_lib_auto_attack(norm: float, eps: float, version: str) -> Callable:
+    return partial(ta_lib_auto_attack, norm=norm, eps=eps, version=version)
 
 
 @attack_ingredient.capture
@@ -308,7 +423,14 @@ def get_foolbox_lib_attack(name: str) -> Callable:
 
 
 _torchattacks_lib = {
-    'sparsefool': get_torchattacks_lib_sparsefool
+    'deepfool': get_torchattacks_lib_deepfool,
+    'sparsefool': get_torchattacks_lib_sparsefool,
+    'fab': get_torchattacks_lib_fab,
+    'cw': get_torchattacks_lib_cw,
+    'auto_attack': get_torchattacks_lib_auto_attack,
+    'pgd_l2': get_torchattacks_lib_pgd_l2,
+    'pgd_linf': get_torchattacks_lib_pgd_linf,
+    'fgsm': get_torchattacks_lib_fgsm
 }
 
 _art_lib = {

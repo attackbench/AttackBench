@@ -19,3 +19,4 @@ dependencies:
     - torchvision==0.12.0
     - tqdm==4.56.2
     - torchattacks==3.2.6
+    - adversarial-robustness-toolbox==1.10.2
