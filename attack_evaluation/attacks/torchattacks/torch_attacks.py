@@ -1,3 +1,4 @@
+from typing import Optional
 from torchattacks import SparseFool, FAB, FGSM, DeepFool, CW, PGD, PGDL2, AutoAttack
 from torchattacks.attack import Attack as TorchAttack
 from torch import Tensor, nn
@@ -8,8 +9,9 @@ def torch_attacks_wrapper(attack: TorchAttack,
                           model: nn.Module,
                           inputs: Tensor,
                           labels: Tensor,
-                          **kwargs) -> Tensor:
-    attack = attack(model)
+                          targets: Optional[Tensor] = None,
+                          targeted: bool = False) -> Tensor:
+    attack = attack(model=model)
     adv_examples = attack(images=inputs, labels=labels)
     return adv_examples
 

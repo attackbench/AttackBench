@@ -5,7 +5,6 @@ from art.attacks.evasion import ProjectedGradientDescent, FastGradientMethod, Sa
     CarliniLInfMethod, BrendelBethgeAttack, DeepFool, AutoProjectedGradientDescent, BasicIterativeMethod, \
     ElasticNet
 
-
 def art_lib_pgd(model, targeted, batch_size, **kwargs):
     return ProjectedGradientDescent(estimator=model, targeted=targeted, batch_size=batch_size, **kwargs)
 

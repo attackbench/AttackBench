@@ -5,7 +5,7 @@ from torch import Tensor
 
 from adv_lib.attacks import alma as alma_attack, ddn as ddn_attack, fmn as fmn_adv_lib_attack
 from adv_lib.attacks import vfga as vfga_attack, pdgd as pdgd_attack
-from .foolbox.foolbox_attacks import fb_dataset_attack
+from .foolbox.foolbox_attacks import fb_lib_dataset_attack, fb_lib_fmn_attack
 from .torchattacks.torch_attacks import ta_lib_cw, ta_lib_fab, ta_lib_fgsm, ta_lib_pgd_l2, ta_lib_pgd_linf, \
     ta_lib_auto_attack, ta_lib_sparsefool, ta_lib_deepfool
 
@@ -13,9 +13,11 @@ from sacred import Ingredient
 
 from .adversarial_library import adv_lib_wrapper
 from .original.fast_minimum_norm import fmn_attack
+from .foolbox.foolbox_attacks import foolbox_wrapper
 from .torchattacks.torch_attacks import torch_attacks_wrapper
 from .art.art_attacks import art_lib_wrapper, art_lib_pgd, art_lib_fgsm, art_lib_jsma, art_lib_cw_l2, art_lib_cw_linf, \
     art_lib_bb, art_lib_deepfool, art_lib_apgd, art_lib_bim, art_lib_ead
+from foolbox.attacks.base import MinimizationAttack
 
 attack_ingredient = Ingredient('attack')
 
@@ -83,6 +85,19 @@ def fb_dataset_attack():
 
 
 @attack_ingredient.named_config
+def fb_fmn():
+    name = 'fmn'
+    origin = 'foolbox'  # available: ['foolbox', 'adv_lib', 'original']
+    norm = inf
+    steps = 100
+    max_stepsize = 1.0
+    min_stepsize = None
+    gamma = 0.05
+    init_attack = None
+    binary_search_steps = 10
+
+
+@attack_ingredient.named_config
 def ta_deepfool():
     name = 'ta_deepfool'
     origin = 'torchattacks'  # available: ['torchattacks', 'art']
@@ -93,7 +108,7 @@ def ta_deepfool():
 
 @attack_ingredient.named_config
 def ta_sparsefool():
-    name = 'ta_sparsefool'
+    name = 'sparsefool'
     origin = 'torchattacks'  # available: ['torchattacks']
     norm = 0
     steps = 20
@@ -103,7 +118,7 @@ def ta_sparsefool():
 
 @attack_ingredient.named_config
 def ta_fab():
-    name = 'ta_fab'
+    name = 'fab'
     origin = 'torchattacks'  # available: ['torchattacks']
     norm = 2  # available: inf, 2, 1
     steps = 100
@@ -117,7 +132,7 @@ def ta_fab():
 
 @attack_ingredient.named_config
 def ta_fgsm():
-    name = 'ta_fgsm'
+    name = 'fgsm'
     origin = 'torchattacks'  # available: ['torchattacks']
     norm = 2
     eps = 0.007
@@ -125,7 +140,7 @@ def ta_fgsm():
 
 @attack_ingredient.named_config
 def ta_cw():
-    name = 'ta_cw'
+    name = 'cw'
     origin = 'torchattacks'  # available: ['torchattacks']
     norm = 2
     c = 0.0001
@@ -136,7 +151,7 @@ def ta_cw():
 
 @attack_ingredient.named_config
 def ta_pgd_linf():
-    name = 'ta_pgd_linf'
+    name = 'pgd_linf'
     origin = 'torchattacks'  # available: ['torchattacks']
     norm = inf
     eps = 0.3
@@ -147,7 +162,7 @@ def ta_pgd_linf():
 
 @attack_ingredient.named_config
 def ta_pgd_l2():
-    name = 'ta_pgd_l2'
+    name = 'pgd_l2'
     origin = 'torchattacks'  # available: ['torchattacks']
     norm = 2
     eps = 1.0
@@ -159,7 +174,7 @@ def ta_pgd_l2():
 
 @attack_ingredient.named_config
 def ta_auto_attack():
-    name = 'ta_auto_attack'
+    name = 'auto_attack'
     origin = 'torchattacks'  # available: ['torchattacks']
     norm = 2  # available: inf, 2
     eps = 0.3
@@ -297,6 +312,13 @@ def get_fmn(norm: float, steps: int, max_stepsize: float, gamma: float) -> Calla
 
 
 @attack_ingredient.capture
+def get_fb_fmn(norm: float, steps: int, max_stepsize: float, gamma: float, min_stepsize: Optional[float],
+               init_attack: Optional[MinimizationAttack], binary_search_steps: int) -> Callable:
+    return partial(fb_lib_fmn_attack, norm=norm, steps=steps, max_stepsize=max_stepsize, min_stepsize=min_stepsize,
+                   gamma=gamma, init_attack=init_attack, binary_search_steps=binary_search_steps)
+
+
+@attack_ingredient.capture
 def get_adv_lib_fmn(norm: float, steps: int, max_stepsize: float, gamma: float) -> Callable:
     return partial(fmn_adv_lib_attack, norm=norm, steps=steps, α_init=max_stepsize, γ_init=gamma)
 
@@ -317,7 +339,7 @@ def get_adv_lib_pdgd(num_steps: int, random_init: float, primal_lr: float, prima
 
 @attack_ingredient.capture
 def get_dataset_attack() -> Callable:
-    return fb_dataset_attack
+    return partial(fb_lib_dataset_attack)
 
 
 @attack_ingredient.capture
@@ -469,13 +491,15 @@ def get_adv_lib_attack(name: str) -> Callable:
 
 
 _foolbox_lib = {
-    'dataset_attack': get_dataset_attack
+    'dataset_attack': get_dataset_attack,
+    'fmn': get_fb_fmn
 }
 
 
 @attack_ingredient.capture
 def get_foolbox_lib_attack(name: str) -> Callable:
-    return _foolbox_lib[name]()
+    attack = _foolbox_lib[name]()
+    return partial(foolbox_wrapper, attack=attack)
 
 
 _torchattacks_lib = {
