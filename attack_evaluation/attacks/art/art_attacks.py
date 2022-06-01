@@ -1,7 +1,8 @@
 from typing import Optional, Callable
 from torch import Tensor, nn, from_numpy
 from art.estimators.classification import PyTorchClassifier
-from art.attacks.evasion import ProjectedGradientDescent, FastGradientMethod, SaliencyMapMethod, CarliniL2Method
+from art.attacks.evasion import ProjectedGradientDescent, FastGradientMethod, SaliencyMapMethod, CarliniL2Method, \
+    CarliniLInfMethod
 
 
 def art_lib_pgd(model, targeted, batch_size, **kwargs):
@@ -15,8 +16,14 @@ def art_lib_fgsm(model, targeted, batch_size, **kwargs):
 def art_lib_jsma(model, targeted, batch_size, **kwargs):
     return SaliencyMapMethod(classifier=model, batch_size=batch_size, **kwargs)
 
+
 def art_lib_cw_l2(model, targeted, batch_size, **kwargs):
     return CarliniL2Method(classifier=model, targeted=targeted, batch_size=batch_size, **kwargs)
+
+
+def art_lib_cw_linf(model, targeted, batch_size, **kwargs):
+    return CarliniLInfMethod(classifier=model, targeted=targeted, batch_size=batch_size, **kwargs)
+
 
 _art_attacks = {
     'pgd': art_lib_pgd,

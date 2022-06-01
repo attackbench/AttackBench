@@ -13,7 +13,7 @@ from sacred import Ingredient
 from .adversarial_library import adv_lib_wrapper
 from .original.fast_minimum_norm import fmn_attack
 from .torchattacks.torch_attacks import torch_attacks_wrapper
-from .art.art_attacks import art_lib_wrapper, art_lib_pgd, art_lib_fgsm, art_lib_jsma, art_lib_cw_l2
+from .art.art_attacks import art_lib_wrapper, art_lib_pgd, art_lib_fgsm, art_lib_jsma, art_lib_cw_l2, art_lib_cw_linf
 
 attack_ingredient = Ingredient('attack')
 
@@ -121,8 +121,8 @@ def jsma():
 
 
 @attack_ingredient.named_config
-def cw():
-    name = 'cw'
+def cw_l2():
+    name = 'cw_l2'
     origin = 'art'  # available: ['art']
     confidence = 0.0
     learning_rate = 0.01
@@ -131,6 +131,19 @@ def cw():
     initial_const = 0.01
     max_halving = 5
     max_doubling = 5
+
+
+@attack_ingredient.named_config
+def cw_linf():
+    name = 'cw_linf'
+    origin = 'art'  # available: ['art']
+    confidence = 0.0
+    learning_rate = 0.01
+    max_iter = 10
+    decrease_factor = 0.9
+    initial_const = 0.01
+    largest_const = 20.0
+    const_factor = 2.0
 
 
 @attack_ingredient.capture
@@ -206,6 +219,17 @@ def get_art_lib_cw_l2(confidence: float, learning_rate: float,
                    max_doubling=max_doubling)
 
 
+@attack_ingredient.capture
+def get_art_lib_cw_linf(confidence: float, learning_rate: float,
+                        max_iter: int, decrease_factor: float, initial_const: float,
+                        largest_const: float, const_factor: float):
+    return partial(art_lib_cw_linf, confidence=confidence,
+                   learning_rate=learning_rate, max_iter=max_iter,
+                   decrease_factor=decrease_factor, initial_const=initial_const,
+                   largest_const=largest_const,
+                   const_factor=const_factor)
+
+
 _original = {
     'fmn': get_fmn,
 }
@@ -249,7 +273,8 @@ _art_lib = {
     'pgd': get_art_lib_pgd,
     'fgsm': get_art_lib_fgsm,
     'jsma': get_art_lib_jsma,
-    'cw': get_art_lib_cw_l2,
+    'cw_l2': get_art_lib_cw_l2,
+    'cw_linf': get_art_lib_cw_linf,
 }
 
 
