@@ -19,11 +19,17 @@ python attack_evaluation/run.py -F results/mnist with attack.ddn dataset.mnist m
 
 ## Currently implemented
 
-| Attack | Original | Advertorch | Adv_lib | ART | CleverHans | DeepRobust | Foolbox | Torchattacks |
-|--------|:--------:|:----------:|:-------:|:---:|:----------:|:----------:|:-------:|:------------:|
-| DDN    |    ☒     |            |    ✓    |  ☒  |     ☒      |     ☒      |         |      ☒       |
-| ALMA   |    ☒     |     ☒      |    ✓    |  ☒  |     ☒      |     ☒      |    ☒    |      ☒       |
-| FMN    |    ✓     |     ☒      |    ✓    |  ☒  |     ☒      |     ☒      |         |      ☒       |
+| Attack  | Original | Advertorch | Adv_lib | ART | CleverHans | DeepRobust | Foolbox | Torchattacks |
+|---------|:--------:|:----------:|:-------:|:---:|:----------:|:----------:|:-------:|:------------:|
+| DDN     |    ☒     |            |    ✓    |  ☒  |     ☒      |     ☒      |         |      ☒       |
+| ALMA    |    ☒     |     ☒      |    ✓    |  ☒  |     ☒      |     ☒      |    ☒    |      ☒       |
+| FMN     |    ✓     |     ☒      |    ✓    |  ☒  |     ☒      |     ☒      |         |      ☒       |
+| PGD     |          |            |         |  ✓  |            |            |         |              |
+| JSMA    |    ☒     |            |    ☒    |  ✓  |     ☒      |     ☒      |    ☒    |      ☒       |
+| CW-L2   |          |            |         |  ✓  |            |            |         |              |
+| CW-LINF |          |     ☒      |         |  ✓  |     ☒      |     ☒      |    ☒    |      ☒       |
+| FGSM    |    ☒     |            |    ☒    |  ✓  |            |            |         |              |
+
 
 Legend: 
 - _empty_ : not implemented yet 
