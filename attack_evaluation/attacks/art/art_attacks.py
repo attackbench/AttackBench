@@ -2,7 +2,7 @@ from typing import Optional, Callable
 from torch import Tensor, nn, from_numpy
 from art.estimators.classification import PyTorchClassifier
 from art.attacks.evasion import ProjectedGradientDescent, FastGradientMethod, SaliencyMapMethod, CarliniL2Method, \
-    CarliniLInfMethod, BrendelBethgeAttack
+    CarliniLInfMethod, BrendelBethgeAttack, DeepFool
 
 
 def art_lib_pgd(model, targeted, batch_size, **kwargs):
@@ -27,6 +27,10 @@ def art_lib_cw_linf(model, targeted, batch_size, **kwargs):
 
 def art_lib_bb(model, targeted, batch_size, **kwargs):
     return BrendelBethgeAttack(estimator=model, targeted=targeted, batch_size=batch_size, **kwargs)
+
+
+def art_lib_deepfool(model, targeted, batch_size, **kwargs):
+    return DeepFool(classifier=model, batch_size=batch_size, **kwargs)
 
 
 def art_lib_wrapper(attack: Callable,

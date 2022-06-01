@@ -14,7 +14,7 @@ from .adversarial_library import adv_lib_wrapper
 from .original.fast_minimum_norm import fmn_attack
 from .torchattacks.torch_attacks import torch_attacks_wrapper
 from .art.art_attacks import art_lib_wrapper, art_lib_pgd, art_lib_fgsm, art_lib_jsma, art_lib_cw_l2, art_lib_cw_linf, \
-    art_lib_bb
+    art_lib_bb, art_lib_deepfool
 
 attack_ingredient = Ingredient('attack')
 
@@ -162,6 +162,15 @@ def bb():
     init_size = 32
 
 
+@attack_ingredient.named_config
+def deepfool():
+    name = 'deepfool'
+    origin = 'art'  # available: ['art']
+    max_iter = 100
+    epsilon = 1e-6
+    nb_grads = 10
+
+
 @attack_ingredient.capture
 def get_alma(distance: float, steps: int, alpha: float, init_lr_distance: float) -> Callable:
     return partial(alma_attack, distance=distance, num_steps=steps, α=alpha, init_lr_distance=init_lr_distance)
@@ -257,6 +266,12 @@ def get_art_lib_bb(norm: float, overshoot: float, steps: int, lr: float,
                    init_size=init_size)
 
 
+@attack_ingredient.capture
+def get_art_lib_deepfool(max_iter: int, epsilon: float, nb_grads: int):
+    return partial(art_lib_deepfool, max_iter=max_iter,
+                   epsilon=epsilon, nb_grads=nb_grads)
+
+
 _original = {
     'fmn': get_fmn,
 }
@@ -303,6 +318,7 @@ _art_lib = {
     'cw_l2': get_art_lib_cw_l2,
     'cw_linf': get_art_lib_cw_linf,
     'bb': get_art_lib_bb,
+    'deepfool': get_art_lib_deepfool,
 }
 
 
