@@ -38,16 +38,17 @@ def get_adv_lib_ddn(steps: int, gamma: float, init_norm: float) -> Callable:
     return partial(ddn_attack, steps=steps, γ=gamma, init_norm=init_norm)
 
 
-def adv_lib_vfga():
-    name = 'vfga'
-    source = 'adv_lib'  # available: ['adv_lib']
-    max_iter = None
-    n_samples = 10
-    large_memory = False
+def adv_lib_fmn():
+    name = 'fmn'
+    source = 'adv_lib'  # available: ['original', 'adv_lib']
+    norm = 2
+    steps = 1000
+    max_stepsize = 1
+    gamma = 0.05
 
 
-def get_adv_lib_vfga(max_iter: int, n_samples: int, large_memory: bool) -> Callable:
-    return partial(vfga_attack, max_iter=max_iter, n_samples=n_samples, large_memory=large_memory)
+def get_adv_lib_fmn(norm: float, steps: int, max_stepsize: float, gamma: float) -> Callable:
+    return partial(fmn_adv_lib_attack, norm=norm, steps=steps, α_init=max_stepsize, γ_init=gamma)
 
 
 def adv_lib_pdgd():
@@ -101,17 +102,16 @@ def get_adv_lib_pdpgd(norm: float, num_steps: int, random_init: float, proximal_
                    ε_threshold=ε_threshold)
 
 
-def adv_lib_fmn():
-    name = 'fmn'
-    source = 'adv_lib'  # available: ['original', 'adv_lib']
-    norm = 2
-    steps = 1000
-    max_stepsize = 1
-    gamma = 0.05
+def adv_lib_vfga():
+    name = 'vfga'
+    source = 'adv_lib'  # available: ['adv_lib']
+    max_iter = None
+    n_samples = 10
+    large_memory = False
 
 
-def get_adv_lib_fmn(norm: float, steps: int, max_stepsize: float, gamma: float) -> Callable:
-    return partial(fmn_adv_lib_attack, norm=norm, steps=steps, α_init=max_stepsize, γ_init=gamma)
+def get_adv_lib_vfga(max_iter: int, n_samples: int, large_memory: bool) -> Callable:
+    return partial(vfga_attack, max_iter=max_iter, n_samples=n_samples, large_memory=large_memory)
 
 
 adv_lib_index = {
