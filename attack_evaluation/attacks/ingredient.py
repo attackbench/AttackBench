@@ -25,7 +25,7 @@ attack_ingredient = Ingredient('attack')
 @attack_ingredient.named_config
 def alma():
     name = 'alma'
-    origin = 'adv_lib'  # available: ['adv_lib']
+    source = 'adv_lib'  # available: ['adv_lib']
     distance = 'l2'
     steps = 1000
     alpha = 0.9
@@ -35,7 +35,7 @@ def alma():
 @attack_ingredient.named_config
 def ddn():
     name = 'ddn'
-    origin = 'adv_lib'  # available: ['adv_lib']
+    source = 'adv_lib'  # available: ['adv_lib']
     steps = 1000
     init_norm = 1
     gamma = 0.05
@@ -44,7 +44,7 @@ def ddn():
 @attack_ingredient.named_config
 def vfga():
     name = 'vfga'
-    origin = 'adv_lib'
+    source = 'adv_lib'  # available: ['adv_lib']
     targeted = False
     max_iter = None
     n_samples = 10
@@ -54,7 +54,7 @@ def vfga():
 @attack_ingredient.named_config
 def pdgd():
     name = 'pdgd'
-    origin = 'adv_lib'
+    source = 'adv_lib'  # available: ['adv_lib']
     targeted = False
     num_steps = 500
     random_init = 0
@@ -70,7 +70,7 @@ def pdgd():
 @attack_ingredient.named_config
 def fmn():
     name = 'fmn'
-    origin = 'original'  # available: ['original', 'adv_lib']
+    source = 'original'  # available: ['original', 'adv_lib']
     norm = 2
     steps = 1000
     max_stepsize = 1
@@ -81,13 +81,13 @@ def fmn():
 def fb_dataset_attack():
     # Use default config from foolbox. By default pgd with l2 is executed.
     name = 'dataset_attack'
-    origin = 'foolbox'  # available: ['foolbox']
+    source = 'foolbox'  # available: ['foolbox']
 
 
 @attack_ingredient.named_config
 def fb_fmn():
     name = 'fmn'
-    origin = 'foolbox'  # available: ['foolbox', 'adv_lib', 'original']
+    source = 'foolbox'  # available: ['foolbox', 'adv_lib', 'original']
     norm = inf
     steps = 100
     max_stepsize = 1.0
@@ -100,7 +100,7 @@ def fb_fmn():
 @attack_ingredient.named_config
 def ta_deepfool():
     name = 'ta_deepfool'
-    origin = 'torchattacks'  # available: ['torchattacks', 'art']
+    source = 'torchattacks'  # available: ['torchattacks', 'art']
     norm = 2
     steps = 50
     overshoot = 0.02
@@ -109,7 +109,7 @@ def ta_deepfool():
 @attack_ingredient.named_config
 def ta_sparsefool():
     name = 'sparsefool'
-    origin = 'torchattacks'  # available: ['torchattacks']
+    source = 'torchattacks'  # available: ['torchattacks']
     norm = 0
     steps = 20
     lam = 3
@@ -119,7 +119,7 @@ def ta_sparsefool():
 @attack_ingredient.named_config
 def ta_fab():
     name = 'fab'
-    origin = 'torchattacks'  # available: ['torchattacks']
+    source = 'torchattacks'  # available: ['torchattacks']
     norm = 2  # available: inf, 2, 1
     steps = 100
     eps = None
@@ -133,7 +133,7 @@ def ta_fab():
 @attack_ingredient.named_config
 def ta_fgsm():
     name = 'fgsm'
-    origin = 'torchattacks'  # available: ['torchattacks']
+    source = 'torchattacks'  # available: ['torchattacks']
     norm = 2
     eps = 0.007
 
@@ -141,7 +141,7 @@ def ta_fgsm():
 @attack_ingredient.named_config
 def ta_cw():
     name = 'cw'
-    origin = 'torchattacks'  # available: ['torchattacks']
+    source = 'torchattacks'  # available: ['torchattacks']
     norm = 2
     c = 0.0001
     steps = 1000
@@ -152,7 +152,7 @@ def ta_cw():
 @attack_ingredient.named_config
 def ta_pgd_linf():
     name = 'pgd_linf'
-    origin = 'torchattacks'  # available: ['torchattacks']
+    source = 'torchattacks'  # available: ['torchattacks']
     norm = inf
     eps = 0.3
     alpha = 0.00784313725490196
@@ -163,7 +163,7 @@ def ta_pgd_linf():
 @attack_ingredient.named_config
 def ta_pgd_l2():
     name = 'pgd_l2'
-    origin = 'torchattacks'  # available: ['torchattacks']
+    source = 'torchattacks'  # available: ['torchattacks']
     norm = 2
     eps = 1.0
     alpha = 0.2
@@ -175,7 +175,7 @@ def ta_pgd_l2():
 @attack_ingredient.named_config
 def ta_auto_attack():
     name = 'auto_attack'
-    origin = 'torchattacks'  # available: ['torchattacks']
+    source = 'torchattacks'  # available: ['torchattacks']
     norm = 2  # available: inf, 2
     eps = 0.3
     version = 'standard'
@@ -184,7 +184,7 @@ def ta_auto_attack():
 @attack_ingredient.named_config
 def pgd():
     name = 'pgd'
-    origin = 'art'  # available: ['art']
+    source = 'art'  # available: ['art']
     norm = inf
     eps = 0.3
     eps_step = 0.1
@@ -196,7 +196,7 @@ def pgd():
 @attack_ingredient.named_config
 def fgsm():
     name = 'fgsm'
-    origin = 'art'  # available: ['art']
+    source = 'art'  # available: ['art']
     norm = inf
     eps = 0.3
     eps_step = 0.1
@@ -207,7 +207,7 @@ def fgsm():
 @attack_ingredient.named_config
 def jsma():
     name = 'jsma'
-    origin = 'art'  # available: ['art']
+    source = 'art'  # available: ['art']
     theta = 0.1
     gamma = 1.0
 
@@ -215,7 +215,7 @@ def jsma():
 @attack_ingredient.named_config
 def cw_l2():
     name = 'cw_l2'
-    origin = 'art'  # available: ['art']
+    source = 'art'  # available: ['art']
     confidence = 0.0
     learning_rate = 0.01
     binary_search_steps = 10
@@ -228,7 +228,7 @@ def cw_l2():
 @attack_ingredient.named_config
 def cw_linf():
     name = 'cw_linf'
-    origin = 'art'  # available: ['art']
+    source = 'art'  # available: ['art']
     confidence = 0.0
     learning_rate = 0.01
     max_iter = 10
@@ -241,7 +241,7 @@ def cw_linf():
 @attack_ingredient.named_config
 def bb():
     name = 'bb'
-    origin = 'art'  # available: ['art']
+    source = 'art'  # available: ['art']
     norm = inf
     overshoot = 1.1
     steps = 1000
@@ -256,7 +256,7 @@ def bb():
 @attack_ingredient.named_config
 def deepfool():
     name = 'deepfool'
-    origin = 'art'  # available: ['art']
+    source = 'art'  # available: ['art']
     max_iter = 100
     epsilon = 1e-6
     nb_grads = 10
@@ -265,7 +265,7 @@ def deepfool():
 @attack_ingredient.named_config
 def apgd():
     name = 'apgd'
-    origin = 'art'  # available: ['art']
+    source = 'art'  # available: ['art']
     norm = inf
     eps = 0.3
     eps_step = 0.1
@@ -277,7 +277,7 @@ def apgd():
 @attack_ingredient.named_config
 def bim():
     name = 'bim'
-    origin = 'art'  # available: ['art']
+    source = 'art'  # available: ['art']
     eps = 0.3
     eps_step = 0.1
     max_iter = 100
@@ -286,7 +286,7 @@ def bim():
 @attack_ingredient.named_config
 def ead():
     name = 'ead'
-    origin = 'art'  # available: ['art']
+    source = 'art'  # available: ['art']
     confidence = 0.0
     learning_rate = 1e-2
     binary_search_steps = 9
@@ -549,5 +549,5 @@ _libraries = {
 
 
 @attack_ingredient.capture
-def get_attack(origin: str) -> Callable:
-    return _libraries[origin]()
+def get_attack(source: str) -> Callable:
+    return _libraries[source]()
