@@ -191,7 +191,7 @@ def fb_dataset_attack():
 
 @attack_ingredient.capture
 def get_dataset_attack() -> Callable:
-    return partial(fb_lib_dataset_attack)
+    return fb_lib_dataset_attack
 
 
 @attack_ingredient.named_config
