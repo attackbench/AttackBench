@@ -103,7 +103,7 @@ def get_adv_lib_pdpgd(norm: float, num_steps: int, random_init: float, proximal_
 
 def adv_lib_fmn():
     name = 'fmn'
-    source = 'original'  # available: ['original', 'adv_lib']
+    source = 'adv_lib'  # available: ['original', 'adv_lib']
     norm = 2
     steps = 1000
     max_stepsize = 1
