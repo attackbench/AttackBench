@@ -9,13 +9,6 @@ from torch import Tensor, nn
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-import os
-
-
-def mkdir_p(dir):
-    if not os.path.exists(dir):
-        os.makedirs(dir)
-
 
 def run_attack(model: nn.Module,
                loader: DataLoader,
