@@ -335,7 +335,8 @@ def pgd():
 
 
 @attack_ingredient.capture
-def get_art_lib_pgd(norm: float, eps: float, eps_step: float, max_iter: int, num_random_init: int, random_eps: bool):
+def get_art_lib_pgd(norm: float, eps: float, eps_step: float, max_iter: int, num_random_init: int,
+                    random_eps: bool) -> Callable:
     return partial(art_lib_pgd, norm=norm, eps=eps, eps_step=eps_step, num_random_init=num_random_init,
                    max_iter=max_iter, random_eps=random_eps)
 
@@ -352,7 +353,7 @@ def fgsm():
 
 
 @attack_ingredient.capture
-def get_art_lib_fgsm(norm: float, eps: float, eps_step: float, num_random_init: int, minimal: bool):
+def get_art_lib_fgsm(norm: float, eps: float, eps_step: float, num_random_init: int, minimal: bool) -> Callable:
     return partial(art_lib_fgsm, norm=norm, eps=eps, eps_step=eps_step, num_random_init=num_random_init,
                    minimal=minimal)
 
@@ -366,7 +367,7 @@ def jsma():
 
 
 @attack_ingredient.capture
-def get_art_lib_jsma(theta: float, gamma: float):
+def get_art_lib_jsma(theta: float, gamma: float) -> Callable:
     return partial(art_lib_jsma, theta=theta, gamma=gamma)
 
 
@@ -385,7 +386,7 @@ def cw_l2():
 
 @attack_ingredient.capture
 def get_art_lib_cw_l2(confidence: float, learning_rate: float, binary_search_steps: int, max_iter: int,
-                      initial_const: float, max_halving: int, max_doubling: int):
+                      initial_const: float, max_halving: int, max_doubling: int) -> Callable:
     return partial(art_lib_cw_l2, confidence=confidence, learning_rate=learning_rate,
                    binary_search_steps=binary_search_steps, max_iter=max_iter, initial_const=initial_const,
                    max_halving=max_halving, max_doubling=max_doubling)
@@ -406,7 +407,7 @@ def cw_linf():
 
 @attack_ingredient.capture
 def get_art_lib_cw_linf(confidence: float, learning_rate: float, max_iter: int, decrease_factor: float,
-                        initial_const: float, largest_const: float, const_factor: float):
+                        initial_const: float, largest_const: float, const_factor: float) -> Callable:
     return partial(art_lib_cw_linf, confidence=confidence, learning_rate=learning_rate, max_iter=max_iter,
                    decrease_factor=decrease_factor, initial_const=initial_const, largest_const=largest_const,
                    const_factor=const_factor)
@@ -429,7 +430,7 @@ def bb():
 
 @attack_ingredient.capture
 def get_art_lib_bb(norm: float, overshoot: float, steps: int, lr: float, lr_decay: float, lr_num_decay: int,
-                   momentum: float, binary_search_steps: int, init_size: int):
+                   momentum: float, binary_search_steps: int, init_size: int) -> Callable:
     return partial(art_lib_bb, norm=norm, overshoot=overshoot, steps=steps, lr=lr, lr_decay=lr_decay,
                    lr_num_decay=lr_num_decay, momentum=momentum, binary_search_steps=binary_search_steps,
                    init_size=init_size)
@@ -445,7 +446,7 @@ def deepfool():
 
 
 @attack_ingredient.capture
-def get_art_lib_deepfool(max_iter: int, epsilon: float, nb_grads: int):
+def get_art_lib_deepfool(max_iter: int, epsilon: float, nb_grads: int) -> Callable:
     return partial(art_lib_deepfool, max_iter=max_iter, epsilon=epsilon, nb_grads=nb_grads)
 
 
@@ -463,7 +464,7 @@ def apgd():
 
 @attack_ingredient.capture
 def get_art_lib_apgd(norm: float, eps: float, eps_step: float, max_iter: int, nb_random_init: int,
-                     loss_type: Optional[str]):
+                     loss_type: Optional[str]) -> Callable:
     return partial(art_lib_apgd, norm=norm, eps=eps, eps_step=eps_step, max_iter=max_iter,
                    nb_random_init=nb_random_init, loss_type=loss_type)
 
@@ -478,7 +479,7 @@ def bim():
 
 
 @attack_ingredient.capture
-def get_art_lib_bim(eps: float, eps_step: float, max_iter: int):
+def get_art_lib_bim(eps: float, eps_step: float, max_iter: int) -> Callable:
     return partial(art_lib_bim, eps=eps, eps_step=eps_step, max_iter=max_iter)
 
 
@@ -497,7 +498,7 @@ def ead():
 
 @attack_ingredient.capture
 def get_art_lib_ead(confidence: float, learning_rate: float, binary_search_steps: int, max_iter: int, beta: float,
-                    initial_const: float, decision_rule: str):
+                    initial_const: float, decision_rule: str) -> Callable:
     return partial(art_lib_ead, confidence=confidence, learning_rate=learning_rate,
                    binary_search_steps=binary_search_steps, max_iter=max_iter, beta=beta,
                    initial_const=initial_const, decision_rule=decision_rule)
