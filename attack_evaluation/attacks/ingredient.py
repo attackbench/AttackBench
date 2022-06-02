@@ -54,6 +54,11 @@ def alma():
     init_lr_distance = 1
 
 
+@attack_ingredient.capture
+def get_alma(distance: float, steps: int, alpha: float, init_lr_distance: float) -> Callable:
+    return partial(alma_attack, distance=distance, num_steps=steps, α=alpha, init_lr_distance=init_lr_distance)
+
+
 @attack_ingredient.named_config
 def ddn():
     name = 'ddn'
@@ -63,6 +68,11 @@ def ddn():
     gamma = 0.05
 
 
+@attack_ingredient.capture
+def get_ddn(steps: int, gamma: float, init_norm: float) -> Callable:
+    return partial(ddn_attack, steps=steps, γ=gamma, init_norm=init_norm)
+
+
 @attack_ingredient.named_config
 def vfga():
     name = 'vfga'
@@ -70,6 +80,11 @@ def vfga():
     max_iter = None
     n_samples = 10
     large_memory = False
+
+
+@attack_ingredient.capture
+def get_adv_lib_vfga(max_iter: int, n_samples: int, large_memory: bool) -> Callable:
+    return partial(vfga_attack, max_iter=max_iter, n_samples=n_samples, large_memory=large_memory)
 
 
 @attack_ingredient.named_config
@@ -85,6 +100,15 @@ def pdgd():
     dual_lr_decrease = 0.1
     dual_ema = 0.9
     dual_min_ratio = 1e-6
+
+
+@attack_ingredient.capture
+def get_adv_lib_pdgd(num_steps: int, random_init: float, primal_lr: float, primal_lr_decrease: float,
+                     dual_ratio_init: float, dual_lr: float, dual_lr_decrease: float, dual_ema: float,
+                     dual_min_ratio: float) -> Callable:
+    return partial(pdgd_attack, num_steps=num_steps, random_init=random_init, primal_lr=primal_lr,
+                   primal_lr_decrease=primal_lr_decrease, dual_ratio_init=dual_ratio_init, dual_lr=dual_lr,
+                   dual_lr_decrease=dual_lr_decrease, dual_ema=dual_ema, dual_min_ratio=dual_min_ratio)
 
 
 @attack_ingredient.named_config
@@ -106,6 +130,18 @@ def pdpgd():
     ε_threshold = 1e-2
 
 
+@attack_ingredient.capture
+def get_adv_lib_pdpgd(norm: float, num_steps: int, random_init: float, proximal_operator: Optional[float],
+                      primal_lr: float, primal_lr_decrease: float, dual_ratio_init: float, dual_lr: float,
+                      dual_lr_decrease: float, dual_ema: float, dual_min_ratio: float, proximal_steps: int,
+                      ε_threshold: float) -> Callable:
+    return partial(pdpgd_attack, norm=float(norm), num_steps=num_steps, random_init=random_init,
+                   proximal_operator=proximal_operator, primal_lr=primal_lr, primal_lr_decrease=primal_lr_decrease,
+                   dual_ratio_init=dual_ratio_init, dual_lr=dual_lr, dual_lr_decrease=dual_lr_decrease,
+                   dual_ema=dual_ema, dual_min_ratio=dual_min_ratio, proximal_steps=proximal_steps,
+                   ε_threshold=ε_threshold)
+
+
 @attack_ingredient.named_config
 def fmn():
     name = 'fmn'
@@ -116,11 +152,14 @@ def fmn():
     gamma = 0.05
 
 
-@attack_ingredient.named_config
-def fb_dataset_attack():
-    # Use default config from foolbox. By default pgd with l2 is executed.
-    name = 'dataset_attack'
-    source = 'foolbox'  # available: ['foolbox']
+@attack_ingredient.capture
+def get_fmn(norm: float, steps: int, max_stepsize: float, gamma: float) -> Callable:
+    return partial(fmn_attack, norm=norm, steps=steps, max_stepsize=max_stepsize, gamma=gamma)
+
+
+@attack_ingredient.capture
+def get_adv_lib_fmn(norm: float, steps: int, max_stepsize: float, gamma: float) -> Callable:
+    return partial(fmn_adv_lib_attack, norm=norm, steps=steps, α_init=max_stepsize, γ_init=gamma)
 
 
 @attack_ingredient.named_config
@@ -136,6 +175,25 @@ def fb_fmn():
     binary_search_steps = 10
 
 
+@attack_ingredient.capture
+def get_fb_fmn(norm: float, steps: int, max_stepsize: float, gamma: float, min_stepsize: Optional[float],
+               init_attack: Optional[MinimizationAttack], binary_search_steps: int) -> Callable:
+    return partial(fb_lib_fmn_attack, norm=norm, steps=steps, max_stepsize=max_stepsize, min_stepsize=min_stepsize,
+                   gamma=gamma, init_attack=init_attack, binary_search_steps=binary_search_steps)
+
+
+@attack_ingredient.named_config
+def fb_dataset_attack():
+    # Use default config from foolbox. By default pgd with l2 is executed.
+    name = 'dataset_attack'
+    source = 'foolbox'  # available: ['foolbox']
+
+
+@attack_ingredient.capture
+def get_dataset_attack() -> Callable:
+    return partial(fb_lib_dataset_attack)
+
+
 @attack_ingredient.named_config
 def ta_deepfool():
     name = 'ta_deepfool'
@@ -143,6 +201,11 @@ def ta_deepfool():
     norm = 2
     steps = 50
     overshoot = 0.02
+
+
+@attack_ingredient.capture
+def get_torchattacks_lib_deepfool(norm: float, steps: int, overshoot: float) -> Callable:
+    return partial(ta_lib_deepfool, steps=steps, norm=norm, overshoot=overshoot)
 
 
 @attack_ingredient.named_config
@@ -153,6 +216,11 @@ def ta_sparsefool():
     steps = 20
     lam = 3
     overshoot = 0.02
+
+
+@attack_ingredient.capture
+def get_torchattacks_lib_sparsefool(norm: float, steps: int, lam: float, overshoot: float) -> Callable:
+    return partial(ta_lib_sparsefool, norm=norm, steps=steps, lam=lam, overshoot=overshoot)
 
 
 @attack_ingredient.named_config
@@ -169,12 +237,24 @@ def ta_fab():
     targeted = False
 
 
+@attack_ingredient.capture
+def get_torchattacks_lib_fab(norm: float, eps: float, steps: int, n_restarts: int, alpha_max: float, eta: float,
+                             beta: float, targeted: bool) -> Callable:
+    return partial(ta_lib_fab, steps=steps, norm=norm, eps=eps, n_restarts=n_restarts, alpha_max=alpha_max, eta=eta,
+                   beta=beta, targeted=targeted)
+
+
 @attack_ingredient.named_config
 def ta_fgsm():
     name = 'fgsm'
     source = 'torchattacks'  # available: ['torchattacks']
     norm = 2
     eps = 0.007
+
+
+@attack_ingredient.capture
+def get_torchattacks_lib_fgsm(norm: float, steps: int) -> Callable:
+    return partial(ta_lib_fgsm, norm=norm, steps=steps)
 
 
 @attack_ingredient.named_config
@@ -188,6 +268,11 @@ def ta_cw():
     lr = 0.01
 
 
+@attack_ingredient.capture
+def get_torchattacks_lib_cw(norm: float, steps: int, c: float, kappa: float, lr: float) -> Callable:
+    return partial(ta_lib_cw, norm=norm, steps=steps, c=c, kappa=kappa, lr=lr)
+
+
 @attack_ingredient.named_config
 def ta_pgd_linf():
     name = 'pgd_linf'
@@ -197,6 +282,11 @@ def ta_pgd_linf():
     alpha = 0.00784313725490196
     steps = 40
     random_start = True
+
+
+@attack_ingredient.capture
+def get_torchattacks_lib_pgd_linf(norm: float, steps: int, eps: float, alpha: float, random_start: bool) -> Callable:
+    return partial(ta_lib_pgd_linf, norm=norm, steps=steps, eps=eps, alpha=alpha, random_start=random_start)
 
 
 @attack_ingredient.named_config
@@ -211,6 +301,13 @@ def ta_pgd_l2():
     eps_for_division = 1e-10
 
 
+@attack_ingredient.capture
+def get_torchattacks_lib_pgd_l2(norm: float, steps: int, eps: float, alpha: float, random_start: bool,
+                                eps_for_division: float) -> Callable:
+    return partial(ta_lib_pgd_l2, norm=norm, steps=steps, eps=eps, alpha=alpha, random_start=random_start,
+                   eps_for_division=eps_for_division)
+
+
 @attack_ingredient.named_config
 def ta_auto_attack():
     name = 'auto_attack'
@@ -218,6 +315,11 @@ def ta_auto_attack():
     norm = 2  # available: inf, 2
     eps = 0.3
     version = 'standard'
+
+
+@attack_ingredient.capture
+def get_torchattacks_lib_auto_attack(norm: float, eps: float, version: str) -> Callable:
+    return partial(ta_lib_auto_attack, norm=norm, eps=eps, version=version)
 
 
 @attack_ingredient.named_config
@@ -232,6 +334,12 @@ def pgd():
     random_eps = False
 
 
+@attack_ingredient.capture
+def get_art_lib_pgd(norm: float, eps: float, eps_step: float, max_iter: int, num_random_init: int, random_eps: bool):
+    return partial(art_lib_pgd, norm=norm, eps=eps, eps_step=eps_step, num_random_init=num_random_init,
+                   max_iter=max_iter, random_eps=random_eps)
+
+
 @attack_ingredient.named_config
 def fgsm():
     name = 'fgsm'
@@ -243,12 +351,23 @@ def fgsm():
     minimal = False
 
 
+@attack_ingredient.capture
+def get_art_lib_fgsm(norm: float, eps: float, eps_step: float, num_random_init: int, minimal: bool):
+    return partial(art_lib_fgsm, norm=norm, eps=eps, eps_step=eps_step, num_random_init=num_random_init,
+                   minimal=minimal)
+
+
 @attack_ingredient.named_config
 def jsma():
     name = 'jsma'
     source = 'art'  # available: ['art']
     theta = 0.1
     gamma = 1.0
+
+
+@attack_ingredient.capture
+def get_art_lib_jsma(theta: float, gamma: float):
+    return partial(art_lib_jsma, theta=theta, gamma=gamma)
 
 
 @attack_ingredient.named_config
@@ -264,6 +383,14 @@ def cw_l2():
     max_doubling = 5
 
 
+@attack_ingredient.capture
+def get_art_lib_cw_l2(confidence: float, learning_rate: float, binary_search_steps: int, max_iter: int,
+                      initial_const: float, max_halving: int, max_doubling: int):
+    return partial(art_lib_cw_l2, confidence=confidence, learning_rate=learning_rate,
+                   binary_search_steps=binary_search_steps, max_iter=max_iter, initial_const=initial_const,
+                   max_halving=max_halving, max_doubling=max_doubling)
+
+
 @attack_ingredient.named_config
 def cw_linf():
     name = 'cw_linf'
@@ -275,6 +402,14 @@ def cw_linf():
     initial_const = 0.01
     largest_const = 20.0
     const_factor = 2.0
+
+
+@attack_ingredient.capture
+def get_art_lib_cw_linf(confidence: float, learning_rate: float, max_iter: int, decrease_factor: float,
+                        initial_const: float, largest_const: float, const_factor: float):
+    return partial(art_lib_cw_linf, confidence=confidence, learning_rate=learning_rate, max_iter=max_iter,
+                   decrease_factor=decrease_factor, initial_const=initial_const, largest_const=largest_const,
+                   const_factor=const_factor)
 
 
 @attack_ingredient.named_config
@@ -292,6 +427,14 @@ def bb():
     init_size = 32
 
 
+@attack_ingredient.capture
+def get_art_lib_bb(norm: float, overshoot: float, steps: int, lr: float, lr_decay: float, lr_num_decay: int,
+                   momentum: float, binary_search_steps: int, init_size: int):
+    return partial(art_lib_bb, norm=norm, overshoot=overshoot, steps=steps, lr=lr, lr_decay=lr_decay,
+                   lr_num_decay=lr_num_decay, momentum=momentum, binary_search_steps=binary_search_steps,
+                   init_size=init_size)
+
+
 @attack_ingredient.named_config
 def deepfool():
     name = 'deepfool'
@@ -299,6 +442,11 @@ def deepfool():
     max_iter = 100
     epsilon = 1e-6
     nb_grads = 10
+
+
+@attack_ingredient.capture
+def get_art_lib_deepfool(max_iter: int, epsilon: float, nb_grads: int):
+    return partial(art_lib_deepfool, max_iter=max_iter, epsilon=epsilon, nb_grads=nb_grads)
 
 
 @attack_ingredient.named_config
@@ -313,6 +461,13 @@ def apgd():
     loss_type = None
 
 
+@attack_ingredient.capture
+def get_art_lib_apgd(norm: float, eps: float, eps_step: float, max_iter: int, nb_random_init: int,
+                     loss_type: Optional[str]):
+    return partial(art_lib_apgd, norm=norm, eps=eps, eps_step=eps_step, max_iter=max_iter,
+                   nb_random_init=nb_random_init, loss_type=loss_type)
+
+
 @attack_ingredient.named_config
 def bim():
     name = 'bim'
@@ -320,6 +475,11 @@ def bim():
     eps = 0.3
     eps_step = 0.1
     max_iter = 100
+
+
+@attack_ingredient.capture
+def get_art_lib_bim(eps: float, eps_step: float, max_iter: int):
+    return partial(art_lib_bim, eps=eps, eps_step=eps_step, max_iter=max_iter)
 
 
 @attack_ingredient.named_config
@@ -336,181 +496,8 @@ def ead():
 
 
 @attack_ingredient.capture
-def get_alma(distance: float, steps: int, alpha: float, init_lr_distance: float) -> Callable:
-    return partial(alma_attack, distance=distance, num_steps=steps, α=alpha, init_lr_distance=init_lr_distance)
-
-
-@attack_ingredient.capture
-def get_ddn(steps: int, gamma: float, init_norm: float) -> Callable:
-    return partial(ddn_attack, steps=steps, γ=gamma, init_norm=init_norm)
-
-
-@attack_ingredient.capture
-def get_fmn(norm: float, steps: int, max_stepsize: float, gamma: float) -> Callable:
-    return partial(fmn_attack, norm=norm, steps=steps, max_stepsize=max_stepsize, gamma=gamma)
-
-
-@attack_ingredient.capture
-def get_fb_fmn(norm: float, steps: int, max_stepsize: float, gamma: float, min_stepsize: Optional[float],
-               init_attack: Optional[MinimizationAttack], binary_search_steps: int) -> Callable:
-    return partial(fb_lib_fmn_attack, norm=norm, steps=steps, max_stepsize=max_stepsize, min_stepsize=min_stepsize,
-                   gamma=gamma, init_attack=init_attack, binary_search_steps=binary_search_steps)
-
-
-@attack_ingredient.capture
-def get_adv_lib_fmn(norm: float, steps: int, max_stepsize: float, gamma: float) -> Callable:
-    return partial(fmn_adv_lib_attack, norm=norm, steps=steps, α_init=max_stepsize, γ_init=gamma)
-
-
-@attack_ingredient.capture
-def get_adv_lib_vfga(max_iter: int, n_samples: int, large_memory: bool) -> Callable:
-    return partial(vfga_attack, max_iter=max_iter, n_samples=n_samples, large_memory=large_memory)
-
-
-@attack_ingredient.capture
-def get_adv_lib_pdgd(num_steps: int, random_init: float, primal_lr: float, primal_lr_decrease: float,
-                     dual_ratio_init: float, dual_lr: float, dual_lr_decrease: float, dual_ema: float,
-                     dual_min_ratio: float) -> Callable:
-    return partial(pdgd_attack, num_steps=num_steps, random_init=random_init, primal_lr=primal_lr,
-                   primal_lr_decrease=primal_lr_decrease, dual_ratio_init=dual_ratio_init, dual_lr=dual_lr,
-                   dual_lr_decrease=dual_lr_decrease, dual_ema=dual_ema, dual_min_ratio=dual_min_ratio)
-
-
-@attack_ingredient.capture
-def get_adv_lib_pdpgd(norm: float, num_steps: int, random_init: float, proximal_operator: Optional[float],
-                      primal_lr: float, primal_lr_decrease: float, dual_ratio_init: float, dual_lr: float,
-                      dual_lr_decrease: float, dual_ema: float, dual_min_ratio: float, proximal_steps: int,
-                      ε_threshold: float) -> Callable:
-    return partial(pdpgd_attack, norm=float(norm), num_steps=num_steps, random_init=random_init,
-                   proximal_operator=proximal_operator, primal_lr=primal_lr, primal_lr_decrease=primal_lr_decrease,
-                   dual_ratio_init=dual_ratio_init, dual_lr=dual_lr, dual_lr_decrease=dual_lr_decrease,
-                   dual_ema=dual_ema, dual_min_ratio=dual_min_ratio, proximal_steps=proximal_steps,
-                   ε_threshold=ε_threshold)
-
-
-@attack_ingredient.capture
-def get_dataset_attack() -> Callable:
-    return partial(fb_lib_dataset_attack)
-
-
-@attack_ingredient.capture
-def get_torchattacks_lib_deepfool(norm: float, steps: int, overshoot: float) -> Callable:
-    return partial(ta_lib_deepfool, steps=steps, norm=norm, overshoot=overshoot)
-
-
-@attack_ingredient.capture
-def get_torchattacks_lib_sparsefool(norm: float, steps: int, lam: float, overshoot: float) -> Callable:
-    return partial(ta_lib_sparsefool, norm=norm, steps=steps, lam=lam, overshoot=overshoot)
-
-
-@attack_ingredient.capture
-def get_torchattacks_lib_fab(norm: float, eps: float, steps: int, n_restarts: int, alpha_max: float, eta: float,
-                             beta: float, targeted: bool) -> Callable:
-    return partial(ta_lib_fab, steps=steps, norm=norm, eps=eps, n_restarts=n_restarts, alpha_max=alpha_max, eta=eta,
-                   beta=beta, targeted=targeted)
-
-
-@attack_ingredient.capture
-def get_torchattacks_lib_fgsm(norm: float, steps: int) -> Callable:
-    return partial(ta_lib_fgsm, norm=norm, steps=steps)
-
-
-@attack_ingredient.capture
-def get_torchattacks_lib_cw(norm: float, steps: int, c: float, kappa: float, lr: float) -> Callable:
-    return partial(ta_lib_cw, norm=norm, steps=steps, c=c, kappa=kappa, lr=lr)
-
-
-@attack_ingredient.capture
-def get_torchattacks_lib_pgd_linf(norm: float, steps: int, eps: float, alpha: float, random_start: bool) -> Callable:
-    return partial(ta_lib_pgd_linf, norm=norm, steps=steps, eps=eps, alpha=alpha, random_start=random_start)
-
-
-@attack_ingredient.capture
-def get_torchattacks_lib_pgd_l2(norm: float, steps: int, eps: float, alpha: float, random_start: bool,
-                                eps_for_division: float) -> Callable:
-    return partial(ta_lib_pgd_l2, norm=norm, steps=steps, eps=eps, alpha=alpha, random_start=random_start,
-                   eps_for_division=eps_for_division)
-
-
-@attack_ingredient.capture
-def get_torchattacks_lib_auto_attack(norm: float, eps: float, version: str) -> Callable:
-    return partial(ta_lib_auto_attack, norm=norm, eps=eps, version=version)
-
-
-@attack_ingredient.capture
-def get_art_lib_pgd(norm: float, eps: float, eps_step: float, max_iter: int,
-                    num_random_init: int, random_eps: bool):
-    return partial(art_lib_pgd, norm=norm, eps=eps, eps_step=eps_step,
-                   num_random_init=num_random_init, max_iter=max_iter, random_eps=random_eps)
-
-
-@attack_ingredient.capture
-def get_art_lib_bim(eps: float, eps_step: float, max_iter: int):
-    return partial(art_lib_bim, eps=eps, eps_step=eps_step,
-                   max_iter=max_iter)
-
-
-@attack_ingredient.capture
-def get_art_lib_fgsm(norm: float, eps: float, eps_step: float,
-                     num_random_init: int, minimal: bool):
-    return partial(art_lib_fgsm, norm=norm, eps=eps, eps_step=eps_step,
-                   num_random_init=num_random_init, minimal=minimal)
-
-
-@attack_ingredient.capture
-def get_art_lib_jsma(theta: float, gamma: float):
-    return partial(art_lib_jsma, theta=theta, gamma=gamma)
-
-
-@attack_ingredient.capture
-def get_art_lib_cw_l2(confidence: float, learning_rate: float,
-                      binary_search_steps: int, max_iter: int, initial_const: float,
-                      max_halving: int, max_doubling: int):
-    return partial(art_lib_cw_l2, confidence=confidence,
-                   learning_rate=learning_rate, binary_search_steps=binary_search_steps,
-                   max_iter=max_iter, initial_const=initial_const, max_halving=max_halving,
-                   max_doubling=max_doubling)
-
-
-@attack_ingredient.capture
-def get_art_lib_cw_linf(confidence: float, learning_rate: float,
-                        max_iter: int, decrease_factor: float, initial_const: float,
-                        largest_const: float, const_factor: float):
-    return partial(art_lib_cw_linf, confidence=confidence,
-                   learning_rate=learning_rate, max_iter=max_iter,
-                   decrease_factor=decrease_factor, initial_const=initial_const,
-                   largest_const=largest_const,
-                   const_factor=const_factor)
-
-
-@attack_ingredient.capture
-def get_art_lib_bb(norm: float, overshoot: float, steps: int, lr: float,
-                   lr_decay: float, lr_num_decay: int, momentum: float,
-                   binary_search_steps: int,
-                   init_size: int):
-    return partial(art_lib_bb, norm=norm, overshoot=overshoot, steps=steps,
-                   lr=lr, lr_decay=lr_decay, lr_num_decay=lr_num_decay,
-                   momentum=momentum, binary_search_steps=binary_search_steps,
-                   init_size=init_size)
-
-
-@attack_ingredient.capture
-def get_art_lib_deepfool(max_iter: int, epsilon: float, nb_grads: int):
-    return partial(art_lib_deepfool, max_iter=max_iter,
-                   epsilon=epsilon, nb_grads=nb_grads)
-
-
-@attack_ingredient.capture
-def get_art_lib_apgd(norm: float, eps: float, eps_step: float,
-                     max_iter: int, nb_random_init: int, loss_type: Optional[str]):
-    return partial(art_lib_apgd, norm=norm, eps=eps, eps_step=eps_step,
-                   max_iter=max_iter, nb_random_init=nb_random_init,
-                   loss_type=loss_type)
-
-
-@attack_ingredient.capture
-def get_art_lib_ead(confidence: float, learning_rate: float, binary_search_steps: int,
-                    max_iter: int, beta: float, initial_const: float, decision_rule: str):
+def get_art_lib_ead(confidence: float, learning_rate: float, binary_search_steps: int, max_iter: int, beta: float,
+                    initial_const: float, decision_rule: str):
     return partial(art_lib_ead, confidence=confidence, learning_rate=learning_rate,
                    binary_search_steps=binary_search_steps, max_iter=max_iter, beta=beta,
                    initial_const=initial_const, decision_rule=decision_rule)
