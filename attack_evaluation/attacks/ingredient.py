@@ -67,7 +67,6 @@ def ddn():
 def vfga():
     name = 'vfga'
     source = 'adv_lib'  # available: ['adv_lib']
-    targeted = False
     max_iter = None
     n_samples = 10
     large_memory = False
@@ -77,7 +76,6 @@ def vfga():
 def pdgd():
     name = 'pdgd'
     source = 'adv_lib'  # available: ['adv_lib']
-    targeted = False
     num_steps = 500
     random_init = 0
     primal_lr = 0.1
@@ -365,8 +363,8 @@ def get_adv_lib_fmn(norm: float, steps: int, max_stepsize: float, gamma: float) 
 
 
 @attack_ingredient.capture
-def get_adv_lib_vfga(targeted: bool, max_iter: int, n_samples: int, large_memory: bool) -> Callable:
-    return partial(vfga_attack, targeted=targeted, max_iter=max_iter, n_samples=n_samples, large_memory=large_memory)
+def get_adv_lib_vfga(max_iter: int, n_samples: int, large_memory: bool) -> Callable:
+    return partial(vfga_attack, max_iter=max_iter, n_samples=n_samples, large_memory=large_memory)
 
 
 @attack_ingredient.capture
