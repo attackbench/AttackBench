@@ -1,23 +1,44 @@
 from cmath import inf
 from functools import partial
 from typing import Callable, Optional
-from torch import Tensor
 
-from adv_lib.attacks import alma as alma_attack, ddn as ddn_attack, fmn as fmn_adv_lib_attack
-from adv_lib.attacks import vfga as vfga_attack, pdgd as pdgd_attack
-from .foolbox.foolbox_attacks import fb_lib_dataset_attack, fb_lib_fmn_attack
-from .torchattacks.torch_attacks import ta_lib_cw, ta_lib_fab, ta_lib_fgsm, ta_lib_pgd_l2, ta_lib_pgd_linf, \
-    ta_lib_auto_attack, ta_lib_sparsefool, ta_lib_deepfool
-
+from adv_lib.attacks import (
+    alma as alma_attack,
+    ddn as ddn_attack,
+    fmn as fmn_adv_lib_attack,
+    pdgd as pdgd_attack,
+    vfga as vfga_attack
+)
+from foolbox.attacks.base import MinimizationAttack
 from sacred import Ingredient
 
 from .adversarial_library import adv_lib_wrapper
+from .art.art_attacks import (
+    art_lib_apgd,
+    art_lib_bb,
+    art_lib_bim,
+    art_lib_cw_l2,
+    art_lib_cw_linf,
+    art_lib_deepfool,
+    art_lib_ead,
+    art_lib_fgsm,
+    art_lib_jsma,
+    art_lib_pgd,
+    art_lib_wrapper
+)
+from .foolbox.foolbox_attacks import fb_lib_dataset_attack, fb_lib_fmn_attack, foolbox_wrapper
 from .original.fast_minimum_norm import fmn_attack
-from .foolbox.foolbox_attacks import foolbox_wrapper
-from .torchattacks.torch_attacks import torch_attacks_wrapper
-from .art.art_attacks import art_lib_wrapper, art_lib_pgd, art_lib_fgsm, art_lib_jsma, art_lib_cw_l2, art_lib_cw_linf, \
-    art_lib_bb, art_lib_deepfool, art_lib_apgd, art_lib_bim, art_lib_ead
-from foolbox.attacks.base import MinimizationAttack
+from .torchattacks.torch_attacks import (
+    ta_lib_auto_attack,
+    ta_lib_cw,
+    ta_lib_deepfool,
+    ta_lib_fab,
+    ta_lib_fgsm,
+    ta_lib_pgd_l2,
+    ta_lib_pgd_linf,
+    ta_lib_sparsefool,
+    torch_attacks_wrapper
+)
 
 attack_ingredient = Ingredient('attack')
 
