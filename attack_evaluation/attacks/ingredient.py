@@ -36,8 +36,8 @@ from .torchattacks.torch_attacks import (
 attack_ingredient = Ingredient('attack')
 
 for attack in adv_lib_index.values():
-    attack_ingredient.named_config(attack['config'])
-    attack['getter'] = attack_ingredient.capture(attack['getter'])
+    attack_ingredient.named_config(attack.config)
+    attack.getter = attack_ingredient.capture(attack.getter)
 
 
 @attack_ingredient.named_config
@@ -409,7 +409,7 @@ def get_original_attack(name: str) -> Callable:
 
 @attack_ingredient.capture
 def get_adv_lib_attack(name: str) -> Callable:
-    attack = adv_lib_index[name]['getter']()
+    attack = adv_lib_index[name].getter()
     return partial(adv_lib_wrapper, attack=attack)
 
 

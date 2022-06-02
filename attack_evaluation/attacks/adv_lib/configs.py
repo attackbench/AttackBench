@@ -10,6 +10,8 @@ from adv_lib.attacks import (
     vfga as vfga_attack
 )
 
+from ..utils import ConfigGetter
+
 
 def adv_lib_alma():
     name = 'alma'
@@ -113,10 +115,10 @@ def get_adv_lib_fmn(norm: float, steps: int, max_stepsize: float, gamma: float) 
 
 
 adv_lib_index = {
-    'alma': {'config': adv_lib_alma, 'getter': get_adv_lib_alma},
-    'ddn': {'config': adv_lib_ddn, 'getter': get_adv_lib_ddn},
-    'fmn': {'config': adv_lib_fmn, 'getter': get_adv_lib_fmn},
-    'pdgd': {'config': adv_lib_pdgd, 'getter': get_adv_lib_pdgd},
-    'pdpgd': {'config': adv_lib_pdpgd, 'getter': get_adv_lib_pdpgd},
-    'vfga': {'config': adv_lib_vfga, 'getter': get_adv_lib_vfga},
+    'alma': ConfigGetter(config=adv_lib_alma, getter=get_adv_lib_alma),
+    'ddn': ConfigGetter(config=adv_lib_ddn, getter=get_adv_lib_ddn),
+    'fmn': ConfigGetter(config=adv_lib_fmn, getter=get_adv_lib_fmn),
+    'pdgd': ConfigGetter(config=adv_lib_pdgd, getter=get_adv_lib_pdgd),
+    'pdpgd': ConfigGetter(config=adv_lib_pdpgd, getter=get_adv_lib_pdpgd),
+    'vfga': ConfigGetter(config=adv_lib_vfga, getter=get_adv_lib_vfga),
 }
