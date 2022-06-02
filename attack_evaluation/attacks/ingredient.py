@@ -7,6 +7,7 @@ from adv_lib.attacks import (
     ddn as ddn_attack,
     fmn as fmn_adv_lib_attack,
     pdgd as pdgd_attack,
+    pdpgd as pdpgd_attack,
     vfga as vfga_attack
 )
 from foolbox.attacks.base import MinimizationAttack
@@ -86,6 +87,25 @@ def pdgd():
     dual_lr_decrease = 0.1
     dual_ema = 0.9
     dual_min_ratio = 1e-6
+
+
+@attack_ingredient.named_config
+def pdpgd():
+    name = 'pdpgd'
+    source = 'adv_lib'  # available: ['adv_lib']
+    norm = float('inf')
+    num_steps = 500
+    random_init = 0
+    proximal_operator = None
+    primal_lr = 0.1
+    primal_lr_decrease = 0.01
+    dual_ratio_init = 0.01
+    dual_lr = 0.1
+    dual_lr_decrease = 0.1
+    dual_ema = 0.9
+    dual_min_ratio = 1e-6
+    proximal_steps = 5
+    ε_threshold = 1e-2
 
 
 @attack_ingredient.named_config
@@ -359,6 +379,18 @@ def get_adv_lib_pdgd(num_steps: int, random_init: float, primal_lr: float, prima
 
 
 @attack_ingredient.capture
+def get_adv_lib_pdpgd(norm: float, num_steps: int, random_init: float, proximal_operator: Optional[float],
+                      primal_lr: float, primal_lr_decrease: float, dual_ratio_init: float, dual_lr: float,
+                      dual_lr_decrease: float, dual_ema: float, dual_min_ratio: float, proximal_steps: int,
+                      ε_threshold: float) -> Callable:
+    return partial(pdpgd_attack, norm=float(norm), num_steps=num_steps, random_init=random_init,
+                   proximal_operator=proximal_operator, primal_lr=primal_lr, primal_lr_decrease=primal_lr_decrease,
+                   dual_ratio_init=dual_ratio_init, dual_lr=dual_lr, dual_lr_decrease=dual_lr_decrease,
+                   dual_ema=dual_ema, dual_min_ratio=dual_min_ratio, proximal_steps=proximal_steps,
+                   ε_threshold=ε_threshold)
+
+
+@attack_ingredient.capture
 def get_dataset_attack() -> Callable:
     return partial(fb_lib_dataset_attack)
 
@@ -501,7 +533,8 @@ _adv_lib = {
     'ddn': get_ddn,
     'fmn': get_adv_lib_fmn,
     'vfga': get_adv_lib_vfga,
-    'pdgd': get_adv_lib_pdgd
+    'pdgd': get_adv_lib_pdgd,
+    'pdpgd': get_adv_lib_pdpgd,
 }
 
 
