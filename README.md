@@ -37,6 +37,7 @@ python attack_evaluation/run.py -F results/mnist with attack.ddn dataset.mnist m
 | PDGD    |    ☒     |     ☒      |    ✓    |  ☒  |     ☒      |     ☒      |    ☒    |      ☒       |
 | PDPGD   |    ☒     |     ☒      |    ✓    |  ☒  |     ☒      |     ☒      |    ☒    |      ☒       |
 | TR      |          |     ☒      |    ✓    |  ☒  |     ☒      |     ☒      |    ☒    |      ☒       |
+| FAB     |          |            |    ✓    |  ☒  |     ☒      |     ☒      |    ☒    |              |
 
 
 Legend: 

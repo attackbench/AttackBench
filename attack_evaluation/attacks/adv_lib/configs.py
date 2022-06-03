@@ -8,6 +8,7 @@ from adv_lib.attacks import (
     carlini_wagner_l2,
     carlini_wagner_linf,
     ddn,
+    fab,
     fmn,
     pdgd,
     pdpgd,
@@ -100,6 +101,24 @@ def adv_lib_ddn():
 
 def get_adv_lib_ddn(steps: int, gamma: float, init_norm: float) -> Callable:
     return partial(ddn, steps=steps, γ=gamma, init_norm=init_norm)
+
+
+def adv_lib_fab():
+    name = 'fab'
+    source = 'adv_lib'  # available: ['adv_lib']
+    norm = float('inf')
+    n_iter = 100
+    alpha_max = 1
+    beta = 0.9
+    eta = 1.05
+    restarts = None
+    targeted_restarts = False
+
+
+def get_adv_lib_fab(norm: float, n_iter: int, alpha_max: float, beta: float, eta: float, restarts: Optional[int],
+                    targeted_restarts: bool) -> Callable:
+    return partial(fab, norm=norm, n_iter=n_iter, α_max=alpha_max, β=beta, η=eta, restarts=restarts,
+                   targeted_restarts=targeted_restarts)
 
 
 def adv_lib_fmn():
@@ -218,6 +237,7 @@ adv_lib_index = {
     'cw_l2': ConfigGetter(config=adv_lib_cw_l2, getter=get_adv_lib_cw_l2),
     'cw_linf': ConfigGetter(config=adv_lib_cw_linf, getter=get_adv_lib_cw_linf),
     'ddn': ConfigGetter(config=adv_lib_ddn, getter=get_adv_lib_ddn),
+    'fab': ConfigGetter(config=adv_lib_fab, getter=get_adv_lib_fab),
     'fmn': ConfigGetter(config=adv_lib_fmn, getter=get_adv_lib_fmn),
     'pdgd': ConfigGetter(config=adv_lib_pdgd, getter=get_adv_lib_pdgd),
     'pdpgd': ConfigGetter(config=adv_lib_pdpgd, getter=get_adv_lib_pdpgd),
