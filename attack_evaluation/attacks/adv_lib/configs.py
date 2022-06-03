@@ -108,7 +108,7 @@ def adv_lib_fab():
     source = 'adv_lib'  # available: ['adv_lib']
     norm = float('inf')
     n_iter = 100
-    alpha_max = 1
+    alpha_max = 0.1
     beta = 0.9
     eta = 1.05
     restarts = None
