@@ -108,6 +108,7 @@ def adv_lib_fab():
     source = 'adv_lib'  # available: ['adv_lib']
     norm = float('inf')
     n_iter = 100
+    epsilon = None
     alpha_max = 0.1
     beta = 0.9
     eta = 1.05
@@ -115,9 +116,9 @@ def adv_lib_fab():
     targeted_restarts = False
 
 
-def get_adv_lib_fab(norm: float, n_iter: int, alpha_max: float, beta: float, eta: float, restarts: Optional[int],
-                    targeted_restarts: bool) -> Callable:
-    return partial(fab, norm=norm, n_iter=n_iter, α_max=alpha_max, β=beta, η=eta, restarts=restarts,
+def get_adv_lib_fab(norm: float, n_iter: int, epsilon: Optional[float], alpha_max: float, beta: float, eta: float,
+                    restarts: Optional[int], targeted_restarts: bool) -> Callable:
+    return partial(fab, norm=norm, n_iter=n_iter, ε=epsilon, α_max=alpha_max, β=beta, η=eta, restarts=restarts,
                    targeted_restarts=targeted_restarts)
 
 
