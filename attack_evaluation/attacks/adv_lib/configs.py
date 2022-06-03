@@ -2,18 +2,18 @@ from functools import partial
 from typing import Callable, Optional
 
 from adv_lib.attacks import (
-    alma as alma_attack,
-    apgd as apgd_attack,
-    apgd_targeted as apgd_targeted_attack,
-    carlini_wagner_l2 as carlini_wagner_l2_attack,
-    carlini_wagner_linf as carlini_wagner_linf_attack,
-    ddn as ddn_attack,
-    fmn as fmn_adv_lib_attack,
-    pdgd as pdgd_attack,
-    pdpgd as pdpgd_attack,
-    pgd_linf as pgd_linf_attack,
-    tr as tr_attack,
-    vfga as vfga_attack
+    alma,
+    apgd,
+    apgd_targeted,
+    carlini_wagner_l2,
+    carlini_wagner_linf,
+    ddn,
+    fmn,
+    pdgd,
+    pdpgd,
+    pgd_linf,
+    tr,
+    vfga,
 )
 
 from ..utils import ConfigGetter
@@ -29,7 +29,7 @@ def adv_lib_alma():
 
 
 def get_adv_lib_alma(distance: float, steps: int, alpha: float, init_lr_distance: float) -> Callable:
-    return partial(alma_attack, distance=distance, num_steps=steps, α=alpha, init_lr_distance=init_lr_distance)
+    return partial(alma, distance=distance, num_steps=steps, α=alpha, init_lr_distance=init_lr_distance)
 
 
 def adv_lib_apgd():
@@ -48,7 +48,7 @@ def adv_lib_apgd():
 
 def get_adv_lib_apgd(norm: float, eps: float, targeted: bool, n_iter: int, n_restarts: int, loss_function: str,
                      rho: float, use_large_reps: bool, use_rs: bool) -> Callable:
-    attack_func = apgd_targeted_attack if targeted else apgd_attack
+    attack_func = apgd_targeted if targeted else apgd
     return partial(attack_func, norm=norm, eps=eps, n_iter=n_iter, n_restarts=n_restarts, loss_function=loss_function,
                    rho=rho, use_large_reps=use_large_reps, use_rs=use_rs)
 
@@ -66,9 +66,8 @@ def adv_lib_cw_l2():
 
 def get_adv_lib_cw_l2(confidence: float, learning_rate: float, initial_const: float, binary_search_steps: int,
                       max_iterations: int, abort_early: bool) -> Callable:
-    return partial(carlini_wagner_l2_attack, confidence=confidence, learning_rate=learning_rate,
-                   initial_const=initial_const, binary_search_steps=binary_search_steps, max_iterations=max_iterations,
-                   abort_early=abort_early)
+    return partial(carlini_wagner_l2, confidence=confidence, learning_rate=learning_rate, initial_const=initial_const,
+                   binary_search_steps=binary_search_steps, max_iterations=max_iterations, abort_early=abort_early)
 
 
 def adv_lib_cw_linf():
@@ -86,7 +85,7 @@ def adv_lib_cw_linf():
 
 def get_adv_lib_cw_linf(learning_rate: float, max_iterations: int, initial_const: float, largest_const: float,
                         const_factor: float, reduce_const: bool, decrease_factor: float, abort_early: bool) -> Callable:
-    return partial(carlini_wagner_linf_attack, learning_rate=learning_rate, max_iterations=max_iterations,
+    return partial(carlini_wagner_linf, learning_rate=learning_rate, max_iterations=max_iterations,
                    initial_const=initial_const, largest_const=largest_const, const_factor=const_factor,
                    reduce_const=reduce_const, decrease_factor=decrease_factor, abort_early=abort_early)
 
@@ -100,7 +99,7 @@ def adv_lib_ddn():
 
 
 def get_adv_lib_ddn(steps: int, gamma: float, init_norm: float) -> Callable:
-    return partial(ddn_attack, steps=steps, γ=gamma, init_norm=init_norm)
+    return partial(ddn, steps=steps, γ=gamma, init_norm=init_norm)
 
 
 def adv_lib_fmn():
@@ -113,7 +112,7 @@ def adv_lib_fmn():
 
 
 def get_adv_lib_fmn(norm: float, steps: int, max_stepsize: float, gamma: float) -> Callable:
-    return partial(fmn_adv_lib_attack, norm=norm, steps=steps, α_init=max_stepsize, γ_init=gamma)
+    return partial(fmn, norm=norm, steps=steps, α_init=max_stepsize, γ_init=gamma)
 
 
 def adv_lib_pdgd():
@@ -133,7 +132,7 @@ def adv_lib_pdgd():
 def get_adv_lib_pdgd(num_steps: int, random_init: float, primal_lr: float, primal_lr_decrease: float,
                      dual_ratio_init: float, dual_lr: float, dual_lr_decrease: float, dual_ema: float,
                      dual_min_ratio: float) -> Callable:
-    return partial(pdgd_attack, num_steps=num_steps, random_init=random_init, primal_lr=primal_lr,
+    return partial(pdgd, num_steps=num_steps, random_init=random_init, primal_lr=primal_lr,
                    primal_lr_decrease=primal_lr_decrease, dual_ratio_init=dual_ratio_init, dual_lr=dual_lr,
                    dual_lr_decrease=dual_lr_decrease, dual_ema=dual_ema, dual_min_ratio=dual_min_ratio)
 
@@ -160,7 +159,7 @@ def get_adv_lib_pdpgd(norm: float, num_steps: int, random_init: float, proximal_
                       primal_lr: float, primal_lr_decrease: float, dual_ratio_init: float, dual_lr: float,
                       dual_lr_decrease: float, dual_ema: float, dual_min_ratio: float, proximal_steps: int,
                       ε_threshold: float) -> Callable:
-    return partial(pdpgd_attack, norm=float(norm), num_steps=num_steps, random_init=random_init,
+    return partial(pdpgd, norm=float(norm), num_steps=num_steps, random_init=random_init,
                    proximal_operator=proximal_operator, primal_lr=primal_lr, primal_lr_decrease=primal_lr_decrease,
                    dual_ratio_init=dual_ratio_init, dual_lr=dual_lr, dual_lr_decrease=dual_lr_decrease,
                    dual_ema=dual_ema, dual_min_ratio=dual_min_ratio, proximal_steps=proximal_steps,
@@ -181,7 +180,7 @@ def adv_lib_pgd():
 
 def get_adv_lib_pgd(ε: float, steps: int, random_init: bool, restarts: int, loss_function: str,
                     relative_step_size: float, absolute_step_size: Optional[float]):
-    return partial(pgd_linf_attack, ε=ε, steps=steps, random_init=random_init, restarts=restarts,
+    return partial(pgd_linf, ε=ε, steps=steps, random_init=random_init, restarts=restarts,
                    loss_function=loss_function, relative_step_size=relative_step_size,
                    absolute_step_size=absolute_step_size)
 
@@ -198,7 +197,7 @@ def adv_lib_tr():
 
 
 def get_adv_lib_tr(p: float, iter: int, adaptive: bool, eps: float, c: int, worst_case: bool) -> Callable:
-    return partial(tr_attack, p=p, iter=iter, adaptive=adaptive, eps=eps, c=c, worst_case=worst_case)
+    return partial(tr, p=p, iter=iter, adaptive=adaptive, eps=eps, c=c, worst_case=worst_case)
 
 
 def adv_lib_vfga():
@@ -210,7 +209,7 @@ def adv_lib_vfga():
 
 
 def get_adv_lib_vfga(max_iter: int, n_samples: int, large_memory: bool) -> Callable:
-    return partial(vfga_attack, max_iter=max_iter, n_samples=n_samples, large_memory=large_memory)
+    return partial(vfga, max_iter=max_iter, n_samples=n_samples, large_memory=large_memory)
 
 
 adv_lib_index = {
