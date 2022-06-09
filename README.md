@@ -30,7 +30,7 @@ python attack_evaluation/run.py -F results/mnist with attack.ddn dataset.mnist m
 | CW-LINF |          |     ☒      |    ✓    |  ✓  |     ☒      |     ☒      |    ☒    |      ☒       |
 | FGSM    |    ☒     |            |    ☒    |  ✓  |            |            |         |      ✓       |
 | BB      |          |     ☒      |    ☒    |  ✓  |     ☒      |     ☒      |         |      ☒       |
-| DF      |          |     ☒      |    ☒    |  ✓  |     ☒      |            |         |      ✓       |
+| DF      |          |     ☒      |    ☒    |  ✓  |     ☒      |     ~      |         |      ✓       |
 | APGD    |          |     ☒      |    ✓    |  ✓  |     ☒      |     ☒      |    ☒    |      ✓       |
 | BIM     |          |            |    ☒    |  ✓  |            |     ☒      |         |      ☒       |
 | EAD     |          |            |    ☒    |  ✓  |     ☒      |     ☒      |         |      ☒       |

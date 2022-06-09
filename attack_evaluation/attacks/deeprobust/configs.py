@@ -2,6 +2,7 @@ import warnings
 from typing import Callable, Tuple
 
 from deeprobust.image.attack.cw import CarliniWagner
+from deeprobust.image.attack.deepfool import DeepFool
 from deeprobust.image.attack.pgd import PGD
 
 from ..utils import ConfigGetter
@@ -29,6 +30,19 @@ def get_dr_cw_l2(confidence: float, binary_search_steps: int, max_iterations: in
                                max_iterations=max_iterations, initial_const=initial_const, learning_rate=learning_rate)
 
 
+def dr_deepfool():
+    name = 'deepfool'
+    source = 'deeprobust'
+    overshoot = 0.02
+    max_iteration = 50
+    num_classes = 10
+
+
+def get_dr_deepfool(overshoot: float, max_iteration: int, num_classes: int) -> Tuple[Callable, dict]:
+    warnings.warn('DeepFool does not support batches in DeepRobust.')
+    return DeepFool, dict(overshoot=overshoot, max_iteration=max_iteration, num_classes=num_classes)
+
+
 def dr_pgd():
     name = 'pgd'
     source = 'deeprobust'
@@ -45,5 +59,6 @@ def get_dr_pgd(norm: float, epsilon: float, num_steps: int, step_size: float) ->
 
 deeprobust_index = {
     'cw_l2': ConfigGetter(config=dr_cw_l2, getter=get_dr_cw_l2),
+    'deepfool': ConfigGetter(config=dr_deepfool, getter=get_dr_deepfool),
     'pgd': ConfigGetter(config=dr_pgd, getter=get_dr_pgd),
 }
