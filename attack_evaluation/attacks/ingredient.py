@@ -90,21 +90,22 @@ _foolbox_lib = {
 
 
 @attack_ingredient.capture
-def get_foolbox_lib_attack(name: str) -> Callable:
+def get_foolbox_attack(name: str) -> Callable:
     attack = _foolbox_lib[name]()
     return partial(foolbox_wrapper, attack=attack)
 
 
 @attack_ingredient.capture
-def get_torchattacks_lib_attack(name: str) -> Callable:
+def get_torchattacks_attack(name: str) -> Callable:
     attack = torchattacks_index[name].getter()
     return partial(torchattacks_wrapper, attack=attack)
 
 
 @attack_ingredient.capture
-def get_art_lib_attack(name: str) -> Callable:
+def get_art_attack(name: str) -> Callable:
     attack = art_index[name].getter()
     return partial(art_wrapper, attack=attack)
+
 
 @attack_ingredient.capture
 def get_deeprobust_attack(name: str) -> Callable:
@@ -115,10 +116,10 @@ def get_deeprobust_attack(name: str) -> Callable:
 _libraries = {
     'original': get_original_attack,
     'adv_lib': get_adv_lib_attack,
-    'foolbox': get_foolbox_lib_attack,
-    'torchattacks': get_torchattacks_lib_attack,
-    'art': get_art_lib_attack,
+    'art': get_art_attack,
     'deeprobust': get_deeprobust_attack,
+    'foolbox': get_foolbox_attack,
+    'torchattacks': get_torchattacks_attack,
 }
 
 
