@@ -24,9 +24,9 @@ python attack_evaluation/run.py -F results/mnist with attack.ddn dataset.mnist m
 | DDN     |    ☒     |            |    ✓    |  ☒  |     ☒      |     ☒      |         |      ☒       |
 | ALMA    |    ☒     |     ☒      |    ✓    |  ☒  |     ☒      |     ☒      |    ☒    |      ☒       |
 | FMN     |    ✓     |     ☒      |    ✓    |  ☒  |     ☒      |     ☒      |         |      ☒       |
-| PGD     |          |            |    ✓    |  ✓  |            |            |         |      ✓       |
+| PGD     |          |            |    ✓    |  ✓  |            |     ✓      |         |      ✓       |
 | JSMA    |    ☒     |            |    ☒    |  ✓  |     ☒      |     ☒      |    ☒    |      ☒       |
-| CW-L2   |          |            |    ✓    |  ✓  |            |            |         |      ✓       |
+| CW-L2   |          |            |    ✓    |  ✓  |            |     ~      |         |      ✓       |
 | CW-LINF |          |     ☒      |    ✓    |  ✓  |     ☒      |     ☒      |    ☒    |      ☒       |
 | FGSM    |    ☒     |            |    ☒    |  ✓  |            |            |         |      ✓       |
 | BB      |          |     ☒      |    ☒    |  ✓  |     ☒      |     ☒      |         |      ☒       |
@@ -44,6 +44,7 @@ Legend:
 - _empty_ : not implemented yet 
 - ☒ : not available (see google sheet)
 - ✓ : implemented
+- ~ : not functional yet
 
 ## Attack format
 

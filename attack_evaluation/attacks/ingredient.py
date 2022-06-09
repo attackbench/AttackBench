@@ -7,13 +7,14 @@ from sacred import Ingredient
 
 from .adv_lib import adv_lib_index, adv_lib_wrapper
 from .art import art_index, art_wrapper
+from .deeprobust import deeprobust_index, deeprobust_wrapper
 from .foolbox.foolbox_attacks import fb_lib_dataset_attack, fb_lib_fmn_attack, foolbox_wrapper
 from .original.fast_minimum_norm import fmn_attack
 from .torchattacks import torchattacks_index, torchattacks_wrapper
 
 attack_ingredient = Ingredient('attack')
 
-for index in [adv_lib_index, art_index, torchattacks_index]:
+for index in [adv_lib_index, art_index, deeprobust_index, torchattacks_index]:
     for attack in index.values():
         attack_ingredient.named_config(attack.config)
         attack.getter = attack_ingredient.capture(attack.getter)
@@ -105,6 +106,11 @@ def get_art_lib_attack(name: str) -> Callable:
     attack = art_index[name].getter()
     return partial(art_wrapper, attack=attack)
 
+@attack_ingredient.capture
+def get_deeprobust_attack(name: str) -> Callable:
+    attack, attack_params = deeprobust_index[name].getter()
+    return partial(deeprobust_wrapper, attack=attack, attack_params=attack_params)
+
 
 _libraries = {
     'original': get_original_attack,
@@ -112,6 +118,7 @@ _libraries = {
     'foolbox': get_foolbox_lib_attack,
     'torchattacks': get_torchattacks_lib_attack,
     'art': get_art_lib_attack,
+    'deeprobust': get_deeprobust_attack,
 }
 
 
