@@ -9,6 +9,7 @@ from .adv_lib import adv_lib_index, adv_lib_wrapper
 from .art import art_index, art_wrapper
 from .deeprobust import deeprobust_index, deeprobust_wrapper
 from .foolbox.foolbox_attacks import fb_lib_dataset_attack, fb_lib_fmn_attack, foolbox_wrapper
+from .original.auto_pgd import autopgd_attack
 from .original.deepfool import deepfool_attack
 from .original.fast_minimum_norm import fmn_attack
 from .torchattacks import torchattacks_index, torchattacks_wrapper
@@ -19,6 +20,27 @@ for index in [adv_lib_index, art_index, deeprobust_index, torchattacks_index]:
     for attack in index.values():
         attack_ingredient.named_config(attack.config)
         attack.getter = attack_ingredient.capture(attack.getter)
+
+
+@attack_ingredient.named_config
+def apgd():
+    name = 'apgd'
+    source = 'original'
+    norm = float('inf')
+    n_iter = 100
+    n_restarts = 1
+    targeted_variant = False
+    eps = 0.3
+    loss = 'ce'  # loss function in ['ce', 'dlr']
+    rho = .75
+    use_largereps = False  # set True with L1 norm
+
+
+@attack_ingredient.capture
+def get_apgd(norm: float, n_iter: int, n_restarts: int, targeted_variant: bool, eps: float, loss: str, rho: float,
+             use_largereps: bool) -> Callable:
+    return partial(autopgd_attack, norm=norm, n_iter=n_iter, n_restarts=n_restarts, targeted_variant=targeted_variant,
+                   eps=eps, loss=loss, rho=rho, use_largereps=use_largereps)
 
 
 @attack_ingredient.named_config
@@ -83,6 +105,7 @@ def get_dataset_attack() -> Callable:
 
 
 _original = {
+    'apgd': get_apgd,
     'deepfool': get_deepfool,
     'fmn': get_fmn,
 }
