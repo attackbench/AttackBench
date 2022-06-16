@@ -9,6 +9,7 @@ from .adv_lib import adv_lib_index, adv_lib_wrapper
 from .art import art_index, art_wrapper
 from .deeprobust import deeprobust_index, deeprobust_wrapper
 from .foolbox.foolbox_attacks import fb_lib_dataset_attack, fb_lib_fmn_attack, foolbox_wrapper
+from .original.deepfool import deepfool_attack
 from .original.fast_minimum_norm import fmn_attack
 from .torchattacks import torchattacks_index, torchattacks_wrapper
 
@@ -18,6 +19,20 @@ for index in [adv_lib_index, art_index, deeprobust_index, torchattacks_index]:
     for attack in index.values():
         attack_ingredient.named_config(attack.config)
         attack.getter = attack_ingredient.capture(attack.getter)
+
+
+@attack_ingredient.named_config
+def deepfool():
+    name = 'deepfool'
+    source = 'original'
+    num_classes = 10  # number of classes to test gradient (can be different from the number of classes of the model)
+    overshoot = 0.02
+    max_iter = 50
+
+
+@attack_ingredient.capture
+def get_deepfool(num_classes: int, overshoot: float, max_iter: int) -> Callable:
+    return partial(deepfool_attack, num_classes=num_classes, overshoot=overshoot, max_iter=max_iter)
 
 
 @attack_ingredient.named_config
@@ -68,6 +83,7 @@ def get_dataset_attack() -> Callable:
 
 
 _original = {
+    'deepfool': get_deepfool,
     'fmn': get_fmn,
 }
 
