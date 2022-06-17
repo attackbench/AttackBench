@@ -24,7 +24,7 @@ python attack_evaluation/run.py -F results/mnist with attack.ddn dataset.mnist m
 | DDN     |    ☒     |            |    ✓    |  ☒  |     ☒      |     ☒      |         |      ☒       |
 | ALMA    |    ☒     |     ☒      |    ✓    |  ☒  |     ☒      |     ☒      |    ☒    |      ☒       |
 | FMN     |    ✓     |     ☒      |    ✓    |  ☒  |     ☒      |     ☒      |         |      ☒       |
-| PGD     |          |            |    ✓    |  ✓  |            |     ✓      |         |      ✓       |
+| PGD     |    ☒     |            |    ✓    |  ✓  |            |     ✓      |         |      ✓       |
 | JSMA    |    ☒     |            |    ☒    |  ✓  |     ☒      |     ☒      |    ☒    |      ☒       |
 | CW-L2   |    ☒     |            |    ✓    |  ✓  |            |     ~      |         |      ✓       |
 | CW-LINF |    ☒     |     ☒      |    ✓    |  ✓  |     ☒      |     ☒      |    ☒    |      ☒       |
@@ -32,11 +32,11 @@ python attack_evaluation/run.py -F results/mnist with attack.ddn dataset.mnist m
 | BB      |    ☒     |     ☒      |    ☒    |  ✓  |     ☒      |     ☒      |         |      ☒       |
 | DF      |    ✓     |     ☒      |    ☒    |  ✓  |     ☒      |     ~      |         |      ✓       |
 | APGD    |    ✓     |     ☒      |    ✓    |  ✓  |     ☒      |     ☒      |    ☒    |      ✓       |
-| BIM     |          |            |    ☒    |  ✓  |            |     ☒      |         |      ☒       |
-| EAD     |          |            |    ☒    |  ✓  |     ☒      |     ☒      |         |      ☒       |
+| BIM     |    ☒     |            |    ☒    |  ✓  |            |     ☒      |         |      ☒       |
+| EAD     |    ☒     |            |    ☒    |  ✓  |     ☒      |     ☒      |         |      ☒       |
 | PDGD    |    ☒     |     ☒      |    ✓    |  ☒  |     ☒      |     ☒      |    ☒    |      ☒       |
 | PDPGD   |    ☒     |     ☒      |    ✓    |  ☒  |     ☒      |     ☒      |    ☒    |      ☒       |
-| TR      |          |     ☒      |    ✓    |  ☒  |     ☒      |     ☒      |    ☒    |      ☒       |
+| TR      |    ✓     |     ☒      |    ✓    |  ☒  |     ☒      |     ☒      |    ☒    |      ☒       |
 | FAB     |          |            |    ✓    |  ☒  |     ☒      |     ☒      |    ☒    |      ✓       |
 
 

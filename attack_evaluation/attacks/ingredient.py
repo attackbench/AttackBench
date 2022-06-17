@@ -12,6 +12,7 @@ from .foolbox.foolbox_attacks import fb_lib_dataset_attack, fb_lib_fmn_attack, f
 from .original.auto_pgd import apgd_attack, apgd_t_attack
 from .original.deepfool import deepfool_attack
 from .original.fast_minimum_norm import fmn_attack
+from .original.trust_region import tr_attack_wrapper
 from .torchattacks import torchattacks_index, torchattacks_wrapper
 
 attack_ingredient = Ingredient('attack')
@@ -92,6 +93,22 @@ def get_fmn(norm: float, steps: int, max_stepsize: float, gamma: float) -> Calla
 
 
 @attack_ingredient.named_config
+def tr():
+    name = 'tr'
+    source = 'original'
+    norm = float('inf')
+    adaptive = False
+    eps = 0.001
+    c = 9
+    iter = 100
+
+
+@attack_ingredient.capture
+def get_tr(norm: float, adaptive: bool, eps: float, c: int, iter: int) -> Callable:
+    return partial(tr_attack_wrapper, norm=norm, adaptive=adaptive, eps=eps, c=c, iter=iter)
+
+
+@attack_ingredient.named_config
 def fb_fmn():
     name = 'fmn'
     source = 'foolbox'  # available: ['foolbox', 'adv_lib', 'original']
@@ -128,6 +145,7 @@ _original = {
     'apgd_t': get_apgd_t,
     'deepfool': get_deepfool,
     'fmn': get_fmn,
+    'tr': get_tr,
 }
 
 
