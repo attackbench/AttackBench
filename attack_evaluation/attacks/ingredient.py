@@ -11,6 +11,7 @@ from .deeprobust import deeprobust_index, deeprobust_wrapper
 from .foolbox.foolbox_attacks import fb_lib_dataset_attack, fb_lib_fmn_attack, foolbox_wrapper
 from .original.auto_pgd import apgd_attack, apgd_t_attack
 from .original.deepfool import deepfool_attack
+from .original.fast_adaptive_boundary import fab_attack
 from .original.fast_minimum_norm import fmn_attack
 from .original.trust_region import tr_attack_wrapper
 from .torchattacks import torchattacks_index, torchattacks_wrapper
@@ -75,6 +76,28 @@ def deepfool():
 @attack_ingredient.capture
 def get_deepfool(num_classes: int, overshoot: float, max_iter: int) -> Callable:
     return partial(deepfool_attack, num_classes=num_classes, overshoot=overshoot, max_iter=max_iter)
+
+
+@attack_ingredient.named_config
+def fab():
+    name = 'fab'
+    source = 'original'
+    norm = float('inf')
+    n_restarts = 1
+    n_iter = 100
+    eps = None
+    alpha_max = 0.1
+    eta = 1.05
+    beta = 0.9
+    targeted_variant = False
+    n_target_classes = 9
+
+
+@attack_ingredient.capture
+def get_fab(norm: float, n_restarts: int, n_iter: int, eps: Optional[float], alpha_max: float, eta: float, beta: float,
+            targeted_variant: bool, n_target_classes: int) -> Callable:
+    return partial(fab_attack, norm=norm, n_restarts=n_restarts, n_iter=n_iter, eps=eps, alpha_max=alpha_max, eta=eta,
+                   beta=beta, targeted_variant=targeted_variant, n_target_classes=n_target_classes)
 
 
 @attack_ingredient.named_config
@@ -144,6 +167,7 @@ _original = {
     'apgd': get_apgd,
     'apgd_t': get_apgd_t,
     'deepfool': get_deepfool,
+    'fab': get_fab,
     'fmn': get_fmn,
     'tr': get_tr,
 }
