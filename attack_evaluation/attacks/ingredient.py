@@ -9,11 +9,7 @@ from .adv_lib import adv_lib_index, adv_lib_wrapper
 from .art import art_index, art_wrapper
 from .deeprobust import deeprobust_index, deeprobust_wrapper
 from .foolbox.foolbox_attacks import fb_lib_dataset_attack, fb_lib_fmn_attack, foolbox_wrapper
-from .original.auto_pgd import apgd_attack, apgd_t_attack
-from .original.deepfool import deepfool_attack
-from .original.fast_adaptive_boundary import fab_attack
-from .original.fast_minimum_norm import fmn_attack
-from .original.trust_region import tr_attack_wrapper
+from .original import apgd_attack, apgd_t_attack, deepfool_attack, fab_attack, fmn_attack, tr_attack
 from .torchattacks import torchattacks_index, torchattacks_wrapper
 
 attack_ingredient = Ingredient('attack')
@@ -128,7 +124,7 @@ def tr():
 
 @attack_ingredient.capture
 def get_tr(norm: float, adaptive: bool, eps: float, c: int, iter: int) -> Callable:
-    return partial(tr_attack_wrapper, norm=norm, adaptive=adaptive, eps=eps, c=c, iter=iter)
+    return partial(tr_attack, norm=norm, adaptive=adaptive, eps=eps, c=c, iter=iter)
 
 
 @attack_ingredient.named_config

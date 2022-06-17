@@ -59,7 +59,7 @@ def select_index(model, data, c=9, p=2, worst_case=False):
 #################################################
 ## TR First Order Attack
 #################################################
-def tr_attack(model, data, true_ind, target_ind, eps, p=2):
+def _tr_attack(model, data, true_ind, target_ind, eps, p=2):
     """Generate an adversarial pertubation using the TR method.
     Pick the top false label and perturb towards that.
     First-order attack
@@ -122,15 +122,15 @@ def tr_attack_iter(model, data, target, eps, c=9, p=2, iter=100, worst_case=Fals
         if torch.sum(tmp_mask.long()) < 1:
             return X_adv, update_num  # MODIFIED: return X_adv.cpu(), update_num
         attack_mask = tmp_mask.nonzero().view(-1)
-        X_adv[attack_mask, :] = tr_attack(model, X_adv[attack_mask, :], target[attack_mask], target_ind[attack_mask],
-                                          eps, p=p)
+        X_adv[attack_mask, :] = _tr_attack(model, X_adv[attack_mask, :], target[attack_mask], target_ind[attack_mask],
+                                           eps, p=p)
     return X_adv, update_num  # MODIFIED: return X_adv.cpu(), update_num
 
 
 #################################################
 ## TR First Order Attack Adaptive
 #################################################
-def tr_attack_adaptive(model, data, true_ind, target_ind, eps, p=2):
+def _tr_attack_adaptive(model, data, true_ind, target_ind, eps, p=2):
     """Generate an adversarial pertubation using the TR method with adaptive
     trust radius.
     Args:
@@ -236,9 +236,9 @@ def tr_attack_adaptive_iter(model, data, target, eps, c=9, p=2, iter=100, worst_
         if torch.sum(tmp_mask.long()) < 1:
             return X_adv, update_num  # MODIFIED: return X_adv.cpu(), update_num
         attack_mask = tmp_mask.nonzero().view(-1)
-        X_adv[attack_mask, :], eps[attack_mask, :] = tr_attack_adaptive(model, X_adv[attack_mask, :],
-                                                                        target[attack_mask], target_ind[attack_mask],
-                                                                        eps[attack_mask, :], p=p)
+        X_adv[attack_mask, :], eps[attack_mask, :] = _tr_attack_adaptive(model, X_adv[attack_mask, :],
+                                                                         target[attack_mask], target_ind[attack_mask],
+                                                                         eps[attack_mask, :], p=p)
     return X_adv, update_num  # MODIFIED: return X_adv.cpu(), update_num
 
 
@@ -248,16 +248,16 @@ _norms = {
 }
 
 
-def tr_attack_wrapper(model: nn.Module,
-                      inputs: Tensor,
-                      labels: Tensor,
-                      targets: Optional[Tensor] = None,
-                      targeted: bool = False,
-                      norm: float = float('inf'),
-                      adaptive: bool = False,
-                      eps: float = 0.001,
-                      c: int = 9,
-                      iter: int = 100) -> Tensor:
+def tr_attack(model: nn.Module,
+              inputs: Tensor,
+              labels: Tensor,
+              targets: Optional[Tensor] = None,
+              targeted: bool = False,
+              norm: float = float('inf'),
+              adaptive: bool = False,
+              eps: float = 0.001,
+              c: int = 9,
+              iter: int = 100) -> Tensor:
     attack_func = tr_attack_adaptive_iter if adaptive else tr_attack_iter
     adv_inputs = attack_func(model=model, data=inputs, target=labels, p=_norms[norm], eps=eps, c=c, iter=iter)[0]
     return adv_inputs
