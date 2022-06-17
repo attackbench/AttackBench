@@ -50,8 +50,8 @@ def adv_lib_apgd():
 def get_adv_lib_apgd(norm: float, eps: float, targeted: bool, n_iter: int, n_restarts: int, loss_function: str,
                      rho: float, use_large_reps: bool, use_rs: bool) -> Callable:
     attack_func = apgd_targeted if targeted else apgd
-    return partial(attack_func, norm=norm, eps=eps, n_iter=n_iter, n_restarts=n_restarts, loss_function=loss_function,
-                   rho=rho, use_large_reps=use_large_reps, use_rs=use_rs)
+    return partial(attack_func, norm=float(norm), eps=eps, n_iter=n_iter, n_restarts=n_restarts,
+                   loss_function=loss_function, rho=rho, use_large_reps=use_large_reps, use_rs=use_rs)
 
 
 def adv_lib_cw_l2():
@@ -118,21 +118,21 @@ def adv_lib_fab():
 
 def get_adv_lib_fab(norm: float, n_iter: int, epsilon: Optional[float], alpha_max: float, beta: float, eta: float,
                     restarts: Optional[int], targeted_restarts: bool) -> Callable:
-    return partial(fab, norm=norm, n_iter=n_iter, ε=epsilon, α_max=alpha_max, β=beta, η=eta, restarts=restarts,
+    return partial(fab, norm=float(norm), n_iter=n_iter, ε=epsilon, α_max=alpha_max, β=beta, η=eta, restarts=restarts,
                    targeted_restarts=targeted_restarts)
 
 
 def adv_lib_fmn():
     name = 'fmn'
     source = 'adv_lib'  # available: ['original', 'adv_lib']
-    norm = 2
+    norm = float('inf')
     steps = 1000
     max_stepsize = 1
     gamma = 0.05
 
 
 def get_adv_lib_fmn(norm: float, steps: int, max_stepsize: float, gamma: float) -> Callable:
-    return partial(fmn, norm=norm, steps=steps, α_init=max_stepsize, γ_init=gamma)
+    return partial(fmn, norm=float(norm), steps=steps, α_init=max_stepsize, γ_init=gamma)
 
 
 def adv_lib_pdgd():
@@ -208,7 +208,7 @@ def get_adv_lib_pgd(ε: float, steps: int, random_init: bool, restarts: int, los
 def adv_lib_tr():
     name = 'tr'
     source = 'adv_lib'  # available: ['adv_lib']
-    p = float('inf')
+    norm = float('inf')
     iter = 100
     adaptive = False
     eps = 0.001
@@ -216,8 +216,8 @@ def adv_lib_tr():
     worst_case = False
 
 
-def get_adv_lib_tr(p: float, iter: int, adaptive: bool, eps: float, c: int, worst_case: bool) -> Callable:
-    return partial(tr, p=p, iter=iter, adaptive=adaptive, eps=eps, c=c, worst_case=worst_case)
+def get_adv_lib_tr(norm: float, iter: int, adaptive: bool, eps: float, c: int, worst_case: bool) -> Callable:
+    return partial(tr, p=float(norm), iter=iter, adaptive=adaptive, eps=eps, c=c, worst_case=worst_case)
 
 
 def adv_lib_vfga():
