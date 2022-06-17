@@ -720,14 +720,21 @@ _norms = {
 }
 
 
-def autopgd_attack(model: nn.Module,
-                   inputs: Tensor,
-                   labels: Tensor,
-                   targets: Optional[Tensor] = None,
-                   targeted: bool = False,
-                   norm: float = float('inf'),
-                   targeted_variant: bool = False, **kwargs) -> Tensor:
-    attack_class = APGDAttack_targeted if targeted_variant else APGDAttack
-    attack = attack_class(predict=model, norm=_norms[float(norm)], device=inputs.device, **kwargs)
-    adv_inputs = attack.perturb(x=inputs, y=labels)
-    return adv_inputs
+def apgd_attack(model: nn.Module,
+                inputs: Tensor,
+                labels: Tensor,
+                targets: Optional[Tensor] = None,
+                targeted: bool = False,
+                norm: float = float('inf'), **kwargs) -> Tensor:
+    attack = APGDAttack(predict=model, norm=_norms[float(norm)], device=inputs.device, **kwargs)
+    return attack.perturb(x=inputs, y=labels)
+
+
+def apgd_t_attack(model: nn.Module,
+                  inputs: Tensor,
+                  labels: Tensor,
+                  targets: Optional[Tensor] = None,
+                  targeted: bool = False,
+                  norm: float = float('inf'), **kwargs) -> Tensor:
+    attack = APGDAttack_targeted(predict=model, norm=_norms[float(norm)], device=inputs.device, **kwargs)
+    return attack.perturb(x=inputs, y=labels)

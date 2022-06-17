@@ -9,7 +9,7 @@ from .adv_lib import adv_lib_index, adv_lib_wrapper
 from .art import art_index, art_wrapper
 from .deeprobust import deeprobust_index, deeprobust_wrapper
 from .foolbox.foolbox_attacks import fb_lib_dataset_attack, fb_lib_fmn_attack, foolbox_wrapper
-from .original.auto_pgd import autopgd_attack
+from .original.auto_pgd import apgd_attack, apgd_t_attack
 from .original.deepfool import deepfool_attack
 from .original.fast_minimum_norm import fmn_attack
 from .torchattacks import torchattacks_index, torchattacks_wrapper
@@ -29,7 +29,6 @@ def apgd():
     norm = float('inf')
     n_iter = 100
     n_restarts = 1
-    targeted_variant = False
     eps = 0.3
     loss = 'ce'  # loss function in ['ce', 'dlr']
     rho = .75
@@ -37,10 +36,30 @@ def apgd():
 
 
 @attack_ingredient.capture
-def get_apgd(norm: float, n_iter: int, n_restarts: int, targeted_variant: bool, eps: float, loss: str, rho: float,
+def get_apgd(norm: float, n_iter: int, n_restarts: int, eps: float, loss: str, rho: float,
              use_largereps: bool) -> Callable:
-    return partial(autopgd_attack, norm=norm, n_iter=n_iter, n_restarts=n_restarts, targeted_variant=targeted_variant,
-                   eps=eps, loss=loss, rho=rho, use_largereps=use_largereps)
+    return partial(apgd_attack, norm=norm, n_iter=n_iter, n_restarts=n_restarts, eps=eps, loss=loss, rho=rho,
+                   use_largereps=use_largereps)
+
+
+@attack_ingredient.named_config
+def apgd_t():
+    name = 'apgd_t'
+    source = 'original'
+    norm = float('inf')
+    n_iter = 100
+    n_restarts = 1
+    n_target_classes = 9
+    eps = 0.3
+    rho = .75
+    use_largereps = False  # set True with L1 norm
+
+
+@attack_ingredient.capture
+def get_apgd_t(norm: float, n_iter: int, n_restarts: int, n_target_classes: int, eps: float, rho: float,
+               use_largereps: bool) -> Callable:
+    return partial(apgd_t_attack, norm=norm, n_iter=n_iter, n_restarts=n_restarts, n_target_classes=n_target_classes,
+                   eps=eps, rho=rho, use_largereps=use_largereps)
 
 
 @attack_ingredient.named_config
@@ -106,6 +125,7 @@ def get_dataset_attack() -> Callable:
 
 _original = {
     'apgd': get_apgd,
+    'apgd_t': get_apgd_t,
     'deepfool': get_deepfool,
     'fmn': get_fmn,
 }
