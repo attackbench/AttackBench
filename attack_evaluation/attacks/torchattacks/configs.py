@@ -27,7 +27,8 @@ def ta_apgd():
 def get_ta_apgd(norm: float, targeted: bool, steps: int, epsilon: float, num_restarts: int, loss: str,
                 rho: float) -> Callable:
     apgd_func = APGDT if targeted else APGD
-    return partial(apgd_func, norm=_norms[float(norm)], steps=steps, eps=epsilon, n_restarts=num_restarts, loss=loss, rho=rho)
+    return partial(apgd_func, norm=_norms[float(norm)], steps=steps, eps=epsilon, n_restarts=num_restarts, loss=loss,
+                   rho=rho)
 
 
 def ta_auto_attack():
@@ -81,7 +82,8 @@ def ta_fab():
 
 def get_ta_fab(norm: float, num_steps: int, epsilon: Optional[float], num_restarts: int, alpha_max: float, eta: float,
                beta: float, targeted: bool) -> Callable:
-    return partial(FAB, norm=_norms[float(norm)], steps=num_steps, eps=epsilon, n_restarts=num_restarts, alpha_max=alpha_max,
+    return partial(FAB, norm=_norms[float(norm)], steps=num_steps, eps=epsilon, n_restarts=num_restarts,
+                   alpha_max=alpha_max,
                    eta=eta, beta=beta, targeted=targeted)
 
 
@@ -118,7 +120,8 @@ def ta_pgd_l2():
     eps_for_division = 1e-10
 
 
-def get_ta_pgd_l2(num_steps: int, epsilon: float, alpha: float, random_start: bool, eps_for_division: float) -> Callable:
+def get_ta_pgd_l2(num_steps: int, epsilon: float, alpha: float, random_start: bool,
+                  eps_for_division: float) -> Callable:
     return partial(PGDL2, steps=num_steps, eps=epsilon, alpha=alpha, random_start=random_start,
                    eps_for_division=eps_for_division)
 

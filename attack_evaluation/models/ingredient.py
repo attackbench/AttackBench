@@ -15,7 +15,7 @@ model_ingredient = Ingredient('model')
 @model_ingredient.named_config
 def config():
     requires_grad = False  # if some model requires gradient computations in the forward pass
-    #threat_model = 'Linf'
+    # threat_model = 'Linf'
 
 
 @model_ingredient.named_config
@@ -23,6 +23,7 @@ def mnist_smallcnn():
     name = 'MNIST_SmallCNN'
     origin = 'local'
     robust = None
+
 
 @model_ingredient.named_config
 def wideresnet_28_10():

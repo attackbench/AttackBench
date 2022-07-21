@@ -24,33 +24,33 @@ def adv_lib_alma():
     name = 'alma'
     source = 'adv_lib'  # available: ['adv_lib']
     distance = 'l2'
-    steps = 1000
+    num_steps = 1000
     alpha = 0.9
     init_lr_distance = 1
 
 
-def get_adv_lib_alma(distance: float, steps: int, alpha: float, init_lr_distance: float) -> Callable:
-    return partial(alma, distance=distance, num_steps=steps, α=alpha, init_lr_distance=init_lr_distance)
+def get_adv_lib_alma(distance: float, num_steps: int, alpha: float, init_lr_distance: float) -> Callable:
+    return partial(alma, distance=distance, num_steps=num_steps, α=alpha, init_lr_distance=init_lr_distance)
 
 
 def adv_lib_apgd():
     name = 'apgd'
     source = 'adv_lib'  # available: ['adv_lib']
     norm = float('inf')
-    eps = 4 / 255
+    epsilon = 4 / 255
     targeted = False  # use a targeted objective for the untargeted attack
-    n_iter = 100
-    n_restarts = 1
+    num_steps = 100
+    num_restarts = 1
     loss_function = 'dlr'
     rho = 0.75
     use_large_reps = False
     use_rs = True
 
 
-def get_adv_lib_apgd(norm: float, eps: float, targeted: bool, n_iter: int, n_restarts: int, loss_function: str,
+def get_adv_lib_apgd(norm: float, epsilon: float, targeted: bool, num_steps: int, num_restarts: int, loss_function: str,
                      rho: float, use_large_reps: bool, use_rs: bool) -> Callable:
     attack_func = apgd_targeted if targeted else apgd
-    return partial(attack_func, norm=float(norm), eps=eps, n_iter=n_iter, n_restarts=n_restarts,
+    return partial(attack_func, norm=float(norm), eps=epsilon, n_iter=num_steps, n_restarts=num_restarts,
                    loss_function=loss_function, rho=rho, use_large_reps=use_large_reps, use_rs=use_rs)
 
 
@@ -58,24 +58,24 @@ def adv_lib_cw_l2():
     name = 'cw_l2'
     source = 'adv_lib'  # available: ['adv_lib']
     confidence = 0
-    learning_rate = 0.01
+    step_size = 0.01
     initial_const = 0.001
-    binary_search_steps = 9
-    max_iterations = 10000
+    num_binary_search_steps = 9
+    num_steps = 10000
     abort_early = True
 
 
-def get_adv_lib_cw_l2(confidence: float, learning_rate: float, initial_const: float, binary_search_steps: int,
-                      max_iterations: int, abort_early: bool) -> Callable:
-    return partial(carlini_wagner_l2, confidence=confidence, learning_rate=learning_rate, initial_const=initial_const,
-                   binary_search_steps=binary_search_steps, max_iterations=max_iterations, abort_early=abort_early)
+def get_adv_lib_cw_l2(confidence: float, step_size: float, initial_const: float, num_binary_search_steps: int,
+                      num_steps: int, abort_early: bool) -> Callable:
+    return partial(carlini_wagner_l2, confidence=confidence, learning_rate=step_size, initial_const=initial_const,
+                   binary_search_steps=num_binary_search_steps, max_iterations=num_steps, abort_early=abort_early)
 
 
 def adv_lib_cw_linf():
     name = 'cw_linf'
     source = 'adv_lib'  # available: ['adv_lib']
-    learning_rate = 0.01
-    max_iterations = 1000
+    step_size = 0.01
+    num_steps = 1000
     initial_const = 1e-5
     largest_const = 2e+1
     const_factor = 2
@@ -84,9 +84,9 @@ def adv_lib_cw_linf():
     abort_early = True
 
 
-def get_adv_lib_cw_linf(learning_rate: float, max_iterations: int, initial_const: float, largest_const: float,
+def get_adv_lib_cw_linf(step_size: float, num_steps: int, initial_const: float, largest_const: float,
                         const_factor: float, reduce_const: bool, decrease_factor: float, abort_early: bool) -> Callable:
-    return partial(carlini_wagner_linf, learning_rate=learning_rate, max_iterations=max_iterations,
+    return partial(carlini_wagner_linf, learning_rate=step_size, max_iterations=num_steps,
                    initial_const=initial_const, largest_const=largest_const, const_factor=const_factor,
                    reduce_const=reduce_const, decrease_factor=decrease_factor, abort_early=abort_early)
 
@@ -94,45 +94,45 @@ def get_adv_lib_cw_linf(learning_rate: float, max_iterations: int, initial_const
 def adv_lib_ddn():
     name = 'ddn'
     source = 'adv_lib'  # available: ['adv_lib']
-    steps = 1000
+    num_steps = 1000
     init_norm = 1
     gamma = 0.05
 
 
-def get_adv_lib_ddn(steps: int, gamma: float, init_norm: float) -> Callable:
-    return partial(ddn, steps=steps, γ=gamma, init_norm=init_norm)
+def get_adv_lib_ddn(num_steps: int, gamma: float, init_norm: float) -> Callable:
+    return partial(ddn, steps=num_steps, γ=gamma, init_norm=init_norm)
 
 
 def adv_lib_fab():
     name = 'fab'
     source = 'adv_lib'  # available: ['adv_lib']
     norm = float('inf')
-    n_iter = 100
+    num_steps = 100
     epsilon = None
     alpha_max = 0.1
     beta = 0.9
     eta = 1.05
-    restarts = None
+    num_restarts = None
     targeted_restarts = False
 
 
-def get_adv_lib_fab(norm: float, n_iter: int, epsilon: Optional[float], alpha_max: float, beta: float, eta: float,
-                    restarts: Optional[int], targeted_restarts: bool) -> Callable:
-    return partial(fab, norm=float(norm), n_iter=n_iter, ε=epsilon, α_max=alpha_max, β=beta, η=eta, restarts=restarts,
-                   targeted_restarts=targeted_restarts)
+def get_adv_lib_fab(norm: float, num_steps: int, epsilon: Optional[float], alpha_max: float, beta: float, eta: float,
+                    num_restarts: Optional[int], targeted_restarts: bool) -> Callable:
+    return partial(fab, norm=float(norm), n_iter=num_steps, ε=epsilon, α_max=alpha_max, β=beta, η=eta,
+                   restarts=num_restarts, targeted_restarts=targeted_restarts)
 
 
 def adv_lib_fmn():
     name = 'fmn'
     source = 'adv_lib'  # available: ['original', 'adv_lib']
     norm = float('inf')
-    steps = 1000
+    num_steps = 1000
     max_stepsize = 1
     gamma = 0.05
 
 
-def get_adv_lib_fmn(norm: float, steps: int, max_stepsize: float, gamma: float) -> Callable:
-    return partial(fmn, norm=float(norm), steps=steps, α_init=max_stepsize, γ_init=gamma)
+def get_adv_lib_fmn(norm: float, num_steps: int, max_stepsize: float, gamma: float) -> Callable:
+    return partial(fmn, norm=float(norm), steps=num_steps, α_init=max_stepsize, γ_init=gamma)
 
 
 def adv_lib_pdgd():
@@ -189,18 +189,18 @@ def get_adv_lib_pdpgd(norm: float, num_steps: int, random_init: float, proximal_
 def adv_lib_pgd():
     name = 'pgd'
     source = 'adv_lib'  # available: ['adv_lib']
-    ε = 4 / 255
-    steps = 40
+    epsilon = 4 / 255
+    num_steps = 40
     random_init = True
-    restarts = 1
+    num_restarts = 1
     loss_function = 'ce'
     relative_step_size = 0.01 / 0.3
     absolute_step_size = None
 
 
-def get_adv_lib_pgd(ε: float, steps: int, random_init: bool, restarts: int, loss_function: str,
+def get_adv_lib_pgd(epsilon: float, num_steps: int, random_init: bool, num_restarts: int, loss_function: str,
                     relative_step_size: float, absolute_step_size: Optional[float]):
-    return partial(pgd_linf, ε=ε, steps=steps, random_init=random_init, restarts=restarts,
+    return partial(pgd_linf, ε=epsilon, steps=num_steps, random_init=random_init, restarts=num_restarts,
                    loss_function=loss_function, relative_step_size=relative_step_size,
                    absolute_step_size=absolute_step_size)
 
@@ -209,27 +209,27 @@ def adv_lib_tr():
     name = 'tr'
     source = 'adv_lib'  # available: ['adv_lib']
     norm = float('inf')
-    iter = 100
+    num_steps = 100
     adaptive = False
-    eps = 0.001
+    epsilon = 0.001
     c = 9
     worst_case = False
 
 
-def get_adv_lib_tr(norm: float, iter: int, adaptive: bool, eps: float, c: int, worst_case: bool) -> Callable:
-    return partial(tr, p=float(norm), iter=iter, adaptive=adaptive, eps=eps, c=c, worst_case=worst_case)
+def get_adv_lib_tr(norm: float, num_steps: int, adaptive: bool, epsilon: float, c: int, worst_case: bool) -> Callable:
+    return partial(tr, p=float(norm), iter=num_steps, adaptive=adaptive, eps=epsilon, c=c, worst_case=worst_case)
 
 
 def adv_lib_vfga():
     name = 'vfga'
     source = 'adv_lib'  # available: ['adv_lib']
-    max_iter = None
+    num_steps = None
     n_samples = 10
     large_memory = False
 
 
-def get_adv_lib_vfga(max_iter: int, n_samples: int, large_memory: bool) -> Callable:
-    return partial(vfga, max_iter=max_iter, n_samples=n_samples, large_memory=large_memory)
+def get_adv_lib_vfga(num_steps: int, n_samples: int, large_memory: bool) -> Callable:
+    return partial(vfga, max_iter=num_steps, n_samples=n_samples, large_memory=large_memory)
 
 
 adv_lib_index = {

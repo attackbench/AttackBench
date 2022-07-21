@@ -9,7 +9,6 @@ def cleverhans_wrapper(attack: Callable,
                        labels: Tensor,
                        targets: Optional[Tensor] = None,
                        targeted: bool = False) -> Tensor:
-
     if 'n_classes' in inspect.signature(attack).parameters:  # specify the number of classes for some attacks
         n_classes = [module for module in model.modules()][-1].out_features
         adv_examples = attack(model_fn=model, x=inputs, n_classes=n_classes)

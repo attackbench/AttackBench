@@ -10,6 +10,7 @@ ex = Experiment('attack_evaluation_curves')
 
 _eval_distances = {'l2': '\ell_2'}
 
+
 @ex.config
 def config():
     root = 'experimental_results'
