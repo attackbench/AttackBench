@@ -40,6 +40,7 @@ def main(cpu: bool,
          cudnn_flag: str,
          save_adv: bool,
          _config, _run, _log):
+
     device = torch.device('cuda' if torch.cuda.is_available() and not cpu else 'cpu')
     setattr(torch.backends.cudnn, cudnn_flag, True)
 
@@ -61,5 +62,4 @@ def main(cpu: bool,
     if 'inputs' in attack_data.keys():
         del attack_data['inputs'], attack_data['adv_inputs']
     _run.info = attack_data
-
     # _log.info(pformat(attack_data, compact=True))

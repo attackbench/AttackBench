@@ -4,7 +4,7 @@ from pathlib import Path
 
 parser = argparse.ArgumentParser(description='Slurm runner for attacks benchmark.')
 parser.add_argument('--dataset', type=str, default='cifar10', choices=['cifar10', 'mnist'], help='Dataset')
-parser.add_argument('--attacks', type=list, default=['fmn', 'alma', 'ddn'], help='Evasion attack')
+parser.add_argument('--attacks', type=list, default=['adv_lib_fmn'], help='Evasion attack')
 parser.add_argument('--model', type=str, default='standard',
                     choices=['standard', 'mnist_smallcnn', 'wideresnet_28_10', 'carmon_2019', 'augustin_2020'],
                     help='Victim model')
@@ -19,12 +19,6 @@ args = parser.parse_args()
 
 _conda_env_name = 'atkbench'
 
-_attacks_keywords = {
-    'fmn': {'distance': 'norm', 'encode': lambda x: x[1:]},
-    'alma': {'distance': 'distance', 'encode': lambda x: x},
-    'ddn': {'distance': 'norm', 'encode': lambda x: x[1:]}
-}
-
 if __name__ == "__main__":
     # machine setup
     device = args.device
@@ -38,36 +32,33 @@ if __name__ == "__main__":
     batch_size = args.batch_size
     attacks = args.attacks
     victim = args.model
-    norm = args.norm
+    norm = float(args.norm[1:])
+    norm_str = args.norm
 
     for attack in attacks:
-        attack_name = f'{attack}-{norm}'
-        exp_dir = root / dataset
-        exp_name = f'{dataset}-{victim}-{attack_name}'
-        logs_dir = exp_dir / 'logs'
+        exp_dir = root / dataset / norm_str / victim
+        logs_dir = root / 'logs' / dataset / norm_str / victim
 
         # folder setup
         root.mkdir(exist_ok=True)
-        exp_dir.mkdir(exist_ok=True)
-        logs_dir.mkdir(exist_ok=True)
+        exp_dir.mkdir(exist_ok=True, parents=True)
+        logs_dir.mkdir(exist_ok=True, parents=True)
 
-        job_file = exp_dir / f'{attack_name}-runner.job'
-        command = f"python run.py -F {exp_dir / exp_name} with " \
-                  f"save_adv " \
+        job_file = exp_dir / f'{attack}-runner.job'
+        command = f"python run.py -F {exp_dir / attack} with " \
                   f"dataset.{dataset} " \
                   f"dataset.batch_size={batch_size} " \
                   f"model.{victim} " \
                   f"attack.{attack} " \
-                  f"attack.{_attacks_keywords[attack]['distance']}={_attacks_keywords[attack]['encode'](norm)}"
+                  f"attack.norm={norm}"
         # f"model.threat_model=L{norm[1:]} "\
-
         lines = [
             "#!/bin/bash",
             f"#SBATCH --job-name={dataset}-{attack}.job",
-            f"#SBATCH --output={Path(logs_dir) / attack_name}-log.out",
+            f"#SBATCH --output={Path(logs_dir) / attack}-log.out",
             f"#SBATCH --mem={memory}gb",
             f"#SBATCH --ntasks={cpu_count}",
-            f"#SBATCH --gres gpu:{device}:{gpu_count}",
+            #f"#SBATCH --gres gpu:{device}:{gpu_count}",
             command,
         ]
 
