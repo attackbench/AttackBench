@@ -31,12 +31,12 @@ def fb_bb():
     name = 'bb'
     source = 'foolbox'
     norm = float('inf')
-    steps = 1000
-    lr = 0.001
+    num_steps = 1000
+    step_size = 0.001
     lr_decay = 0.5
     lr_num_decay = 20
     momentum = 0.8
-    binary_search_steps = 10
+    num_binary_search_steps = 10
 
 
 _bb_attacks = {
@@ -47,31 +47,27 @@ _bb_attacks = {
 }
 
 
-def get_fb_bb(norm: float, steps: int, lr: float, lr_decay: float, lr_num_decay: float,
-              momentum: float,
-              binary_search_steps: int) -> Callable:
-    return partial(_bb_attacks[float(norm)], steps=steps, lr=lr, lr_decay=lr_decay,
-                   lr_num_decay=lr_num_decay,
-                   momentum=momentum, binary_search_steps=binary_search_steps)
+def get_fb_bb(norm: float, num_steps: int, step_size: float, lr_decay: float, lr_num_decay: float,
+              momentum: float, num_binary_search_steps: int) -> Callable:
+    return partial(_bb_attacks[float(norm)], steps=num_steps, lr=step_size, lr_decay=lr_decay,
+                   lr_num_decay=lr_num_decay, momentum=momentum, binary_search_steps=num_binary_search_steps)
 
 
 def fb_cw_l2():
     name = 'cw_l2'
     source = 'foolbox'
-    binary_search_steps = 9
-    steps = 10000
-    stepsize = 0.01
+    num_steps = 10000
+    num_binary_search_steps = 9
+    step_size = 0.01
     confidence = 0
     initial_const = 0.001
     abort_early = True
 
 
-def get_fb_cw_l2(binary_search_steps: int, steps: int, stepsize: float, confidence: float,
-                 initial_const: float,
-                 abort_early: bool) -> Callable:
-    return partial(L2CarliniWagnerAttack, binary_search_steps=binary_search_steps, steps=steps,
-                   stepsize=stepsize,
-                   confidence=confidence, initial_const=initial_const, abort_early=abort_early)
+def get_fb_cw_l2(num_binary_search_steps: int, num_steps: int, step_size: float, confidence: float,
+                 initial_const: float, abort_early: bool) -> Callable:
+    return partial(L2CarliniWagnerAttack, binary_search_steps=num_binary_search_steps, steps=num_steps,
+                   stepsize=step_size, confidence=confidence, initial_const=initial_const, abort_early=abort_early)
 
 
 def fb_dataset():
@@ -87,12 +83,12 @@ def fb_ddn():
     name = 'ddn'
     source = 'foolbox'
     init_epsilon = 1
-    steps = 100
+    num_steps = 100
     gamma = 0.05
 
 
-def get_fb_ddn(init_epsilon: float, steps: int, gamma: float) -> Callable:
-    return partial(DDNAttack, init_epsilon=init_epsilon, steps=steps, gamma=gamma)
+def get_fb_ddn(init_epsilon: float, num_steps: int, gamma: float) -> Callable:
+    return partial(DDNAttack, init_epsilon=init_epsilon, steps=num_steps, gamma=gamma)
 
 
 def fb_deepfool():
