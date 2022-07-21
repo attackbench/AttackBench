@@ -9,10 +9,11 @@ from .deeprobust import deeprobust_index, deeprobust_wrapper
 from .foolbox import foolbox_index, foolbox_wrapper
 from .original import apgd_attack, apgd_t_attack, deepfool_attack, fab_attack, fmn_attack, tr_attack
 from .torchattacks import torchattacks_index, torchattacks_wrapper
+from .cleverhans import cleverhans_index, cleverhans_wrapper
 
 attack_ingredient = Ingredient('attack')
 
-for index in [adv_lib_index, art_index, deeprobust_index, foolbox_index, torchattacks_index]:
+for index in [adv_lib_index, art_index, deeprobust_index, foolbox_index, torchattacks_index, cleverhans_index]:
     for attack in index.values():
         attack_ingredient.named_config(attack.config)
         attack.getter = attack_ingredient.capture(attack.getter)
@@ -170,6 +171,12 @@ def get_deeprobust_attack(name: str) -> Callable:
     return partial(deeprobust_wrapper, attack=attack, attack_params=attack_params)
 
 
+@attack_ingredient.capture
+def get_cleverhans_attack(name: str) -> Callable:
+    attack = cleverhans_index[name].getter()
+    return partial(cleverhans_wrapper, attack=attack)
+
+
 _libraries = {
     'original': get_original_attack,
     'adv_lib': get_adv_lib_attack,
@@ -177,6 +184,7 @@ _libraries = {
     'deeprobust': get_deeprobust_attack,
     'foolbox': get_foolbox_attack,
     'torchattacks': get_torchattacks_attack,
+    'cleverhans': get_cleverhans_attack
 }
 
 
