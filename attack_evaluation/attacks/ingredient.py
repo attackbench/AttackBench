@@ -24,18 +24,18 @@ def apgd():
     name = 'apgd'
     source = 'original'
     norm = float('inf')
-    n_iter = 100
-    n_restarts = 1
-    eps = 0.3
+    num_steps = 100
+    num_restarts = 1
+    epsilon = 0.3
     loss = 'ce'  # loss function in ['ce', 'dlr']
     rho = .75
     use_largereps = False  # set True with L1 norm
 
 
 @attack_ingredient.capture
-def get_apgd(norm: float, n_iter: int, n_restarts: int, eps: float, loss: str, rho: float,
+def get_apgd(norm: float, num_steps: int, num_restarts: int, epsilon: float, loss: str, rho: float,
              use_largereps: bool) -> Callable:
-    return partial(apgd_attack, norm=norm, n_iter=n_iter, n_restarts=n_restarts, eps=eps, loss=loss, rho=rho,
+    return partial(apgd_attack, norm=norm, n_iter=num_steps, n_restarts=num_restarts, eps=epsilon, loss=loss, rho=rho,
                    use_largereps=use_largereps)
 
 
@@ -44,19 +44,19 @@ def apgd_t():
     name = 'apgd_t'
     source = 'original'
     norm = float('inf')
-    n_iter = 100
-    n_restarts = 1
-    n_target_classes = 9
-    eps = 0.3
+    num_steps = 100
+    num_restarts = 1
+    num_target_classes = 9
+    epsilon = 0.3
     rho = .75
     use_largereps = False  # set True with L1 norm
 
 
 @attack_ingredient.capture
-def get_apgd_t(norm: float, n_iter: int, n_restarts: int, n_target_classes: int, eps: float, rho: float,
+def get_apgd_t(norm: float, num_steps: int, num_restarts: int, num_target_classes: int, epsilon: float, rho: float,
                use_largereps: bool) -> Callable:
-    return partial(apgd_t_attack, norm=norm, n_iter=n_iter, n_restarts=n_restarts, n_target_classes=n_target_classes,
-                   eps=eps, rho=rho, use_largereps=use_largereps)
+    return partial(apgd_t_attack, norm=norm, n_iter=num_steps, n_restarts=num_restarts,
+                   n_target_classes=num_target_classes, eps=epsilon, rho=rho, use_largereps=use_largereps)
 
 
 @attack_ingredient.named_config
@@ -65,12 +65,12 @@ def deepfool():
     source = 'original'
     num_classes = 10  # number of classes to test gradient (can be different from the number of classes of the model)
     overshoot = 0.02
-    max_iter = 50
+    num_steps = 50
 
 
 @attack_ingredient.capture
-def get_deepfool(num_classes: int, overshoot: float, max_iter: int) -> Callable:
-    return partial(deepfool_attack, num_classes=num_classes, overshoot=overshoot, max_iter=max_iter)
+def get_deepfool(num_classes: int, overshoot: float, num_steps: int) -> Callable:
+    return partial(deepfool_attack, num_classes=num_classes, overshoot=overshoot, max_iter=num_steps)
 
 
 @attack_ingredient.named_config
@@ -78,9 +78,9 @@ def fab():
     name = 'fab'
     source = 'original'
     norm = float('inf')
-    n_restarts = 1
-    n_iter = 100
-    eps = None
+    num_restarts = 1
+    num_steps = 100
+    epsilon = None
     alpha_max = 0.1
     eta = 1.05
     beta = 0.9
@@ -89,10 +89,10 @@ def fab():
 
 
 @attack_ingredient.capture
-def get_fab(norm: float, n_restarts: int, n_iter: int, eps: Optional[float], alpha_max: float, eta: float, beta: float,
-            targeted_variant: bool, n_target_classes: int) -> Callable:
-    return partial(fab_attack, norm=norm, n_restarts=n_restarts, n_iter=n_iter, eps=eps, alpha_max=alpha_max, eta=eta,
-                   beta=beta, targeted_variant=targeted_variant, n_target_classes=n_target_classes)
+def get_fab(norm: float, num_restarts: int, num_steps: int, epsilon: Optional[float], alpha_max: float, eta: float,
+            beta: float, targeted_variant: bool, n_target_classes: int) -> Callable:
+    return partial(fab_attack, norm=norm, n_restarts=num_restarts, n_iter=num_steps, eps=epsilon, alpha_max=alpha_max,
+                   eta=eta, beta=beta, targeted_variant=targeted_variant, n_target_classes=n_target_classes)
 
 
 @attack_ingredient.named_config
@@ -100,14 +100,14 @@ def fmn():
     name = 'fmn'
     source = 'original'  # available: ['original', 'adv_lib']
     norm = 2
-    steps = 1000
-    max_stepsize = 1
+    num_steps = 1000
+    max_step_size = 1
     gamma = 0.05
 
 
 @attack_ingredient.capture
-def get_fmn(norm: float, steps: int, max_stepsize: float, gamma: float) -> Callable:
-    return partial(fmn_attack, norm=norm, steps=steps, max_stepsize=max_stepsize, gamma=gamma)
+def get_fmn(norm: float, num_steps: int, max_step_size: float, gamma: float) -> Callable:
+    return partial(fmn_attack, norm=norm, steps=num_steps, max_stepsize=max_step_size, gamma=gamma)
 
 
 @attack_ingredient.named_config
@@ -116,14 +116,14 @@ def tr():
     source = 'original'
     norm = float('inf')
     adaptive = False
-    eps = 0.001
+    epsilon = 0.001
     c = 9
-    iter = 100
+    num_steps = 100
 
 
 @attack_ingredient.capture
-def get_tr(norm: float, adaptive: bool, eps: float, c: int, iter: int) -> Callable:
-    return partial(tr_attack, norm=norm, adaptive=adaptive, eps=eps, c=c, iter=iter)
+def get_tr(norm: float, adaptive: bool, epsilon: float, c: int, num_steps: int) -> Callable:
+    return partial(tr_attack, norm=norm, adaptive=adaptive, eps=epsilon, c=c, iter=num_steps)
 
 
 _original = {
