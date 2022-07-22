@@ -1,7 +1,9 @@
+import hashlib
 import warnings
 from distutils.version import LooseVersion
 from typing import Callable, Dict, Optional, Union
 
+import numpy as np
 import torch
 from adv_lib.utils import BackwardCounter, ForwardCounter
 from adv_lib.utils.attack_utils import _default_metrics
@@ -29,7 +31,7 @@ def run_attack(model: nn.Module,
         model.register_backward_hook(backward_counter)
     forwards, backwards = [], []  # number of forward and backward calls per sample
 
-    times, accuracies, ori_success, adv_success = [], [], [], []
+    times, accuracies, ori_success, adv_success, hashes = [], [], [], [], []
     distances = {k: [] for k in metrics.keys()}
 
     if return_adv:
@@ -39,6 +41,12 @@ def run_attack(model: nn.Module,
         if return_adv:
             all_inputs.append(inputs.clone())
 
+        # compute hashes to ensure that input samples are identical
+        for input in inputs:
+            input_hash = hashlib.sha512(np.ascontiguousarray(input.numpy())).hexdigest()
+            hashes.append(input_hash)
+
+        # move data to device and get predictions for clean samples
         inputs, labels = inputs.to(device), labels.to(device)
 
         logits = model(inputs)
@@ -75,6 +83,7 @@ def run_attack(model: nn.Module,
             distances[metric].extend(metric_func(adv_inputs, inputs).detach().cpu().tolist())
 
     data = {
+        'hashes': hashes,
         'targeted': targeted,
         'accuracy': sum(accuracies) / len(accuracies),
         'ori_success': ori_success,
