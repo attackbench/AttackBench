@@ -30,7 +30,7 @@ from ..utils import ConfigGetter
 def fb_bb():
     name = 'bb'
     source = 'foolbox'
-    norm = float('inf')
+    threat_model = 'linf'
     num_steps = 1000
     step_size = 0.001
     lr_decay = 0.5
@@ -40,22 +40,23 @@ def fb_bb():
 
 
 _bb_attacks = {
-    0: L0BrendelBethgeAttack,
-    1: L1BrendelBethgeAttack,
-    2: L2BrendelBethgeAttack,
-    float('inf'): LinfinityBrendelBethgeAttack,
+    'l0': L0BrendelBethgeAttack,
+    'l1': L1BrendelBethgeAttack,
+    'l2': L2BrendelBethgeAttack,
+    'linf': LinfinityBrendelBethgeAttack,
 }
 
 
-def get_fb_bb(norm: float, num_steps: int, step_size: float, lr_decay: float, lr_num_decay: float,
+def get_fb_bb(threat_model: str, num_steps: int, step_size: float, lr_decay: float, lr_num_decay: float,
               momentum: float, num_binary_search_steps: int) -> Callable:
-    return partial(_bb_attacks[float(norm)], steps=num_steps, lr=step_size, lr_decay=lr_decay,
+    return partial(_bb_attacks[threat_model], steps=num_steps, lr=step_size, lr_decay=lr_decay,
                    lr_num_decay=lr_num_decay, momentum=momentum, binary_search_steps=num_binary_search_steps)
 
 
 def fb_cw_l2():
     name = 'cw_l2'
     source = 'foolbox'
+    threat_model = 'l2'
     num_steps = 10000
     num_binary_search_steps = 9
     step_size = 0.01
@@ -73,6 +74,7 @@ def get_fb_cw_l2(num_binary_search_steps: int, num_steps: int, step_size: float,
 def fb_dataset():
     name = 'dataset'
     source = 'foolbox'
+    threat_model = 'l2'
 
 
 def get_fb_dataset():
@@ -82,6 +84,7 @@ def get_fb_dataset():
 def fb_ddn():
     name = 'ddn'
     source = 'foolbox'
+    threat_model = 'l2'
     init_epsilon = 1
     num_steps = 100
     gamma = 0.05
@@ -94,7 +97,7 @@ def get_fb_ddn(init_epsilon: float, num_steps: int, gamma: float) -> Callable:
 def fb_deepfool():
     name = 'deepfool'
     source = 'foolbox'
-    norm = float('inf')
+    threat_model = 'linf'
     num_steps = 50
     candidates = 10
     overshoot = 0.02
@@ -102,20 +105,20 @@ def fb_deepfool():
 
 
 _deepfool_attacks = {
-    2: L2DeepFoolAttack,
-    float('inf'): LinfDeepFoolAttack,
+    'l2': L2DeepFoolAttack,
+    'linf': LinfDeepFoolAttack,
 }
 
 
-def get_fb_deepfool(norm: float, num_steps: int, candidates: int, overshoot: float,
-                    loss: str) -> Callable:
-    return partial(_deepfool_attacks[float(norm)], steps=num_steps, candidates=candidates,
-                   overshoot=overshoot, loss=loss)
+def get_fb_deepfool(threat_model: str, num_steps: int, candidates: int, overshoot: float, loss: str) -> Callable:
+    return partial(_deepfool_attacks[threat_model], steps=num_steps, candidates=candidates, overshoot=overshoot,
+                   loss=loss)
 
 
 def fb_ead():
     name = 'ead'
     source = 'foolbox'
+    threat_model = 'l1'
     num_binary_search_steps = 9
     num_steps = 10000
     step_size = 0.01
@@ -136,7 +139,7 @@ def get_fb_ead(num_binary_search_steps: float, num_steps: int, step_size: float,
 def fb_fmn():
     name = 'fmn'
     source = 'foolbox'
-    norm = float('inf')
+    threat_model = 'linf'
     num_steps = 100
     max_stepsize = 1
     min_stepsize = None
@@ -146,69 +149,71 @@ def fb_fmn():
 
 
 _fmn_attacks = {
-    0: L0FMNAttack,
-    1: L1FMNAttack,
-    2: L2FMNAttack,
-    float('inf'): LInfFMNAttack
+    'l0': L0FMNAttack,
+    'l1': L1FMNAttack,
+    'l2': L2FMNAttack,
+    'linf': LInfFMNAttack
 }
 
 
-def get_fb_fmn(norm: float, num_steps: int, max_stepsize: float, gamma: float,
-               min_stepsize: Optional[float], init_attack: Optional, num_binary_search_steps: int) -> Callable:
-    return partial(_fmn_attacks[float(norm)], steps=num_steps, max_stepsize=max_stepsize, min_stepsize=min_stepsize,
+def get_fb_fmn(threat_model: str, num_steps: int, max_stepsize: float, gamma: float, min_stepsize: Optional[float],
+               init_attack: Optional, num_binary_search_steps: int) -> Callable:
+    return partial(_fmn_attacks[threat_model], steps=num_steps, max_stepsize=max_stepsize, min_stepsize=min_stepsize,
                    gamma=gamma, init_attack=init_attack, binary_search_steps=num_binary_search_steps)
 
 
 def fb_pgd():
     name = 'pgd'
     source = 'foolbox'
-    norm = 2
+    threat_model = 'l2'
     num_steps = 50
     step_size = 0.025
     abs_stepsize = None
 
 
 _pgd_attacks = {
-    2: L2ProjectedGradientDescentAttack,
-    float('inf'): LinfProjectedGradientDescentAttack,
+    'l2': L2ProjectedGradientDescentAttack,
+    'linf': LinfProjectedGradientDescentAttack,
 }
 
 
-def get_fb_pgd(norm: float, num_steps: int, step_size: float, abs_stepsize: float) -> Callable:
-    return partial(_pgd_attacks[float(norm)], steps=num_steps, rel_stepsize=step_size, abs_stepsize=abs_stepsize)
+def get_fb_pgd(threat_model: str, num_steps: int, step_size: float, abs_stepsize: float) -> Callable:
+    return partial(_pgd_attacks[threat_model], steps=num_steps, rel_stepsize=step_size, abs_stepsize=abs_stepsize)
 
 
 def fb_fgm():
     name = 'fgm'
     source = 'foolbox'
+    threat_model = 'l2'
 
 
 _fgm_attacks = {
-    2: L2FastGradientAttack,
-    float('inf'): LinfFastGradientAttack,
+    'l2': L2FastGradientAttack,
+    'linf': LinfFastGradientAttack,
 }
 
 
-def get_fb_fgm(norm: float) -> Callable:
-    return partial(_fgm_attacks[float(norm)])
+def get_fb_fgm(threat_model: str) -> Callable:
+    return partial(_fgm_attacks[threat_model])
 
 
 def fb_bim():
     name = 'bim'
     source = 'foolbox'
+    threat_model = 'linf'
     num_steps = 10
     step_size = 0.2
     abs_stepsize = None
 
 
 _bim_attacks = {
-    2: L2BasicIterativeAttack,
-    float('inf'): LinfBasicIterativeAttack,
+    'l2': L2BasicIterativeAttack,
+    'linf': LinfBasicIterativeAttack,
 }
 
 
-def get_fb_bim(norm: float, num_steps: int, step_size: float, abs_stepsize: float) -> Callable:
-    return partial(_bim_attacks[float(norm)], steps=num_steps, rel_stepsize=step_size, abs_stepsize=abs_stepsize)
+def get_fb_bim(threat_model: str, num_steps: int, step_size: float, abs_stepsize: float) -> Callable:
+    return partial(_bim_attacks[threat_model], steps=num_steps, rel_stepsize=step_size, abs_stepsize=abs_stepsize)
 
 
 foolbox_index = {

@@ -713,28 +713,21 @@ class APGDAttack_targeted(APGDAttack):
         return adv
 
 
-_norms = {
-    1: 'L1',
-    2: 'L2',
-    float('inf'): 'Linf',
-}
-
-
 def apgd_attack(model: nn.Module,
                 inputs: Tensor,
                 labels: Tensor,
+                threat_model: str,
                 targets: Optional[Tensor] = None,
-                targeted: bool = False,
-                norm: float = float('inf'), **kwargs) -> Tensor:
-    attack = APGDAttack(predict=model, norm=_norms[float(norm)], device=inputs.device, **kwargs)
+                targeted: bool = False, **kwargs) -> Tensor:
+    attack = APGDAttack(predict=model, norm=threat_model.capitalize(), device=inputs.device, **kwargs)
     return attack.perturb(x=inputs, y=labels)
 
 
 def apgd_t_attack(model: nn.Module,
                   inputs: Tensor,
                   labels: Tensor,
+                  threat_model: str,
                   targets: Optional[Tensor] = None,
-                  targeted: bool = False,
-                  norm: float = float('inf'), **kwargs) -> Tensor:
-    attack = APGDAttack_targeted(predict=model, norm=_norms[float(norm)], device=inputs.device, **kwargs)
+                  targeted: bool = False, **kwargs) -> Tensor:
+    attack = APGDAttack_targeted(predict=model, norm=threat_model.capitalize(), device=inputs.device, **kwargs)
     return attack.perturb(x=inputs, y=labels)

@@ -11,6 +11,7 @@ from ..utils import ConfigGetter
 def dr_cw_l2():
     name = 'cw_l2'
     source = 'deeprobust'
+    threat_model = 'l2'
     confidence = 0.0001
     num_binary_search_steps = 5
     num_steps = 1000
@@ -34,6 +35,7 @@ def get_dr_cw_l2(confidence: float, num_binary_search_steps: int, num_steps: int
 def dr_deepfool():
     name = 'deepfool'
     source = 'deeprobust'
+    threat_model = 'l2'
     overshoot = 0.02
     num_steps = 50
     num_classes = 10
@@ -47,15 +49,14 @@ def get_dr_deepfool(overshoot: float, num_steps: int, num_classes: int) -> Tuple
 def dr_pgd():
     name = 'pgd'
     source = 'deeprobust'
-    norm = float('inf')
+    threat_model = 'linf'
     epsilon = 0.3
     num_steps = 40
     step_size = 0.01
 
 
-def get_dr_pgd(norm: float, epsilon: float, num_steps: int, step_size: float) -> Tuple[Callable, dict]:
-    bound = f'l{norm}'
-    return PGD, dict(bound=bound, epsilon=epsilon, num_steps=num_steps, step_size=step_size)
+def get_dr_pgd(threat_model: str, epsilon: float, num_steps: int, step_size: float) -> Tuple[Callable, dict]:
+    return PGD, dict(bound=threat_model, epsilon=epsilon, num_steps=num_steps, step_size=step_size)
 
 
 deeprobust_index = {

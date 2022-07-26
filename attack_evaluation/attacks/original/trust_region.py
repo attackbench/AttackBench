@@ -243,21 +243,21 @@ def tr_attack_adaptive_iter(model, data, target, eps, c=9, p=2, iter=100, worst_
 
 
 _norms = {
-    2: 2,
-    float('inf'): 8,
+    'l2': 2,
+    'linf': 8,
 }
 
 
 def tr_attack(model: nn.Module,
               inputs: Tensor,
               labels: Tensor,
+              threat_model: str,
               targets: Optional[Tensor] = None,
               targeted: bool = False,
-              norm: float = float('inf'),
               adaptive: bool = False,
               eps: float = 0.001,
               c: int = 9,
               iter: int = 100) -> Tensor:
     attack_func = tr_attack_adaptive_iter if adaptive else tr_attack_iter
-    adv_inputs = attack_func(model=model, data=inputs, target=labels, p=_norms[norm], eps=eps, c=c, iter=iter)[0]
-    return adv_inputs
+    adv_inputs = attack_func(model=model, data=inputs, target=labels, p=_norms[threat_model], eps=eps, c=c, iter=iter)
+    return adv_inputs[0]

@@ -16,11 +16,18 @@ from art.attacks.evasion import (
 
 from ..utils import ConfigGetter
 
+_norms = {
+    'l0': 0,
+    'l1': 1,
+    'l2': 2,
+    'linf': float('inf'),
+}
+
 
 def art_apgd():
     name = 'apgd'
     source = 'art'  # available: ['art']
-    norm = float('inf')
+    threat_model = 'linf'
     epsilon = 0.3
     step_size = 0.1
     num_steps = 100
@@ -28,15 +35,16 @@ def art_apgd():
     loss_type = None
 
 
-def get_art_apgd(norm: float, epsilon: float, step_size: float, num_steps: int, nb_random_init: int,
+def get_art_apgd(threat_model: str, epsilon: float, step_size: float, num_steps: int, nb_random_init: int,
                  loss_type: Optional[str]) -> Callable:
-    return partial(AutoProjectedGradientDescent, norm=norm, eps=epsilon, eps_step=step_size, max_iter=num_steps,
-                   nb_random_init=nb_random_init, loss_type=loss_type)
+    return partial(AutoProjectedGradientDescent, norm=_norms[threat_model], eps=epsilon, eps_step=step_size,
+                   max_iter=num_steps, nb_random_init=nb_random_init, loss_type=loss_type)
 
 
 def art_bim():
     name = 'bim'
     source = 'art'  # available: ['art']
+    threat_model = 'linf'
     epsilon = 0.3
     step_size = 0.1
     num_steps = 100
@@ -49,7 +57,7 @@ def get_art_bim(epsilon: float, step_size: float, num_steps: int) -> Callable:
 def art_bb():
     name = 'bb'
     source = 'art'  # available: ['art']
-    norm = float('inf')
+    threat_model = 'linf'
     overshoot = 1.1
     num_steps = 1000
     step_size = 1e-3
@@ -60,9 +68,10 @@ def art_bb():
     init_size = 32
 
 
-def get_art_bb(norm: float, overshoot: float, num_steps: int, step_size: float, lr_decay: float, lr_num_decay: int,
+def get_art_bb(threat_model: str, overshoot: float, num_steps: int, step_size: float, lr_decay: float,
+               lr_num_decay: int,
                momentum: float, num_binary_search_steps: int, init_size: int) -> Callable:
-    return partial(BrendelBethgeAttack, norm=norm, overshoot=overshoot, steps=num_steps, lr=step_size,
+    return partial(BrendelBethgeAttack, norm=_norms[threat_model], overshoot=overshoot, steps=num_steps, lr=step_size,
                    lr_decay=lr_decay, lr_num_decay=lr_num_decay, momentum=momentum,
                    binary_search_steps=num_binary_search_steps, init_size=init_size)
 
@@ -70,6 +79,7 @@ def get_art_bb(norm: float, overshoot: float, num_steps: int, step_size: float, 
 def art_cw_l2():
     name = 'cw_l2'
     source = 'art'  # available: ['art']
+    threat_model = 'l2'
     confidence = 0.0
     step_size = 0.01
     num_binary_search_steps = 10
@@ -89,6 +99,7 @@ def get_art_cw_l2(confidence: float, step_size: float, num_binary_search_steps: 
 def art_cw_linf():
     name = 'cw_linf'
     source = 'art'  # available: ['art']
+    threat_model = 'linf'
     confidence = 0.0
     step_size = 0.01
     num_steps = 10
@@ -108,6 +119,7 @@ def get_art_cw_linf(confidence: float, step_size: float, num_steps: int, decreas
 def art_deepfool():
     name = 'deepfool'
     source = 'art'  # available: ['art']
+    threat_model = 'l2'
     num_steps = 100
     epsilon = 1e-6
     nb_grads = 10
@@ -120,6 +132,7 @@ def get_art_deepfool(num_steps: int, epsilon: float, nb_grads: int) -> Callable:
 def art_ead():
     name = 'ead'
     source = 'art'  # available: ['art']
+    threat_model = 'l1'
     confidence = 0.0
     step_size = 1e-2
     num_binary_search_steps = 9
@@ -139,21 +152,22 @@ def get_art_ead(confidence: float, step_size: float, num_binary_search_steps: in
 def art_fgsm():
     name = 'fgsm'
     source = 'art'  # available: ['art']
-    norm = float('inf')
+    threat_model = 'linf'
     epsilon = 0.3
     step_size = 0.1
     num_random_init = 0
     minimal = False
 
 
-def get_art_fgsm(norm: float, epsilon: float, step_size: float, num_random_init: int, minimal: bool) -> Callable:
-    return partial(FastGradientMethod, norm=norm, eps=epsilon, eps_step=step_size, num_random_init=num_random_init,
-                   minimal=minimal)
+def get_art_fgsm(threat_model: str, epsilon: float, step_size: float, num_random_init: int, minimal: bool) -> Callable:
+    return partial(FastGradientMethod, norm=_norms[threat_model], eps=epsilon, eps_step=step_size,
+                   num_random_init=num_random_init, minimal=minimal)
 
 
 def art_jsma():
     name = 'jsma'
     source = 'art'  # available: ['art']
+    threat_model = 'l1'
     theta = 0.1
     gamma = 1.0
 
@@ -165,7 +179,7 @@ def get_art_jsma(theta: float, gamma: float) -> Callable:
 def art_pgd():
     name = 'pgd'
     source = 'art'  # available: ['art']
-    norm = float('inf')
+    threat_model = 'linf'
     epsilon = 0.3
     step_size = 0.1
     num_steps = 100
@@ -173,9 +187,9 @@ def art_pgd():
     random_eps = False
 
 
-def get_art_pgd(norm: float, epsilon: float, step_size: float, num_steps: int, num_random_init: int,
+def get_art_pgd(threat_model: str, epsilon: float, step_size: float, num_steps: int, num_random_init: int,
                 random_eps: bool) -> Callable:
-    return partial(ProjectedGradientDescent, norm=norm, eps=epsilon, eps_step=step_size,
+    return partial(ProjectedGradientDescent, norm=_norms[threat_model], eps=epsilon, eps_step=step_size,
                    num_random_init=num_random_init, max_iter=num_steps, random_eps=random_eps)
 
 
