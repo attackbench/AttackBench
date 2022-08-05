@@ -6,8 +6,7 @@ import warnings
 from collections import defaultdict
 
 import numpy as np
-from matplotlib import pyplot as plt
-import matplotlib.ticker as ticker
+from matplotlib import pyplot as plt, ticker
 
 parser = argparse.ArgumentParser('Compile results from several attacks')
 
@@ -56,7 +55,7 @@ for info_file in info_files:
     distances[ori_success] = 0
 
     # store results
-    scenario = f'{dataset}-{model}-{threat_model}'
+    scenario = (dataset, model, threat_model)
     results[scenario].append((info_file.parent, {hash: distance for (hash, distance) in zip(hashes, distances)}))
 
 # compile and save best distances
@@ -70,18 +69,18 @@ for scenario in results.keys():
             if distance < best_distance:  # TODO: fix ambiguous case where two attacks have the same best distance
                 best_distances[hash] = (attack_path.as_posix(), distance)
 
-    with open(result_path / f'{scenario}.json', 'w') as f:
+    with open(result_path / f'{"-".join(scenario)}.json', 'w') as f:
         json.dump(best_distances, f)
-
 
 if args.plot:
     for scenario in results.keys():
 
-        with open(result_path / f'{scenario}.json', 'r') as f:
+        with open(result_path / f'{"-".join(scenario)}.json', 'r') as f:
             data = json.load(f)
         best_distances = [d[1] for d in data.values()]
 
         fig, ax = plt.subplots(figsize=(5, 4))
+        ax.set_title(' - '.join(scenario), pad=10)
 
         distances, counts = np.unique(best_distances, return_counts=True)
         robust_acc = 1 - counts.cumsum() / len(best_distances)
@@ -91,8 +90,8 @@ if args.plot:
         max_dist = np.amax(distances)
         best_area = np.trapz(robust_acc, distances)
 
-        for attack_dir, hash_distances in results[scenario]:
-            attack_path = attack_dir.relative_to(result_path).as_posix()
+        for attack_dir, hash_distances in sorted(results[scenario]):
+            attack_folder = attack_dir.relative_to(attack_dir.parent.parent)
             adv_distances = np.array(list(hash_distances.values()))
 
             distances, counts = np.unique(adv_distances, return_counts=True)
@@ -104,17 +103,17 @@ if args.plot:
             area = np.trapz(robust_acc_clipped, distances_clipped)
             optimality = 1 - (area - best_area) / (clean_acc * max_dist - best_area)
 
-            ax.plot(distances, robust_acc, linestyle='--', label=f'{attack_dir}: {optimality:.2%}')
+            ax.plot(distances, robust_acc, linestyle='--', label=f'{attack_folder.as_posix()}: {optimality:.2%}')
 
         ax.grid(True, linestyle='--', c='lightgray', which='major')
         ax.yaxis.set_major_formatter(ticker.PercentFormatter(1))
-        ax.set_xlim(left=0)
+        ax.set_xlim(left=0, right=max_dist * 1.05)
         ax.set_ylim(bottom=0, top=1)
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
 
         ax.set_ylabel('Robust Accuracy (%)')
-        ax.set_xlabel(f'Perturbation Size {scenario.split("-")[-1].split(".")[0]}')
+        ax.set_xlabel(f'Perturbation Size {scenario[-1]}')
 
         ax.annotate(text=f'Clean accuracy: {clean_acc:.2%}', xy=(0, clean_acc),
                     xytext=(ax.get_xlim()[1] / 2, clean_acc), ha='left', va='center',
@@ -122,6 +121,5 @@ if args.plot:
 
         ax.legend(loc='center right', labelspacing=.1, handletextpad=0.5)
         fig.tight_layout()
-        fig_name = f'{scenario}.pdf'
+        fig_name = f'{"-".join(scenario)}.pdf'
         fig.savefig(result_path / fig_name, bbox_inches='tight')
-
