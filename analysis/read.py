@@ -40,5 +40,5 @@ def read_results(info_file: Union[Path, str],
     distances[ori_success] = already_adv_distance
 
     # store results
-    scenario = (dataset, model, threat_model)
+    scenario = (dataset, threat_model, model)
     return scenario, {hash: distance for (hash, distance) in zip(hashes, distances)}
