@@ -11,8 +11,8 @@ parser = argparse.ArgumentParser('Plot results')
 
 parser.add_argument('--dir', '-d', type=str, default='results', help='Directory used to store experiment results')
 parser.add_argument('--dataset', type=str, default=None, help='Dataset for which to plot results')
-parser.add_argument('--model', '-m', type=str, default=None, help='Model for which to plot results')
 parser.add_argument('--threat-model', '--tm', type=str, default=None, help='Threat model for which to plot results')
+parser.add_argument('--model', '-m', type=str, default=None, help='Model for which to plot results')
 
 args = parser.parse_args()
 
@@ -21,9 +21,9 @@ result_path = pathlib.Path(args.dir)
 assert result_path.exists()
 
 # find applicable scenarios
-dataset = '*' or args.dataset
-model = '*' or args.model
-threat_model = '*' or args.threat_model
+dataset = args.dataset or '*'
+threat_model = args.threat_model or '*'
+model = args.model or '*'
 scenario_pattern = '-'.join((dataset, model, threat_model)) + '.json'
 
 best_distances_files = result_path.glob(scenario_pattern)

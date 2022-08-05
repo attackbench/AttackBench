@@ -1,5 +1,6 @@
 import argparse
 import json
+import os
 import pathlib
 from collections import defaultdict
 
@@ -8,6 +9,9 @@ from read import read_results
 parser = argparse.ArgumentParser('Compile results from several attacks')
 
 parser.add_argument('--dir', '-d', type=str, default='results', help='Directory used to store experiment results')
+parser.add_argument('--dataset', type=str, default=None, help='Dataset for which to plot results')
+parser.add_argument('--threat-model', '--tm', type=str, default=None, help='Threat model for which to plot results')
+parser.add_argument('--model', '-m', type=str, default=None, help='Model for which to plot results')
 parser.add_argument('--recompile-all', '--ra', action='store_true',
                     help='Ignores previous best distance file and recompile it from scratch.')
 
@@ -18,7 +22,10 @@ result_path = pathlib.Path(args.dir)
 assert result_path.exists()
 
 # find info files corresponding to finished experiments
-info_files = result_path.glob('**/info.json')
+dataset = args.dataset or '*'
+threat_model = args.threat_model or '*'
+model = args.model or '*'
+info_files = result_path.glob(os.sep.join((dataset, threat_model, model, '**', 'info.json')))
 
 results = defaultdict(list)
 
