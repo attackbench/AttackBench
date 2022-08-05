@@ -8,6 +8,8 @@ from read import read_results
 parser = argparse.ArgumentParser('Compile results from several attacks')
 
 parser.add_argument('--dir', '-d', type=str, default='results', help='Directory used to store experiment results')
+parser.add_argument('--recompile-all', '--ra', action='store_true',
+                    help='Ignores previous best distance file and recompile it from scratch.')
 
 args = parser.parse_args()
 
@@ -27,7 +29,11 @@ for info_file in info_files:
 
 # compile and save best distances
 for scenario in results.keys():
+    best_distances_path = result_path / f'{"-".join(scenario)}.json'
     best_distances = {}
+    if best_distances_path.exists() and not args.recompile_all:
+        with open(best_distances_path, 'r') as f:
+            best_distances = json.load(f)
 
     for attack_dir, hash_distances in results[scenario]:
         attack_path = attack_dir.relative_to(result_path)
@@ -36,5 +42,5 @@ for scenario in results.keys():
             if distance < best_distance:  # TODO: fix ambiguous case where two attacks have the same best distance
                 best_distances[hash] = (attack_path.as_posix(), distance)
 
-    with open(result_path / f'{"-".join(scenario)}.json', 'w') as f:
+    with open(best_distances_path, 'w') as f:
         json.dump(best_distances, f)
