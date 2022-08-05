@@ -1,12 +1,12 @@
 import argparse
-import itertools
 import json
 import pathlib
-import warnings
 from collections import defaultdict
 
 import numpy as np
 from matplotlib import pyplot as plt, ticker
+
+from read import read_results
 
 parser = argparse.ArgumentParser('Compile results from several attacks')
 
@@ -26,37 +26,8 @@ results = defaultdict(list)
 
 # traverse result files
 for info_file in info_files:
-    # read config file
-    with open(info_file.parent / 'config.json', 'r') as f:
-        config = json.load(f)
-
-    # extract main configs
-    dataset = config['dataset']['name']
-    model = config['model']['name']
-    threat_model = config['attack']['threat_model']
-
-    # read info file
-    with open(info_file, 'r') as f:
-        info = json.load(f)
-
-    # get hashes and distances for the adversarial examples
-    hashes = info['hashes']
-    distances = np.array(info['distances'][threat_model])
-    ori_success = np.array(info['ori_success'])
-    adv_success = np.array(info['adv_success'])
-
-    # check that adversarial examples have 0 distance for adversarial clean samples
-    non_zero_ori_success = any([d != 0 for d in itertools.compress(distances, ori_success)])
-    if (n := np.count_nonzero(distances[ori_success])):
-        warnings.warn(f'{n} already adversarial clean samples have non zero perturbations.')
-
-    # replace distances with inf for failed attacks and 0 for already adv clean samples
-    distances[~adv_success] = float('inf')
-    distances[ori_success] = 0
-
-    # store results
-    scenario = (dataset, model, threat_model)
-    results[scenario].append((info_file.parent, {hash: distance for (hash, distance) in zip(hashes, distances)}))
+    scenario, hash_distances = read_results(info_file=info_file)
+    results[scenario].append((info_file.parent, hash_distances))
 
 # compile and save best distances
 for scenario in results.keys():
