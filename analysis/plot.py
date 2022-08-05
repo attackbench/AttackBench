@@ -1,10 +1,14 @@
 import argparse
 import json
+import os
 import pathlib
+import warnings
+from collections import defaultdict
 
 import numpy as np
 from matplotlib import pyplot as plt, ticker
 
+from compile import compile_scenario
 from read import read_results
 
 parser = argparse.ArgumentParser('Plot results')
@@ -13,6 +17,8 @@ parser.add_argument('--dir', '-d', type=str, default='results', help='Directory 
 parser.add_argument('--dataset', type=str, default=None, help='Dataset for which to plot results')
 parser.add_argument('--threat-model', '--tm', type=str, default=None, help='Threat model for which to plot results')
 parser.add_argument('--model', '-m', type=str, default=None, help='Model for which to plot results')
+parser.add_argument('--info-files', '--if', type=str, nargs='+', default=None,
+                    help='List of info files to plot from.')
 
 args = parser.parse_args()
 
@@ -20,18 +26,26 @@ args = parser.parse_args()
 result_path = pathlib.Path(args.dir)
 assert result_path.exists()
 
-# find applicable scenarios
-dataset = args.dataset or '*'
-threat_model = args.threat_model or '*'
-model = args.model or '*'
-scenario_pattern = '-'.join((dataset, model, threat_model)) + '.json'
+to_plot = defaultdict(list)
+if args.info_files is not None:
+    info_files = [pathlib.Path(info_file) for info_file in args.info_files]
+    assert all(info_file.exists() for info_file in info_files)
+else:
+    dataset = args.dataset or '*'
+    threat_model = args.threat_model or '*'
+    model = args.model or '*'
+    info_files = result_path.glob(os.sep.join((dataset, threat_model, model, '**', 'info.json')))
 
-best_distances_files = result_path.glob(scenario_pattern)
+for info_file in info_files:
+    scenario, hash_distances = read_results(info_file)
+    to_plot[scenario].append((info_file.parent, hash_distances))
 
-for best_distances_file in best_distances_files:
-    scenario_stem = best_distances_file.relative_to(result_path).stem
-    scenario = scenario_stem.split('-')
-    assert len(scenario) == 3, f'Best distance file {best_distances_file} saved with more than 3 "-" in name.'
+for scenario in to_plot.keys():
+    best_distances_file = result_path / f'{scenario.dataset}-{scenario.threat_model}-{scenario.model}.json'
+    if not best_distances_file.exists():
+        warnings.warn(f'Best distances files {best_distances_file} does not exist for scenario {scenario}.')
+        warnings.warn(f'Compiling best distances file for scenario {scenario}')
+        compile_scenario(path=result_path, scenario=scenario)
 
     with open(best_distances_file, 'r') as f:
         data = json.load(f)
@@ -50,16 +64,8 @@ for best_distances_file in best_distances_files:
     max_dist = np.amax(distances)
     best_area = np.trapz(robust_acc, distances)
 
-    # find results corresponding to scenario
-    scenario_path = result_path.joinpath(*scenario)
-    info_files = scenario_path.glob('**/**/info.json')
-
-    for info_file in sorted(info_files):
-        hash_distances = read_results(info_file=info_file)[1]
-
-        attack_folder = info_file.parent.relative_to(scenario_path).as_posix()
+    for attack_folder, hash_distances in sorted(to_plot[scenario]):
         adv_distances = np.array(list(hash_distances.values()))
-
         distances, counts = np.unique(adv_distances, return_counts=True)
         robust_acc = 1 - counts.cumsum() / len(adv_distances)
 
@@ -69,7 +75,8 @@ for best_distances_file in best_distances_files:
         area = np.trapz(robust_acc_clipped, distances_clipped)
         optimality = 1 - (area - best_area) / (clean_acc * max_dist - best_area)
 
-        ax.plot(distances, robust_acc, linestyle='--', label=f'{attack_folder}: {optimality:.2%}')
+        attack_label = attack_folder.relative_to(attack_folder.parents[1]).as_posix()
+        ax.plot(distances, robust_acc, linestyle='--', label=f'{attack_label}: {optimality:.2%}')
 
     ax.grid(True, linestyle='--', c='lightgray', which='major')
     ax.yaxis.set_major_formatter(ticker.PercentFormatter(1))
@@ -87,5 +94,5 @@ for best_distances_file in best_distances_files:
 
     ax.legend(loc='center right', labelspacing=.1, handletextpad=0.5)
     fig.tight_layout()
-    fig_name = f'{scenario_stem}.pdf'
-    fig.savefig(result_path / fig_name, bbox_inches='tight')
+    fig_name = result_path / f'{scenario.dataset}-{scenario.threat_model}-{scenario.model}.pdf'
+    fig.savefig(fig_name, bbox_inches='tight')

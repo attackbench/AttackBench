@@ -5,10 +5,12 @@ from typing import Mapping, Tuple, Union
 
 import numpy as np
 
+from utils import Scenario
+
 
 def read_results(info_file: Union[Path, str],
                  already_adv_distance: float = 0,
-                 worst_case_distance: float = float('inf')) -> Tuple[Tuple[str, str, str], Mapping[str, float]]:
+                 worst_case_distance: float = float('inf')) -> Tuple[Scenario, Mapping[str, float]]:
     info_file = Path(info_file)
     assert info_file.exists(), f'No info.json found in {dir}'
 
@@ -40,5 +42,5 @@ def read_results(info_file: Union[Path, str],
     distances[ori_success] = already_adv_distance
 
     # store results
-    scenario = (dataset, threat_model, model)
+    scenario = Scenario(dataset=dataset, threat_model=threat_model, model=model)
     return scenario, {hash: distance for (hash, distance) in zip(hashes, distances)}
