@@ -11,7 +11,7 @@ from read import read_results
 parser = argparse.ArgumentParser('Compile results from several attacks')
 
 parser.add_argument('--dir', '-d', type=str, default='results', help='Directory used to store experiment results')
-parser.add_argument('--plot', action='store_true', help='Plot all results')
+parser.add_argument('--plot-all', '-p', action='store_true', help='Plot all results')
 
 args = parser.parse_args()
 
