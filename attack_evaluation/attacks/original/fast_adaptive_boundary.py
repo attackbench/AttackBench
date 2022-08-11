@@ -615,6 +615,8 @@ def fab_attack(model: nn.Module,
                beta: float = 0.9,
                targeted_variant: bool = False,
                n_target_classes: int = 9) -> Tensor:
+    if eps is None:
+        eps = float('inf')
     attack = FABAttack_PT(predict=model, norm=threat_model.capitalize(), n_restarts=n_restarts, n_iter=n_iter, eps=eps,
                           alpha_max=alpha_max, eta=eta, beta=beta, targeted=targeted_variant,
                           n_target_classes=n_target_classes)
