@@ -11,6 +11,13 @@ from matplotlib import pyplot as plt, ticker
 from compile import compile_scenario
 from read import read_results
 
+threat_model_labels = {
+    'l0': r'$\ell_0$',
+    'l1': r'$\ell_1$',
+    'l2': r'$\ell_2$',
+    'linf': r'$\ell_{\infty}$',
+}
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser('Plot results')
 
@@ -93,7 +100,7 @@ if __name__ == '__main__':
         ax.spines['right'].set_visible(False)
 
         ax.set_ylabel('Robust Accuracy (%)')
-        ax.set_xlabel(f'Perturbation Size {scenario[-1]}')
+        ax.set_xlabel(f'Perturbation Size {threat_model_labels[scenario.threat_model]}')
 
         ax.annotate(text=f'Clean accuracy: {clean_acc:.2%}', xy=(0, clean_acc),
                     xytext=(ax.get_xlim()[1] / 2, clean_acc), ha='left', va='center',
