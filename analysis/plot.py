@@ -27,6 +27,7 @@ if __name__ == '__main__':
     parser.add_argument('--model', '-m', type=str, default=None, help='Model for which to plot results')
     parser.add_argument('--info-files', '--if', type=str, nargs='+', default=None,
                         help='List of info files to plot from.')
+    parser.add_argument('--suffix', '-s', type=str, default=None, help='Suffix for the name of the plot')
 
     args = parser.parse_args()
 
@@ -108,5 +109,9 @@ if __name__ == '__main__':
 
         ax.legend(loc='center right', labelspacing=.1, handletextpad=0.5)
         fig.tight_layout()
-        fig_name = result_path / f'{scenario.dataset}-{scenario.threat_model}-{scenario.model}.pdf'
+
+        parts = [scenario.dataset, scenario.threat_model, scenario.model]
+        if args.suffix:
+            parts.append(args.suffix)
+        fig_name = result_path / f'{"-".join(parts)}.pdf'
         fig.savefig(fig_name, bbox_inches='tight')
