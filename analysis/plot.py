@@ -91,7 +91,7 @@ if __name__ == '__main__':
             optimality = 1 - (area - best_area) / (clean_acc * max_dist - best_area)
 
             attack_label = attack_folder.relative_to(attack_folder.parents[1]).as_posix()
-            ax.plot(distances, robust_acc, linestyle='--', label=f'{attack_label}: {optimality:.2%}')
+            ax.plot(distances, robust_acc, linewidth=1, linestyle='--', label=f'{attack_label}: {optimality:.2%}')
 
         ax.grid(True, linestyle='--', c='lightgray', which='major')
         ax.yaxis.set_major_formatter(ticker.PercentFormatter(1))
