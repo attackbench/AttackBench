@@ -64,6 +64,7 @@ if __name__ == '__main__':
         clean_acc = np.count_nonzero(best_distances) / len(best_distances)
         max_dist = np.amax(distances)
         best_area = np.trapz(robust_acc, distances)
+        plot_xlim = max_dist * 1.5
 
         for attack_folder, hash_distances in sorted(to_plot[scenario]):
             adv_distances = np.array(list(hash_distances.values()))
@@ -81,7 +82,7 @@ if __name__ == '__main__':
 
         ax.grid(True, linestyle='--', c='lightgray', which='major')
         ax.yaxis.set_major_formatter(ticker.PercentFormatter(1))
-        ax.set_xlim(left=0, right=max_dist * 1.05)
+        ax.set_xlim(left=0, right=plot_xlim)
         ax.set_ylim(bottom=0, top=1)
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
