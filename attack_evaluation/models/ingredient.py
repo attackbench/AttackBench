@@ -20,32 +20,32 @@ def config():
 @model_ingredient.named_config
 def mnist_smallcnn():
     name = 'MNIST_SmallCNN'
-    origin = 'local'
+    source = 'local'
     robust = None
 
 
 @model_ingredient.named_config
 def wideresnet_28_10():
     name = 'wideresnet_28_10'
-    origin = 'robustbench'
+    source = 'robustbench'
 
 
 @model_ingredient.named_config
 def carmon_2019():
     name = 'Carmon2019Unlabeled'  # 'Carmon2019'
-    origin = 'robustbench'
+    source = 'robustbench'
 
 
 @model_ingredient.named_config
 def augustin_2020():
     name = 'Augustin2020'
-    origin = 'robustbench'
+    source = 'robustbench'
 
 
 @model_ingredient.named_config
 def standard():
     name = 'Standard'
-    origin = 'robustbench'
+    source = 'robustbench'
 
 
 _mnist_checkpoints = {
@@ -88,8 +88,8 @@ _model_getters = {
 
 
 @model_ingredient.capture
-def get_model(origin: str, requires_grad: bool = False) -> nn.Module:
-    model = _model_getters[origin]()
+def get_model(source: str, requires_grad: bool = False) -> nn.Module:
+    model = _model_getters[source]()
     model.eval()
 
     for param in model.parameters():
