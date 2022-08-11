@@ -74,6 +74,11 @@ if __name__ == '__main__':
             distances_clipped, counts = np.unique(adv_distances.clip(min=None, max=max_dist), return_counts=True)
             robust_acc_clipped = 1 - counts.cumsum() / len(adv_distances)
 
+            if distances[-1] == np.inf:
+                distances[-1] = plot_xlim
+                robust_acc[-1] = robust_acc[-2]
+                robust_acc_clipped[-1] = robust_acc_clipped[-2]
+
             area = np.trapz(robust_acc_clipped, distances_clipped)
             optimality = 1 - (area - best_area) / (clean_acc * max_dist - best_area)
 
