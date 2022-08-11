@@ -35,7 +35,7 @@ def read_results(info_file: Union[Path, str],
 
     # check that adversarial examples have 0 distance for adversarial clean samples
     if (n := np.count_nonzero(distances[ori_success])):
-        warnings.warn(f'{n} already adversarial clean samples have non zero perturbations.')
+        warnings.warn(f'{n} already adversarial clean samples have non zero perturbations in {info_file}.')
 
     # replace distances with inf for failed attacks and 0 for already adv clean samples
     distances[~adv_success] = worst_case_distance
