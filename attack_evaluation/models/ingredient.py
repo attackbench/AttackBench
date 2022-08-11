@@ -15,7 +15,6 @@ model_ingredient = Ingredient('model')
 @model_ingredient.named_config
 def config():
     requires_grad = False  # if some model requires gradient computations in the forward pass
-    # threat_model = 'Linf'
 
 
 @model_ingredient.named_config
