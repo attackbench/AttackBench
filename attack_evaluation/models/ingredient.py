@@ -1,5 +1,5 @@
+from functools import partial
 from importlib import resources
-from typing import Optional
 
 import torch
 from robustbench import load_model
@@ -12,16 +12,25 @@ from .mnist import SmallCNN
 model_ingredient = Ingredient('model')
 
 
-@model_ingredient.named_config
+@model_ingredient.config
 def config():
+    source = 'local'
     requires_grad = False  # if some model requires gradient computations in the forward pass
 
 
 @model_ingredient.named_config
 def mnist_smallcnn():
     name = 'MNIST_SmallCNN'
-    source = 'local'
-    robust = None
+
+
+@model_ingredient.named_config
+def mnist_smallcnn_ddn():
+    name = 'MNIST_SmallCNN_ddn'
+
+
+@model_ingredient.named_config
+def mnist_smallcnn_trades():
+    name = 'MNIST_SmallCNN_trades'
 
 
 @model_ingredient.named_config
@@ -48,25 +57,19 @@ def standard():
     source = 'robustbench'
 
 
-_mnist_checkpoints = {
-    None: 'mnist_smallcnn_standard.pth',
-    'ddn': 'mnist_smallcnn_robust_ddn.pth',
-    'trades': 'mnist_smallcnn_robust_trades.pth',
-}
-
-
 @model_ingredient.capture
-def get_mnist_smallcnn(robust: Optional[str] = None) -> nn.Module:
+def get_mnist_smallcnn(checkpoint: str) -> nn.Module:
     model = SmallCNN()
-    checkpoint_file = _mnist_checkpoints[robust]
-    with resources.path(checkpoints, checkpoint_file) as f:
+    with resources.path(checkpoints, checkpoint) as f:
         state_dict = torch.load(f, map_location='cpu')
     model.load_state_dict(state_dict)
     return model
 
 
 _local_models = {
-    'MNIST_SmallCNN': get_mnist_smallcnn,
+    'MNIST_SmallCNN': partial(get_mnist_smallcnn, checkpoint='mnist_smallcnn_standard.pth'),
+    'MNIST_SmallCNN_ddn': partial(get_mnist_smallcnn, checkpoint='mnist_smallcnn_robust_ddn.pth'),
+    'MNIST_SmallCNN_trades': partial(get_mnist_smallcnn, checkpoint='mnist_smallcnn_robust_trades.pth'),
 }
 
 
