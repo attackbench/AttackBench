@@ -58,7 +58,7 @@ if __name__ == '__main__':
 
         with open(best_distances_file, 'r') as f:
             data = json.load(f)
-        best_distances = [d[1] for d in data.values()]
+        best_distances = list(data.values())
 
         # plot best distances
         fig, ax = plt.subplots(figsize=(5, 4))

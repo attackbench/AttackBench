@@ -24,14 +24,13 @@ def compile_scenario(path: pathlib.Path, scenario: Scenario, recompile_all: bool
     # compile best distances
     for info_file in info_files:
         hash_distances = read_results(info_file=info_file)[1]
-        attack_path = info_file.parent.relative_to(path)
         for hash, distance in hash_distances.items():
-            best_distance = best_distances.get(hash, (None, float('inf')))[1]
-            if distance < best_distance:  # TODO: fix ambiguous case where two attacks have the same best distance
-                best_distances[hash] = (attack_path.as_posix(), distance)
+            best_distance = best_distances.get(hash, float('inf'))
+            if distance < best_distance:
+                best_distances[hash] = distance
 
     with open(best_distances_path, 'w') as f:
-        json.dump(best_distances, f)
+        json.dump(best_distances, f, indent=4)
 
 
 if __name__ == '__main__':
