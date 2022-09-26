@@ -58,7 +58,7 @@ if __name__ == "__main__":
             f"#SBATCH --output={Path(logs_dir) / attack}-log.out",
             f"#SBATCH --mem={memory}gb",
             f"#SBATCH --ntasks={cpu_count}",
-            #f"#SBATCH --gres gpu:{device}:{gpu_count}",
+            f"#SBATCH --gres gpu:{device}:{gpu_count}",
             command,
         ]
 
