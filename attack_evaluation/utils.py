@@ -31,7 +31,7 @@ def run_attack(model: nn.Module,
         model.register_backward_hook(backward_counter)
     forwards, backwards = [], []  # number of forward and backward calls per sample
 
-    times, accuracies, ori_success, adv_success, hashes = [], [], [], [], []
+    times, accuracies, ori_success, adv_success, hashes, box_failures = [], [], [], [], [], []
     distances = {k: [] for k in metrics.keys()}
 
     if return_adv:
@@ -66,6 +66,10 @@ def run_attack(model: nn.Module,
         backwards.append(backward_counter.num_samples_called)
         forward_counter.reset(), backward_counter.reset()
 
+        # checking box constraint
+        batch_box_failures = ((adv_inputs < 0) | (adv_inputs > 1)).sum(dim=[1, 2, 3])
+        box_failures.extend(batch_box_failures)
+
         if adv_inputs.min() < 0 or adv_inputs.max() > 1:
             warnings.warn('Values of produced adversarials are not in the [0, 1] range -> Clipping to [0, 1].')
             adv_inputs.clamp_(min=0, max=1)
@@ -93,6 +97,7 @@ def run_attack(model: nn.Module,
         'num_forwards': forwards,
         'num_backwards': backwards,
         'distances': distances,
+        'box_failures': box_failures,
     }
 
     if return_adv:

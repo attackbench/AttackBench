@@ -11,6 +11,7 @@ figs/
 
 # C extensions
 *.so
+*.pdf
 
 # Distribution / packaging
 .Python
