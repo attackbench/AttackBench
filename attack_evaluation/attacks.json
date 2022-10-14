@@ -1,0 +1,106 @@
+{
+  "l2": {
+    "foolbox": {
+      "prefix": "fb",
+      "attacks": ["bb", "cw_l2", "ddn", "deepfool", "fmn", "pgd", "fgm", "bim"]
+    },
+    "art": {
+      "prefix": "art",
+      "attacks": ["apgd", "bb", "cw_l2", "deepfool", "fgsm", "pgd"]
+    },
+    "cleverhans":{
+      "prefix": "ch",
+      "attacks": ["cw_l2", "fgm", "pgd"]
+    },
+    "deeprobust":{
+      "prefix": "dr",
+      "attacks": ["cw_l2", "deepfool", "pgd", "fgm"]
+    },
+    "adversarial_lib": {
+      "prefix": "adv_lib",
+      "attacks": ["alma", "apgd", "cw_l2", "ddn", "fab", "fmn", "pdgd", "pdpgd", "pgd", "tr"]
+    },
+    "torch_attacks": {
+      "prefix": "ta",
+      "attacks": ["cw_l2", "apgd", "deepfool", "fab", "auto_attack", "pgd_l2"]
+    }
+  },
+  "l0": {
+    "foolbox": {
+      "prefix": "fb",
+      "attacks": ["bb", "cw_l2", "dataset", "ddn", "deepfool", "ead", "fmn", "pgd", "fgm", "bim"]
+    },
+    "art": {
+      "prefix": "art",
+      "attacks": ["apgd", "bim", "bb", "cw_l2", "cw_linf", "deepfool", "ead", "fgsm", "jsma", "pgd"]
+    },
+    "deeprobust":{
+      "prefix": "dr",
+      "attacks": ["cw_l2", "deepfool", "pgd"]
+    },
+    "cleverhans":{
+      "prefix": "ch",
+      "attacks": ["cw_l2", "fgm", "hsja", "spsa", "pgd"]
+    },
+    "adversarial_lib": {
+      "prefix": "adv_lib",
+      "attacks": ["alma", "apgd", "cw_l2", "cw_linf", "ddn", "fab", "fmn", "pdgd", "pdpgd", "pgd", "tr", "vfga"]
+    },
+    "torch_attacks": {
+      "prefix": "ta",
+      "attacks": ["apgd", "auto_attack", "cw_l2", "deepfool", "fab", "fgsm", "pgd", "pgd_l2", "sparsefool"]
+    }
+  },
+  "l1": {
+    "foolbox": {
+      "prefix": "fb",
+      "attacks": ["bb", "cw_l2", "dataset", "ddn", "deepfool", "ead", "fmn", "pgd", "fgm", "bim"]
+    },
+    "art": {
+      "prefix": "art",
+      "attacks": ["apgd", "bim", "bb", "cw_l2", "cw_linf", "deepfool", "ead", "fgsm", "jsma", "pgd"]
+    },
+    "deeprobust":{
+      "prefix": "dr",
+      "attacks": ["cw_l2", "deepfool", "pgd"]
+    },
+    "cleverhans":{
+      "prefix": "ch",
+      "attacks": ["cw_l2", "fgm", "hsja", "spsa", "pgd"]
+    },
+    "adversarial_lib": {
+      "prefix": "adv_lib",
+      "attacks": ["alma", "apgd", "cw_l2", "cw_linf", "ddn", "fab", "fmn", "pdgd", "pdpgd", "pgd", "tr", "vfga"]
+    },
+    "torch_attacks": {
+      "prefix": "ta",
+      "attacks": ["apgd", "auto_attack", "cw_l2", "deepfool", "fab", "fgsm", "pgd", "pgd_l2", "sparsefool"]
+    }
+  },
+  "linf": {
+    "foolbox": {
+      "prefix": "fb",
+      "attacks": ["bb", "cw_l2", "dataset", "ddn", "deepfool", "ead", "fmn", "pgd", "fgm", "bim"]
+    },
+    "art": {
+      "prefix": "art",
+      "attacks": ["apgd", "bim", "bb", "cw_l2", "cw_linf", "deepfool", "ead", "fgsm", "jsma", "pgd"]
+    },
+    "deeprobust":{
+      "prefix": "dr",
+      "attacks": ["cw_l2", "deepfool", "pgd"]
+    },
+    "cleverhans":{
+      "prefix": "ch",
+      "attacks": ["cw_l2", "fgm", "hsja", "spsa", "pgd"]
+    },
+    "adversarial_lib": {
+      "prefix": "adv_lib",
+      "attacks": ["alma", "apgd", "cw_l2", "cw_linf", "ddn", "fab", "fmn", "pdgd", "pdpgd", "pgd", "tr", "vfga"]
+    },
+    "torch_attacks": {
+      "prefix": "ta",
+      "attacks": ["apgd", "auto_attack", "cw_l2", "deepfool", "fab", "fgsm", "pgd", "pgd_l2", "sparsefool"]
+    }
+  }
+}

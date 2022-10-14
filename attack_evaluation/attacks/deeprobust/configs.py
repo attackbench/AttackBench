@@ -4,6 +4,7 @@ from typing import Callable, Tuple
 from deeprobust.image.attack.cw import CarliniWagner
 from deeprobust.image.attack.deepfool import DeepFool
 from deeprobust.image.attack.pgd import PGD
+from deeprobust.image.attack.fgsm import FGSM
 
 from ..utils import ConfigGetter
 
@@ -59,8 +60,21 @@ def get_dr_pgd(threat_model: str, epsilon: float, num_steps: int, step_size: flo
     return PGD, dict(bound=threat_model, epsilon=epsilon, num_steps=num_steps, step_size=step_size)
 
 
+def dr_fgm():
+    name = 'fgm'
+    source = 'deeprobust'
+    threat_model = 'linf'  # [linf, l2]
+    epsilon = 0.2
+
+
+def get_dr_fgm(threat_model: str, epsilon: float) -> Tuple[Callable, dict]:
+    order = {'linf': float('inf'), 'l2': 2}
+    return FGSM, dict(bound=threat_model, order=order, epsilon=epsilon, clip_max=1, clip_min=0)
+
+
 deeprobust_index = {
     'cw_l2': ConfigGetter(config=dr_cw_l2, getter=get_dr_cw_l2),
     'deepfool': ConfigGetter(config=dr_deepfool, getter=get_dr_deepfool),
     'pgd': ConfigGetter(config=dr_pgd, getter=get_dr_pgd),
+    'fgm': ConfigGetter(config=dr_fgm, getter=get_dr_fgm)
 }
