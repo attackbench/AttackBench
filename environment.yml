@@ -10,6 +10,7 @@ dependencies:
   - python=3.9.12
   - pytorch=1.11
   - torchvision=0.12
+  - cleverhans=4.0.0
   - pip:
     - adversarial-robustness-toolbox==1.10.2
     - foolbox==3.3.3
