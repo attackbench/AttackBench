@@ -35,7 +35,7 @@ if __name__ == "__main__":
     victim = args.model
     norm = float(args.norm[1:])
 
-    with open('attacks.json', 'r') as f:
+    with open('attack_evaluation/attacks.json', 'r') as f:
         configs = json.load(f)
 
     for lib in configs[args.norm].keys():
