@@ -19,5 +19,5 @@ dependencies:
     - pandas==1.2.5
     - sacred==0.8.2
     - scipy<1.8.0
-    - torchattacks==3.2.6
+    - torchattacks==3.3.0
     - tqdm==4.56.2
