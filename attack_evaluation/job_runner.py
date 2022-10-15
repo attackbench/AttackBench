@@ -55,17 +55,19 @@ if __name__ == "__main__":
         for attack in library_json['attacks']:
             attack_name = f"{library_json['prefix']}_{attack}"
 
+            log_name = f"{lib}-{attack}"
+
             job_file = exp_dir / f'{lib}-runner.job'
             command = f"python run.py -F {exp_dir / attack_name} with " \
                       f"dataset.{dataset} " \
                       f"dataset.batch_size={batch_size} " \
                       f"model.{victim} " \
-                      f"attack.{attack} " \
+                      f"attack.{attack_name} " \
                       f"attack.norm={norm}"
             lines = [
                 "#!/bin/bash",
                 f"#SBATCH --job-name={lib}-{attack}.job",
-                f"#SBATCH --output={Path(logs_dir) / attack}-log.out",
+                f"#SBATCH --output={Path(logs_dir) / log_name}-log.out",
                 f"#SBATCH --mem={memory}gb",
                 f"#SBATCH --ntasks={cpu_count}",
                 f"#SBATCH --gres gpu:{device}:{gpu_count}",
