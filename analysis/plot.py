@@ -25,6 +25,7 @@ if __name__ == '__main__':
     parser.add_argument('--dataset', type=str, default=None, help='Dataset for which to plot results')
     parser.add_argument('--threat-model', '--tm', type=str, default=None, help='Threat model for which to plot results')
     parser.add_argument('--model', '-m', type=str, default=None, help='Model for which to plot results')
+    parser.add_argument('--library', '-l', type=str, default=None, help='Library for which to plot results')
     parser.add_argument('--info-files', '--if', type=str, nargs='+', default=None,
                         help='List of info files to plot from.')
     parser.add_argument('--suffix', '-s', type=str, default=None, help='Suffix for the name of the plot')
@@ -43,7 +44,8 @@ if __name__ == '__main__':
         dataset = args.dataset or '*'
         threat_model = args.threat_model or '*'
         model = args.model or '*'
-        info_files = result_path.glob(os.sep.join((dataset, threat_model, model, '**', 'info.json')))
+        library = f'{args.library}_*/**' if args.library else '**'
+        info_files = result_path.glob(os.sep.join((dataset, threat_model, model, library, 'info.json')))
 
     for info_file in info_files:
         scenario, hash_distances = read_results(info_file)
@@ -110,8 +112,10 @@ if __name__ == '__main__':
         ax.legend(loc='center right', labelspacing=.1, handletextpad=0.5)
         fig.tight_layout()
 
-        parts = [scenario.dataset, scenario.threat_model, scenario.model]
+        library = args.library or ""
+        parts = [library, scenario.dataset, scenario.threat_model, scenario.model]
         if args.suffix:
             parts.append(args.suffix)
         fig_name = result_path / f'{"-".join(parts)}.pdf'
         fig.savefig(fig_name, bbox_inches='tight')
+

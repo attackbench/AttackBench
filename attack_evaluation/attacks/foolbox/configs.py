@@ -180,7 +180,6 @@ _pgd_attacks = {
 def get_fb_pgd(threat_model: str, num_steps: int, step_size: float, abs_stepsize: float) -> Callable:
     return partial(_pgd_attacks[threat_model], steps=num_steps, rel_stepsize=step_size, abs_stepsize=abs_stepsize)
 
-
 def fb_fgm():
     name = 'fgm'
     source = 'foolbox'

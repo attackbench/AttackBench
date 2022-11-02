@@ -38,6 +38,7 @@ def modify_filestorage(options):
     for ingredient in (dataset_ingredient, model_ingredient, attack_ingredient):
         ingredient_name = ingredient.path
         prefix = ingredient_name + '.'
+        print(prefix)
         ingredient_updates = list(filter(lambda s: s.startswith(prefix) and '=' not in s, update))
         if (n := len(ingredient_updates)) != 1:
             raise ValueError(f'Incorrect {ingredient_name} configuration: {n} (!=1) named configs specified.')

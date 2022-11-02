@@ -73,13 +73,12 @@ def ta_fab():
     alpha_max = 0.1
     eta = 1.05
     beta = 0.9
-    targeted = False
 
 
 def get_ta_fab(threat_model: str, num_steps: int, epsilon: Optional[float], num_restarts: int, alpha_max: float,
-               eta: float, beta: float, targeted: bool) -> Callable:
+               eta: float, beta: float) -> Callable:
     return partial(FAB, norm=threat_model.capitalize(), steps=num_steps, eps=epsilon, n_restarts=num_restarts,
-                   alpha_max=alpha_max, eta=eta, beta=beta, targeted=targeted)
+                   alpha_max=alpha_max, eta=eta, beta=beta)
 
 
 def ta_fgsm():
