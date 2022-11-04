@@ -15,7 +15,7 @@ def dr_cw_l2():
     threat_model = 'l2'
     confidence = 0.0001
     num_binary_search_steps = 5
-    num_steps = 1000
+    num_steps = 100 # default was 1000
     initial_const = 0.01
     step_size = 0.00001
     abort_early = True

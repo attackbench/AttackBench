@@ -27,7 +27,7 @@ def ch_cw_l2():
     clip_max = 1
     initial_const = 1e-02
     binary_search_steps = 5
-    steps = 1000
+    steps = 100 #1000
 
 
 def get_ch_cw(lr: float, confidence: float, clip_min: float, clip_max: float, initial_const: float,

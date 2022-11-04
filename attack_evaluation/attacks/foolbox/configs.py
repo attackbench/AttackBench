@@ -57,7 +57,7 @@ def fb_cw_l2():
     name = 'cw_l2'
     source = 'foolbox'
     threat_model = 'l2'
-    num_steps = 10000
+    num_steps = 100 # default was 10000
     num_binary_search_steps = 9
     step_size = 0.01
     confidence = 0

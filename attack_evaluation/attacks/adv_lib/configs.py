@@ -69,7 +69,7 @@ def adv_lib_cw_l2():
     step_size = 0.01
     initial_const = 0.001
     num_binary_search_steps = 9
-    num_steps = 10000
+    num_steps = 100 # default was 10000
     abort_early = True
 
 
