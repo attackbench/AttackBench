@@ -17,6 +17,7 @@ parser.add_argument('--batch_size', type=int, default=512, help='Batch size')
 parser.add_argument('--gpu_count', type=int, default=1, help='Number of gpus for trial')
 parser.add_argument('--cpu_count', type=int, default=10, help='Number of cpus for trial')
 parser.add_argument('--memory', '--mem', type=int, default=128, help='Number of GB to allocate')
+parser.add_argument('--json_attacks', type=str, default='attacks.json', help='JSON file of attacks to run.')
 args = parser.parse_args()
 
 _conda_env_name = 'atkbench'
@@ -34,7 +35,7 @@ if __name__ == "__main__":
     batch_size = args.batch_size
     victim = args.model
 
-    with open('attacks.json', 'r') as f:
+    with open(args.json_attacks, 'r') as f:
         configs = json.load(f)
 
     for lib in configs[args.threat_model].keys():
@@ -51,7 +52,7 @@ if __name__ == "__main__":
 
             library_json = configs[args.threat_model][lib]
             for attack in library_json['attacks']:
-                attack_name = f"{library_json['prefix']}_{attack}"
+                attack_name = f"{library_json['prefix']}{attack}"
 
                 log_name = f"{lib}-{attack}"
 

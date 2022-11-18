@@ -38,12 +38,12 @@ def modify_filestorage(options):
     for ingredient in (dataset_ingredient, model_ingredient, attack_ingredient):
         ingredient_name = ingredient.path
         prefix = ingredient_name + '.'
-        print(prefix)
         ingredient_updates = list(filter(lambda s: s.startswith(prefix) and '=' not in s, update))
         if (n := len(ingredient_updates)) != 1:
             raise ValueError(f'Incorrect {ingredient_name} configuration: {n} (!=1) named configs specified.')
         named_config = ingredient_updates[0].removeprefix(prefix)
-        names.append(ingredient.named_configs[named_config]()['name'])
+        #names.append(ingredient.named_configs[named_config]()['name'])
+        names.append(named_config)
 
     # find threat model
     default_attack_config = ingredient.named_configs[named_config]()
@@ -53,8 +53,18 @@ def modify_filestorage(options):
     else:
         threat_model = default_attack_config['threat_model']
 
+    batch_size_update = list(list(filter(lambda s: "batch_size" in s, update)))
+    if len(batch_size_update):
+        batch_size = batch_size_update[-1].split('=')[-1]
+    else:
+        batch_size = dataset_ingredient.named_configs[names[0]]()['batch_size']
+    batch_name = f'batch_size_{batch_size}'
+
+    # insert batch_size at desired position for folder structure
+    names.insert(1, batch_name)
+
     # insert threat model at desired position for folder structure
-    names.insert(1, threat_model)
+    names.insert(2, threat_model)
 
     options['--file_storage'] = Path(file_storage).joinpath(*names).as_posix()
 
