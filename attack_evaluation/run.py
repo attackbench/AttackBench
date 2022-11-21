@@ -61,10 +61,10 @@ def modify_filestorage(options):
     batch_name = f'batch_size_{batch_size}'
 
     # insert batch_size at desired position for folder structure
-    names.insert(1, batch_name)
+    names.insert(2, batch_name)
 
     # insert threat model at desired position for folder structure
-    names.insert(2, threat_model)
+    names.insert(1, threat_model)
 
     options['--file_storage'] = Path(file_storage).joinpath(*names).as_posix()
 
