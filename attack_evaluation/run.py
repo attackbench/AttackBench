@@ -46,14 +46,13 @@ def modify_filestorage(options):
         names.append(named_config)
 
     # find threat model
-    default_attack_config = ingredient.named_configs[named_config]()
     attack_updates = list(filter(lambda s: s.startswith('attack.') and 'threat_model=' in s, update))
     if len(attack_updates):
         threat_model = attack_updates[-1].split('=')[-1]
     else:
-        threat_model = default_attack_config['threat_model']
+        threat_model = ingredient.named_configs[named_config]()['threat_model']
 
-    batch_size_update = list(list(filter(lambda s: "batch_size" in s, update)))
+    batch_size_update = list(filter(lambda s: "batch_size" in s, update))
     if len(batch_size_update):
         batch_size = batch_size_update[-1].split('=')[-1]
     else:
