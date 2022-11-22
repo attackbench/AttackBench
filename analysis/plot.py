@@ -63,7 +63,7 @@ if __name__ == '__main__':
         best_distances = list(data.values())
 
         # plot best distances
-        fig, ax = plt.subplots(figsize=(5, 4))
+        fig, ax = plt.subplots(figsize=(5, 4), layout='constrained')
         ax.set_title(' - '.join(scenario), pad=10)
 
         distances, counts = np.unique(best_distances, return_counts=True)
@@ -110,12 +110,10 @@ if __name__ == '__main__':
                     arrowprops={'arrowstyle': '-', 'linestyle': '--'})
 
         ax.legend(loc='center right', labelspacing=.1, handletextpad=0.5)
-        fig.tight_layout()
 
         library = args.library or ""
         parts = [library, scenario.dataset, scenario.threat_model, scenario.model]
         if args.suffix:
             parts.append(args.suffix)
         fig_name = result_path / f'{"-".join(parts)}.pdf'
-        fig.savefig(fig_name, bbox_inches='tight')
-
+        fig.savefig(fig_name)
