@@ -17,6 +17,7 @@ from adv_lib.attacks import (
     vfga,
 )
 
+from .wrapper import adv_lib_minimal_wrapper
 from ..utils import ConfigGetter
 
 _norms = {
@@ -61,6 +62,34 @@ def get_adv_lib_apgd(threat_model: str, epsilon: float, targeted: bool, num_step
                    loss_function=loss_function, rho=rho, use_large_reps=use_large_reps, use_rs=use_rs)
 
 
+def adv_lib_apgd_minimal():
+    name = 'apgd_minimal'
+    source = 'adv_lib'
+    threat_model = 'linf'
+    targeted = False  # use a targeted objective for the untargeted attack
+    num_steps = 100
+    num_restarts = 1
+    loss_function = 'dlr'
+    rho = 0.75
+    use_large_reps = False
+    use_rs = True
+
+    init_eps = 1 / 255  # initial guess for line search
+    search_steps = 20  # number of search steps for line + binary search
+
+
+def get_adv_lib_apgd_minimal(threat_model: str, targeted: bool, num_steps: int, num_restarts: int, loss_function: str,
+                             rho: float, use_large_reps: bool, use_rs: bool,
+                             init_eps: float, search_steps: int) -> Callable:
+    attack_func = apgd_targeted if targeted else apgd
+    attack = partial(attack_func, norm=_norms[threat_model], n_iter=num_steps, n_restarts=num_restarts,
+                     loss_function=loss_function, rho=rho, use_large_reps=use_large_reps, use_rs=use_rs)
+
+    max_eps = 1 if threat_model == 'linf' else None
+    return partial(adv_lib_minimal_wrapper, attack=attack, init_eps=init_eps, max_eps=max_eps,
+                   search_steps=search_steps)
+
+
 def adv_lib_cw_l2():
     name = 'cw_l2'
     source = 'adv_lib'  # available: ['adv_lib']
@@ -69,7 +98,7 @@ def adv_lib_cw_l2():
     step_size = 0.01
     initial_const = 0.001
     num_binary_search_steps = 9
-    num_steps = 100 # default was 10000
+    num_steps = 100  # default was 10000
     abort_early = True
 
 
@@ -217,6 +246,32 @@ def get_adv_lib_pgd(epsilon: float, num_steps: int, random_init: bool, num_resta
                    absolute_step_size=absolute_step_size)
 
 
+def adv_lib_pgd_minimal():
+    name = 'pgd_minimal'
+    source = 'adv_lib'  # available: ['adv_lib']
+    threat_model = 'linf'
+    num_steps = 40
+    random_init = True
+    num_restarts = 1
+    loss_function = 'ce'
+    relative_step_size = 0.01 / 0.3
+    absolute_step_size = None
+
+    init_eps = 1 / 255  # initial guess for line search
+    search_steps = 20  # number of search steps for line + binary search
+
+
+def get_adv_lib_pgd_minimal(num_steps: int, random_init: bool, num_restarts: int, loss_function: str,
+                            relative_step_size: float, absolute_step_size: Optional[float],
+                            init_eps: float, search_steps: int) -> Callable:
+    attack = partial(pgd_linf, steps=num_steps, random_init=random_init, restarts=num_restarts,
+                     loss_function=loss_function, relative_step_size=relative_step_size,
+                     absolute_step_size=absolute_step_size)
+
+    return partial(adv_lib_minimal_wrapper, attack=attack, init_eps=init_eps, max_eps=1, search_steps=search_steps,
+                   eps_name='ε')
+
+
 def adv_lib_tr():
     name = 'tr'
     source = 'adv_lib'  # available: ['adv_lib']
@@ -250,6 +305,7 @@ def get_adv_lib_vfga(num_steps: int, n_samples: int, large_memory: bool) -> Call
 adv_lib_index = {
     'alma': ConfigGetter(config=adv_lib_alma, getter=get_adv_lib_alma),
     'apgd': ConfigGetter(config=adv_lib_apgd, getter=get_adv_lib_apgd),
+    'apgd_minimal': ConfigGetter(config=adv_lib_apgd_minimal, getter=get_adv_lib_apgd_minimal),
     'cw_l2': ConfigGetter(config=adv_lib_cw_l2, getter=get_adv_lib_cw_l2),
     'cw_linf': ConfigGetter(config=adv_lib_cw_linf, getter=get_adv_lib_cw_linf),
     'ddn': ConfigGetter(config=adv_lib_ddn, getter=get_adv_lib_ddn),
@@ -258,6 +314,7 @@ adv_lib_index = {
     'pdgd': ConfigGetter(config=adv_lib_pdgd, getter=get_adv_lib_pdgd),
     'pdpgd': ConfigGetter(config=adv_lib_pdpgd, getter=get_adv_lib_pdpgd),
     'pgd': ConfigGetter(config=adv_lib_pgd, getter=get_adv_lib_pgd),
+    'pgd_minimal': ConfigGetter(config=adv_lib_pgd_minimal, getter=get_adv_lib_pgd_minimal),
     'tr': ConfigGetter(config=adv_lib_tr, getter=get_adv_lib_tr),
     'vfga': ConfigGetter(config=adv_lib_vfga, getter=get_adv_lib_vfga),
 }
