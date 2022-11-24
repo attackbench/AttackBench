@@ -7,6 +7,7 @@ from cleverhans.torch.attacks.hop_skip_jump_attack import hop_skip_jump_attack
 from cleverhans.torch.attacks.projected_gradient_descent import projected_gradient_descent
 from cleverhans.torch.attacks.spsa import spsa
 
+from .wrapper import cleverhans_minimal_wrapper
 from ..utils import ConfigGetter
 
 _norms = {
@@ -27,7 +28,7 @@ def ch_cw_l2():
     clip_max = 1
     initial_const = 1e-02
     binary_search_steps = 5
-    steps = 100 #1000
+    steps = 100  # 1000
 
 
 def get_ch_cw(lr: float, confidence: float, clip_min: float, clip_max: float, initial_const: float,
@@ -45,6 +46,22 @@ def ch_fgm():
 
 def get_ch_fgm(threat_model: str, eps: float) -> Callable:
     return partial(fast_gradient_method, norm=_norms[threat_model], eps=eps, clip_min=0, clip_max=1)
+
+
+def ch_fgm_minimal():
+    name = 'fgm_minimal'
+    source = 'cleverhans'
+    threat_model = 'l2'  # available: l1, l2, linf
+
+    init_eps = 1  # initial guess for line search
+    search_steps = 20  # number of search steps for line + binary search
+
+
+def get_ch_fgm_minimal(threat_model: str, init_eps: float, search_steps: int) -> Callable:
+    attack = partial(fast_gradient_method, norm=_norms[threat_model], clip_min=0, clip_max=1)
+    max_eps = 1 if threat_model == 'linf' else None
+    return partial(cleverhans_minimal_wrapper, attack=attack, init_eps=init_eps, max_eps=max_eps,
+                   search_steps=search_steps)
 
 
 def ch_hsja():
@@ -101,10 +118,31 @@ def get_ch_pgd(threat_model: str, eps: float, eps_iter: float, steps: int) -> Ca
                    clip_min=0, clip_max=1, sanity_checks=False)
 
 
+def ch_pgd_minimal():
+    name = 'pgd_minimal'
+    source = 'cleverhans'
+    threat_model = 'l2'  # available: np.inf, 1 or 2.
+    eps_iter = 1.0
+    steps = 20
+
+    init_eps = 1  # initial guess for line search
+    search_steps = 20  # number of search steps for line + binary search
+
+
+def get_ch_pgd_minimal(threat_model: str, eps_iter: float, steps: int, init_eps: float, search_steps: int) -> Callable:
+    attack = partial(projected_gradient_descent, norm=_norms[threat_model], nb_iter=steps, eps_iter=eps_iter,
+                     clip_min=0, clip_max=1, sanity_checks=False)
+    max_eps = 1 if threat_model == 'linf' else None
+    return partial(cleverhans_minimal_wrapper, attack=attack, init_eps=init_eps, max_eps=max_eps,
+                   search_steps=search_steps)
+
+
 cleverhans_index = {
     'cw_l2': ConfigGetter(config=ch_cw_l2, getter=get_ch_cw),
     'fgm': ConfigGetter(config=ch_fgm, getter=get_ch_fgm),
+    'fgm_minimal': ConfigGetter(config=ch_fgm_minimal, getter=get_ch_fgm_minimal),
     'hsja': ConfigGetter(config=ch_hsja, getter=get_ch_hsja),
     'spsa': ConfigGetter(config=ch_spsa, getter=get_ch_spsa),
-    'pgd': ConfigGetter(config=ch_pgd, getter=get_ch_pgd)
+    'pgd': ConfigGetter(config=ch_pgd, getter=get_ch_pgd),
+    'pgd_minimal': ConfigGetter(config=ch_pgd_minimal, getter=get_ch_pgd_minimal),
 }
