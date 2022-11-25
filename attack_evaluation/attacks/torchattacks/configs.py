@@ -95,7 +95,7 @@ def get_ta_fgsm(epsilon: float) -> Callable:
 def ta_pgd():
     name = 'pgd'
     source = 'torchattacks'  # available: ['torchattacks']
-    threat_model = 'inf'
+    threat_model = 'linf'
     num_steps = 40
     epsilon = 0.3
     alpha = 2 / 255
