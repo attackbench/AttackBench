@@ -69,7 +69,7 @@ def dr_fgm():
 
 def get_dr_fgm(threat_model: str, epsilon: float) -> Tuple[Callable, dict]:
     order = {'linf': float('inf'), 'l2': 2}
-    return FGSM, dict(bound=threat_model, order=order, epsilon=epsilon, clip_max=1, clip_min=0)
+    return FGSM, dict(order=order[threat_model], epsilon=epsilon, clip_max=1, clip_min=0)
 
 
 deeprobust_index = {
