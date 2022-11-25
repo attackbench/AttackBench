@@ -17,7 +17,7 @@ class DeepRobustModel(nn.Module):
         return self.forward(x)
 
 
-def deeprobust_wrapper(attack: BaseAttack,
+def deeprobust_wrapper(attack: type[BaseAttack],
                        attack_params: dict,
                        model: nn.Module,
                        inputs: Tensor,
