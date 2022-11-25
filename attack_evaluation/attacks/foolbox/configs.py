@@ -166,6 +166,7 @@ def fb_pgd():
     name = 'pgd'
     source = 'foolbox'
     threat_model = 'l2'
+    epsilon = 0.3
     num_steps = 50
     step_size = 0.025
     abs_stepsize = None
@@ -177,14 +178,16 @@ _pgd_attacks = {
 }
 
 
-def get_fb_pgd(threat_model: str, num_steps: int, step_size: float, abs_stepsize: float) -> Callable:
-    return partial(_pgd_attacks[threat_model], steps=num_steps, rel_stepsize=step_size, abs_stepsize=abs_stepsize)
+def get_fb_pgd(threat_model: str, epsilon: float, num_steps: int, step_size: float, abs_stepsize: float) -> Callable:
+    return partial(_pgd_attacks[threat_model], epsilon=epsilon, steps=num_steps, rel_stepsize=step_size,
+                   abs_stepsize=abs_stepsize)
 
 
 def fb_fgm():
     name = 'fgm'
     source = 'foolbox'
     threat_model = 'l2'
+    epsilon = 0.3
 
 
 _fgm_attacks = {
@@ -193,14 +196,15 @@ _fgm_attacks = {
 }
 
 
-def get_fb_fgm(threat_model: str) -> Callable:
-    return partial(_fgm_attacks[threat_model])
+def get_fb_fgm(threat_model: str, epsilon: float) -> Callable:
+    return partial(_fgm_attacks[threat_model], epsilon=epsilon)
 
 
 def fb_bim():
     name = 'bim'
     source = 'foolbox'
     threat_model = 'linf'
+    epsilon = 0.3
     num_steps = 10
     step_size = 0.2
     abs_stepsize = None
@@ -212,8 +216,9 @@ _bim_attacks = {
 }
 
 
-def get_fb_bim(threat_model: str, num_steps: int, step_size: float, abs_stepsize: float) -> Callable:
-    return partial(_bim_attacks[threat_model], steps=num_steps, rel_stepsize=step_size, abs_stepsize=abs_stepsize)
+def get_fb_bim(threat_model: str, epsilon: float, num_steps: int, step_size: float, abs_stepsize: float) -> Callable:
+    return partial(_bim_attacks[threat_model], epsilon=epsilon, steps=num_steps, rel_stepsize=step_size,
+                   abs_stepsize=abs_stepsize)
 
 
 foolbox_index = {
