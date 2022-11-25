@@ -3,6 +3,7 @@ from typing import Callable, Optional
 
 from torchattacks import APGD, APGDT, AutoAttack, CW, DeepFool, FAB, FGSM, PGD, PGDL2, SparseFool
 
+from .wrapper import TorchattacksMinimalWrapper
 from ..utils import ConfigGetter
 
 
@@ -23,6 +24,30 @@ def get_ta_apgd(threat_model: str, targeted: bool, steps: int, epsilon: float, n
     apgd_func = APGDT if targeted else APGD
     return partial(apgd_func, norm=threat_model.capitalize(), steps=steps, eps=epsilon, n_restarts=num_restarts,
                    loss=loss, rho=rho)
+
+
+def ta_apgd_minimal():
+    name = 'apgd_minimal'
+    source = 'torchattacks'  # available: ['torchattacks']
+    threat_model = 'linf'
+    targeted = False  # use a targeted objective for the untargeted attack
+    steps = 100
+    num_restarts = 1
+    loss = 'ce'
+    rho = 0.75
+
+    init_eps = 1 / 255  # initial guess for line search
+    search_steps = 20  # number of search steps for line + binary search
+
+
+def get_ta_apgd_minimal(threat_model: str, targeted: bool, steps: int, num_restarts: int, loss: str, rho: float,
+                        init_eps: float, search_steps: int) -> Callable:
+    max_eps = 1 if threat_model == 'linf' else None
+    apgd_func = APGDT if targeted else APGD
+    attack = partial(apgd_func, norm=threat_model.capitalize(), steps=steps, n_restarts=num_restarts,
+                     loss=loss, rho=rho)
+    return partial(TorchattacksMinimalWrapper, attack=attack, init_eps=init_eps, search_steps=search_steps,
+                   max_eps=max_eps, batched=True)
 
 
 def ta_auto_attack():
@@ -92,6 +117,20 @@ def get_ta_fgsm(epsilon: float) -> Callable:
     return partial(FGSM, eps=epsilon)
 
 
+def ta_fgsm_minimal():
+    name = 'fgsm_minimal'
+    source = 'torchattacks'  # available: ['torchattacks']
+    threat_model = 'linf'
+
+    init_eps = 1 / 255  # initial guess for line search
+    search_steps = 20  # number of search steps for line + binary search
+
+
+def get_ta_fgsm_minimal(init_eps: float, search_steps: int) -> Callable:
+    return partial(TorchattacksMinimalWrapper, attack=FGSM, init_eps=init_eps, search_steps=search_steps, max_eps=1,
+                   batched=True)
+
+
 def ta_pgd():
     name = 'pgd'
     source = 'torchattacks'  # available: ['torchattacks']
@@ -104,6 +143,24 @@ def ta_pgd():
 
 def get_ta_pgd(num_steps: int, epsilon: float, alpha: float, random_start: bool) -> Callable:
     return partial(PGD, steps=num_steps, eps=epsilon, alpha=alpha, random_start=random_start)
+
+
+def ta_pgd_minimal():
+    name = 'pgd_minimal'
+    source = 'torchattacks'  # available: ['torchattacks']
+    threat_model = 'linf'
+    num_steps = 40
+    alpha = 2 / 255
+    random_start = True
+
+    init_eps = 1 / 255  # initial guess for line search
+    search_steps = 20  # number of search steps for line + binary search
+
+
+def get_ta_pgd_minimal(num_steps: int, alpha: float, random_start: bool, init_eps: float,
+                       search_steps: int) -> Callable:
+    attack = partial(PGD, steps=num_steps, alpha=alpha, random_start=random_start)
+    return partial(TorchattacksMinimalWrapper, attack=attack, init_eps=init_eps, search_steps=search_steps, max_eps=1)
 
 
 def ta_pgd_l2():
@@ -123,6 +180,25 @@ def get_ta_pgd_l2(num_steps: int, epsilon: float, alpha: float, random_start: bo
                    eps_for_division=eps_for_division)
 
 
+def ta_pgd_l2_minimal():
+    name = 'pgd_l2_minimal'
+    source = 'torchattacks'  # available: ['torchattacks']
+    threat_model = 'l2'
+    num_steps = 40
+    alpha = 0.2
+    random_start = True
+    eps_for_division = 1e-10
+
+    init_eps = 1  # initial guess for line search
+    search_steps = 20  # number of search steps for line + binary search
+
+
+def get_ta_pgd_l2_minimal(num_steps: int, alpha: float, random_start: bool, eps_for_division: float, init_eps: float,
+                          search_steps: int) -> Callable:
+    attack = partial(PGDL2, steps=num_steps, alpha=alpha, random_start=random_start, eps_for_division=eps_for_division)
+    return partial(TorchattacksMinimalWrapper, attack=attack, init_eps=init_eps, search_steps=search_steps, max_eps=1)
+
+
 def ta_sparsefool():
     name = 'sparsefool'
     source = 'torchattacks'  # available: ['torchattacks']
@@ -138,12 +214,16 @@ def get_ta_sparsefool(num_steps: int, lam: float, overshoot: float) -> Callable:
 
 torchattacks_index = {
     'apgd': ConfigGetter(config=ta_apgd, getter=get_ta_apgd),
+    'apgd_minimal': ConfigGetter(config=ta_apgd_minimal, getter=get_ta_apgd_minimal),
     'auto_attack': ConfigGetter(config=ta_auto_attack, getter=get_ta_auto_attack),
     'cw_l2': ConfigGetter(config=ta_cw_l2, getter=get_ta_cw_l2),
     'deepfool': ConfigGetter(config=ta_deepfool, getter=get_ta_deepfool),
     'fab': ConfigGetter(config=ta_fab, getter=get_ta_fab),
     'fgsm': ConfigGetter(config=ta_fgsm, getter=get_ta_fgsm),
+    'fgsm_minimal': ConfigGetter(config=ta_fgsm_minimal, getter=get_ta_fgsm_minimal),
     'pgd': ConfigGetter(config=ta_pgd, getter=get_ta_pgd),
+    'pgd_minimal': ConfigGetter(config=ta_pgd_minimal, getter=get_ta_pgd_minimal),
     'pgd_l2': ConfigGetter(config=ta_pgd_l2, getter=get_ta_pgd_l2),
+    'pgd_l2_minimal': ConfigGetter(config=ta_pgd_l2_minimal, getter=get_ta_pgd_l2_minimal),
     'sparsefool': ConfigGetter(config=ta_sparsefool, getter=get_ta_sparsefool),
 }
