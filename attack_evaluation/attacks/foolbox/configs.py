@@ -24,6 +24,7 @@ from foolbox.attacks import (
     LinfBasicIterativeAttack,
 )
 
+from .wrapper import FoolboxMinimalWrapper
 from ..utils import ConfigGetter
 
 
@@ -183,6 +184,25 @@ def get_fb_pgd(threat_model: str, epsilon: float, num_steps: int, step_size: flo
                    abs_stepsize=abs_stepsize)
 
 
+def fb_pgd_minimal():
+    name = 'pgd_minimal'
+    source = 'foolbox'
+    threat_model = 'l2'
+    num_steps = 50
+    step_size = 0.025
+    abs_stepsize = None
+
+    init_eps = 1  # initial guess for line search
+    search_steps = 20  # number of search steps for line + binary search
+
+
+def get_fb_pgd_minimal(threat_model: str, num_steps: int, step_size: float, abs_stepsize: float,
+                       init_eps: float, search_steps: int) -> Callable:
+    max_eps = 1 if threat_model == 'linf' else None
+    attack = partial(_pgd_attacks[threat_model], steps=num_steps, rel_stepsize=step_size, abs_stepsize=abs_stepsize)
+    return partial(FoolboxMinimalWrapper, attack=attack, init_eps=init_eps, search_steps=search_steps, max_eps=max_eps)
+
+
 def fb_fgm():
     name = 'fgm'
     source = 'foolbox'
@@ -198,6 +218,21 @@ _fgm_attacks = {
 
 def get_fb_fgm(threat_model: str, epsilon: float) -> Callable:
     return partial(_fgm_attacks[threat_model], epsilon=epsilon)
+
+
+def fb_fgm_minimal():
+    name = 'fgm_minimal'
+    source = 'foolbox'
+    threat_model = 'l2'
+
+    init_eps = 1  # initial guess for line search
+    search_steps = 20  # number of search steps for line + binary search
+
+
+def get_fb_fgm_minimal(threat_model: str, init_eps: float, search_steps: int) -> Callable:
+    max_eps = 1 if threat_model == 'linf' else None
+    attack = _fgm_attacks[threat_model]
+    return partial(FoolboxMinimalWrapper, attack=attack, init_eps=init_eps, search_steps=search_steps, max_eps=max_eps)
 
 
 def fb_bim():
@@ -221,6 +256,25 @@ def get_fb_bim(threat_model: str, epsilon: float, num_steps: int, step_size: flo
                    abs_stepsize=abs_stepsize)
 
 
+def fb_bim_minimal():
+    name = 'bim_minimal'
+    source = 'foolbox'
+    threat_model = 'linf'
+    num_steps = 10
+    step_size = 0.2
+    abs_stepsize = None
+
+    init_eps = 1 / 255  # initial guess for line search
+    search_steps = 20  # number of search steps for line + binary search
+
+
+def get_fb_bim_minimal(threat_model: str, num_steps: int, step_size: float, abs_stepsize: float,
+                       init_eps: float, search_steps: int) -> Callable:
+    max_eps = 1 if threat_model == 'linf' else None
+    attack = partial(_bim_attacks[threat_model], steps=num_steps, rel_stepsize=step_size, abs_stepsize=abs_stepsize)
+    return partial(FoolboxMinimalWrapper, attack=attack, init_eps=init_eps, search_steps=search_steps, max_eps=max_eps)
+
+
 foolbox_index = {
     'bb': ConfigGetter(config=fb_bb, getter=get_fb_bb),
     'cw_l2': ConfigGetter(config=fb_cw_l2, getter=get_fb_cw_l2),
@@ -230,6 +284,9 @@ foolbox_index = {
     'ead': ConfigGetter(config=fb_ead, getter=get_fb_ead),
     'fmn': ConfigGetter(config=fb_fmn, getter=get_fb_fmn),
     'pgd': ConfigGetter(config=fb_pgd, getter=get_fb_pgd),
+    'pgd_minimal': ConfigGetter(config=fb_pgd_minimal, getter=get_fb_pgd_minimal),
     'fgm': ConfigGetter(config=fb_fgm, getter=get_fb_fgm),
+    'fgm_minimal': ConfigGetter(config=fb_fgm_minimal, getter=get_fb_fgm_minimal),
     'bim': ConfigGetter(config=fb_bim, getter=get_fb_bim),
+    'bim_minimal': ConfigGetter(config=fb_bim_minimal, getter=get_fb_bim_minimal),
 }
