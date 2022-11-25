@@ -69,7 +69,7 @@ def dr_pgd_minimal():
     num_steps = 40
     step_size = 0.01
 
-    init_eps = 1  # initial guess for line search
+    init_eps = 1 / 255  # initial guess for line search
     search_steps = 20  # number of search steps for line + binary search
 
 
@@ -98,7 +98,7 @@ def dr_fgm_minimal():
     source = 'deeprobust'
     threat_model = 'linf'  # [linf, l2]
 
-    init_eps = 1  # initial guess for line search
+    init_eps = 1 / 255  # initial guess for line search
     search_steps = 20  # number of search steps for line + binary search
 
 
