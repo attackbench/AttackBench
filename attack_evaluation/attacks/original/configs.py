@@ -1,5 +1,3 @@
-import inspect
-import sys
 from functools import partial
 from typing import Callable, Optional
 
@@ -8,6 +6,11 @@ from .deepfool import deepfool_attack
 from .fast_adaptive_boundary import fab_attack
 from .fast_minimum_norm import fmn_attack
 from .trust_region import tr_attack
+
+_prefix = 'original'
+
+
+def _wrapper(attack, **kwargs): return attack(**kwargs)
 
 
 def original_apgd():
@@ -105,13 +108,3 @@ def original_tr():
 
 def get_original_tr(threat_model: str, adaptive: bool, epsilon: float, c: int, num_steps: int) -> Callable:
     return partial(tr_attack, threat_model=threat_model, adaptive=adaptive, eps=epsilon, c=c, iter=num_steps)
-
-
-original_funcs = inspect.getmembers(sys.modules[__name__],
-                                    predicate=lambda f: inspect.isfunction(f) and f.__module__ == __name__)
-original_configs, original_getters = [], {}
-for name, func in original_funcs:
-    if name.startswith('original_'):
-        original_configs.append(func)
-    elif name.startswith('get_original_'):
-        original_getters[name.removeprefix('get_original_')] = func

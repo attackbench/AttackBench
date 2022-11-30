@@ -1,5 +1,3 @@
-import inspect
-import sys
 from functools import partial
 from typing import Callable
 
@@ -9,8 +7,10 @@ from cleverhans.torch.attacks.hop_skip_jump_attack import hop_skip_jump_attack
 from cleverhans.torch.attacks.projected_gradient_descent import projected_gradient_descent
 from cleverhans.torch.attacks.spsa import spsa
 
-from .wrapper import cleverhans_minimal_wrapper
+from .wrapper import cleverhans_minimal_wrapper, cleverhans_wrapper
 
+_prefix = 'ch'
+_wrapper = cleverhans_wrapper
 _norms = {
     'l0': 0,
     'l1': 1,
@@ -136,13 +136,3 @@ def get_ch_pgd_minimal(threat_model: str, eps_iter: float, steps: int, init_eps:
     max_eps = 1 if threat_model == 'linf' else None
     return partial(cleverhans_minimal_wrapper, attack=attack, init_eps=init_eps, max_eps=max_eps,
                    search_steps=search_steps)
-
-
-ch_funcs = inspect.getmembers(sys.modules[__name__],
-                              predicate=lambda f: inspect.isfunction(f) and f.__module__ == __name__)
-cleverhans_configs, cleverhans_getters = [], {}
-for name, func in ch_funcs:
-    if name.startswith('ch_'):
-        cleverhans_configs.append(func)
-    elif name.startswith('get_ch_'):
-        cleverhans_getters[name.removeprefix('get_ch_')] = func

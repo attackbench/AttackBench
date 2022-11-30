@@ -1,15 +1,16 @@
-import inspect
-import sys
 import warnings
 from functools import partial
-from typing import Callable, Tuple
+from typing import Dict
 
 from deeprobust.image.attack.cw import CarliniWagner
 from deeprobust.image.attack.deepfool import DeepFool
 from deeprobust.image.attack.fgsm import FGSM
 from deeprobust.image.attack.pgd import PGD
 
-from .wrapper import DeepRobustMinimalWrapper
+from .wrapper import DeepRobustMinimalWrapper, deeprobust_wrapper
+
+_prefix = 'dr'
+_wrapper = deeprobust_wrapper
 
 
 def dr_cw_l2():
@@ -25,15 +26,17 @@ def dr_cw_l2():
 
 
 def get_dr_cw_l2(confidence: float, num_binary_search_steps: int, num_steps: int, initial_const: float,
-                 step_size: float, abort_early: bool) -> Tuple[Callable, dict]:
+                 step_size: float, abort_early: bool) -> Dict:
     warnings.warn('C&W L2 is not functional with DeepRobust.')
     # Several issues:
     #  - cannot import _status_message from scipy.optimize.optimize with scipy>=1.8.0 ==> use scipy<1.8.0
     #  - does not work in batches
     #  - error in line 181 of deeprobust.image.attack.cw which tries to format the loss tensor
-    return CarliniWagner, dict(confidence=confidence, binary_search_steps=num_binary_search_steps,
-                               abort_early=abort_early, max_iterations=num_steps, initial_const=initial_const,
-                               learning_rate=step_size)
+    return dict(
+        attack=CarliniWagner,
+        attack_params=dict(confidence=confidence, binary_search_steps=num_binary_search_steps, abort_early=abort_early,
+                           max_iterations=num_steps, initial_const=initial_const, learning_rate=step_size)
+    )
 
 
 def dr_deepfool():
@@ -45,9 +48,10 @@ def dr_deepfool():
     num_classes = 10
 
 
-def get_dr_deepfool(overshoot: float, num_steps: int, num_classes: int) -> Tuple[Callable, dict]:
+def get_dr_deepfool(overshoot: float, num_steps: int, num_classes: int) -> Dict:
     warnings.warn('DeepFool does not support batches in DeepRobust.')
-    return DeepFool, dict(overshoot=overshoot, max_iteration=num_steps, num_classes=num_classes)
+    return dict(attack=DeepFool,
+                attack_params=dict(overshoot=overshoot, max_iteration=num_steps, num_classes=num_classes))
 
 
 def dr_pgd():
@@ -59,8 +63,9 @@ def dr_pgd():
     step_size = 0.01
 
 
-def get_dr_pgd(threat_model: str, epsilon: float, num_steps: int, step_size: float) -> Tuple[Callable, dict]:
-    return PGD, dict(bound=threat_model, epsilon=epsilon, num_steps=num_steps, step_size=step_size)
+def get_dr_pgd(threat_model: str, epsilon: float, num_steps: int, step_size: float) -> Dict:
+    return dict(attack=PGD,
+                attack_params=dict(bound=threat_model, epsilon=epsilon, num_steps=num_steps, step_size=step_size))
 
 
 def dr_pgd_minimal():
@@ -74,12 +79,11 @@ def dr_pgd_minimal():
     search_steps = 20  # number of search steps for line + binary search
 
 
-def get_dr_pgd_minimal(threat_model: str, num_steps: int, step_size: float, init_eps: float,
-                       search_steps: int) -> Tuple[Callable, dict]:
+def get_dr_pgd_minimal(threat_model: str, num_steps: int, step_size: float, init_eps: float, search_steps: int) -> Dict:
     max_eps = 1 if threat_model == 'linf' else None
     attack = partial(DeepRobustMinimalWrapper, attack=PGD, init_eps=init_eps, search_steps=search_steps,
                      max_eps=max_eps)
-    return attack, dict(bound=threat_model, num_steps=num_steps, step_size=step_size)
+    return dict(attack=attack, attack_params=dict(bound=threat_model, num_steps=num_steps, step_size=step_size))
 
 
 def dr_fgm():
@@ -89,9 +93,9 @@ def dr_fgm():
     epsilon = 0.2
 
 
-def get_dr_fgm(threat_model: str, epsilon: float) -> Tuple[Callable, dict]:
+def get_dr_fgm(threat_model: str, epsilon: float) -> Dict:
     order = {'linf': float('inf'), 'l2': 2}
-    return FGSM, dict(order=order[threat_model], epsilon=epsilon, clip_max=1, clip_min=0)
+    return dict(attack=FGSM, attack_params=dict(order=order[threat_model], epsilon=epsilon, clip_max=1, clip_min=0))
 
 
 def dr_fgm_minimal():
@@ -103,19 +107,9 @@ def dr_fgm_minimal():
     search_steps = 20  # number of search steps for line + binary search
 
 
-def get_dr_fgm_minimal(threat_model: str, init_eps: float, search_steps: int) -> Tuple[Callable, dict]:
+def get_dr_fgm_minimal(threat_model: str, init_eps: float, search_steps: int) -> Dict:
     order = {'linf': float('inf'), 'l2': 2}
     max_eps = 1 if threat_model == 'linf' else None
     attack = partial(DeepRobustMinimalWrapper, attack=FGSM, init_eps=init_eps, search_steps=search_steps,
                      max_eps=max_eps)
-    return attack, dict(order=order[threat_model], clip_min=0, clip_max=1)
-
-
-deeprobust_funcs = inspect.getmembers(sys.modules[__name__],
-                                      predicate=lambda f: inspect.isfunction(f) and f.__module__ == __name__)
-deeprobust_configs, deeprobust_getters = [], {}
-for name, func in deeprobust_funcs:
-    if name.startswith('dr_'):
-        deeprobust_configs.append(func)
-    elif name.startswith('get_dr_'):
-        deeprobust_getters[name.removeprefix('get_dr_')] = func
+    return dict(attack=attack, attack_params=dict(order=order[threat_model], clip_min=0, clip_max=1))

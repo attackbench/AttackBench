@@ -1,5 +1,3 @@
-import inspect
-import sys
 from functools import partial
 from typing import Callable, Optional
 
@@ -16,8 +14,10 @@ from art.attacks.evasion import (
     SaliencyMapMethod
 )
 
-from .wrapper import ArtMinimalWrapper
+from .wrapper import ArtMinimalWrapper, art_wrapper
 
+_prefix = 'art'
+_wrapper = art_wrapper
 _norms = {
     'l0': 0,
     'l1': 1,
@@ -275,13 +275,3 @@ def get_art_pgd_minimal(threat_model: str, step_size: float, num_steps: int, num
                      num_random_init=num_random_init, max_iter=num_steps, random_eps=random_eps)
     max_eps = 1 if threat_model == 'linf' else None
     return ArtMinimalWrapper(attack=attack, init_eps=init_eps, max_eps=max_eps, search_steps=search_steps)
-
-
-art_funcs = inspect.getmembers(sys.modules[__name__],
-                               predicate=lambda f: inspect.isfunction(f) and f.__module__ == __name__)
-art_configs, art_getters = [], {}
-for name, func in art_funcs:
-    if name.startswith('art_'):
-        art_configs.append(func)
-    elif name.startswith('get_art_'):
-        art_getters[name.removeprefix('get_art_')] = func

@@ -1,5 +1,3 @@
-import inspect
-import sys
 from functools import partial
 from typing import Callable, Optional
 
@@ -26,7 +24,10 @@ from foolbox.attacks import (
     LinfBasicIterativeAttack,
 )
 
-from .wrapper import FoolboxMinimalWrapper
+from .wrapper import FoolboxMinimalWrapper, foolbox_wrapper
+
+_prefix = 'fb'
+_wrapper = foolbox_wrapper
 
 
 def fb_bb():
@@ -274,13 +275,3 @@ def get_fb_bim_minimal(threat_model: str, num_steps: int, step_size: float, abs_
     max_eps = 1 if threat_model == 'linf' else None
     attack = partial(_bim_attacks[threat_model], steps=num_steps, rel_stepsize=step_size, abs_stepsize=abs_stepsize)
     return partial(FoolboxMinimalWrapper, attack=attack, init_eps=init_eps, search_steps=search_steps, max_eps=max_eps)
-
-
-foolbox_funcs = inspect.getmembers(sys.modules[__name__],
-                                   predicate=lambda f: inspect.isfunction(f) and f.__module__ == __name__)
-foolbox_configs, foolbox_getters = [], {}
-for name, func in foolbox_funcs:
-    if name.startswith('fb_'):
-        foolbox_configs.append(func)
-    elif name.startswith('get_fb_'):
-        foolbox_getters[name.removeprefix('get_fb_')] = func

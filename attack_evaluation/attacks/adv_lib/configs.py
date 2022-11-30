@@ -1,5 +1,3 @@
-import inspect
-import sys
 from functools import partial
 from typing import Callable, Optional
 
@@ -19,8 +17,10 @@ from adv_lib.attacks import (
     vfga,
 )
 
-from .wrapper import adv_lib_minimal_wrapper
+from .wrapper import adv_lib_minimal_wrapper, adv_lib_wrapper
 
+_prefix = 'adv_lib'
+_wrapper = adv_lib_wrapper
 _norms = {
     'l0': 0,
     'l1': 1,
@@ -301,13 +301,3 @@ def adv_lib_vfga():
 
 def get_adv_lib_vfga(num_steps: int, n_samples: int, large_memory: bool) -> Callable:
     return partial(vfga, max_iter=num_steps, n_samples=n_samples, large_memory=large_memory)
-
-
-adv_lib_funcs = inspect.getmembers(sys.modules[__name__],
-                                   predicate=lambda f: inspect.isfunction(f) and f.__module__ == __name__)
-adv_lib_configs, adv_lib_getters = [], {}
-for name, func in adv_lib_funcs:
-    if name.startswith('adv_lib_'):
-        adv_lib_configs.append(func)
-    elif name.startswith('get_adv_lib_'):
-        adv_lib_getters[name.removeprefix('get_adv_lib_')] = func
