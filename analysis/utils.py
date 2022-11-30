@@ -1,3 +1,3 @@
 from collections import namedtuple
 
-Scenario = namedtuple('Scenario', ['dataset', 'threat_model', 'model'])
+Scenario = namedtuple('Scenario', ['dataset', 'threat_model', 'model', 'batch_size'])

@@ -26,6 +26,7 @@ if __name__ == '__main__':
     parser.add_argument('--threat-model', '--tm', type=str, default=None, help='Threat model for which to plot results')
     parser.add_argument('--model', '-m', type=str, default=None, help='Model for which to plot results')
     parser.add_argument('--library', '-l', type=str, default=None, help='Library for which to plot results')
+    parser.add_argument('--batch_size', '-bs', type=int, default=None, help="Batch size for which to plot the results")
     parser.add_argument('--info-files', '--if', type=str, nargs='+', default=None,
                         help='List of info files to plot from.')
     parser.add_argument('--suffix', '-s', type=str, default=None, help='Suffix for the name of the plot')
@@ -38,21 +39,24 @@ if __name__ == '__main__':
 
     to_plot = defaultdict(list)
     if args.info_files is not None:
-        info_files = [pathlib.Path(info_file) for info_file in args.info_files]
+        info_files_paths = args.info_files
+        info_files = [pathlib.Path(info_file) for info_file in info_files_paths]
         assert all(info_file.exists() for info_file in info_files)
     else:
         dataset = args.dataset or '*'
         threat_model = args.threat_model or '*'
         model = args.model or '*'
         library = f'{args.library}_*/**' if args.library else '**'
-        info_files = result_path.glob(os.sep.join((dataset, threat_model, model, library, 'info.json')))
+        batch_size = f'batch_size_{args.batch_size}' if args.batch_size else '*'
+        info_files_paths = os.sep.join((dataset, threat_model, model, batch_size, library, 'info.json'))
+        info_files = result_path.glob(info_files_paths)
 
     for info_file in info_files:
         scenario, hash_distances = read_results(info_file)
         to_plot[scenario].append((info_file.parent, hash_distances))
 
     for scenario in to_plot.keys():
-        best_distances_file = result_path / f'{scenario.dataset}-{scenario.threat_model}-{scenario.model}.json'
+        best_distances_file = result_path / f'{scenario.dataset}-{scenario.threat_model}-{scenario.model}-{scenario.batch_size}.json'
         if not best_distances_file.exists():
             warnings.warn(f'Best distances files {best_distances_file} does not exist for scenario {scenario}.')
             warnings.warn(f'Compiling best distances file for scenario {scenario}')
@@ -112,10 +116,9 @@ if __name__ == '__main__':
         ax.legend(loc='center right', labelspacing=.1, handletextpad=0.5)
         fig.tight_layout()
 
-        library = args.library or ""
-        parts = [library, scenario.dataset, scenario.threat_model, scenario.model]
+        library = args.library or "all"
+        parts = [scenario.dataset, scenario.threat_model, scenario.model, scenario.batch_size, library]
         if args.suffix:
             parts.append(args.suffix)
         fig_name = result_path / f'{"-".join(parts)}.pdf'
         fig.savefig(fig_name, bbox_inches='tight')
-

@@ -61,53 +61,53 @@
   },
   "l1": {
     "foolbox": {
-      "prefix": "fb",
+      "prefix": "fb_",
       "attacks": ["bb", "ead", "fmn", "pgd"]
     },
     "art": {
-      "prefix": "art",
+      "prefix": "art_",
       "attacks": ["apgd", "bb", "ead", "pgd"]
     },
     "deeprobust":{
-      "prefix": "dr",
+      "prefix": "dr_",
       "attacks": []
     },
     "cleverhans":{
-      "prefix": "ch",
+      "prefix": "ch_",
       "attacks": []
     },
     "adversarial_lib": {
-      "prefix": "adv_lib",
+      "prefix": "adv_lib_",
       "attacks": ["alma", "apgd", "fab", "fmn", "pdpgd"]
     },
     "torch_attacks": {
-      "prefix": "ta",
+      "prefix": "ta_",
       "attacks": ["fab"]
     }
   },
   "linf": {
     "foolbox": {
-      "prefix": "fb",
+      "prefix": "fb_",
       "attacks": ["bb", "deepfool", "fmn", "pgd", "fgm"]
     },
     "art": {
-      "prefix": "art",
+      "prefix": "art_",
       "attacks": ["apgd", "bb", "cw_linf", "fgsm", "pgd"]
     },
     "deeprobust":{
-      "prefix": "dr",
+      "prefix": "dr_",
       "attacks": ["fgm", "pgd"]
     },
     "cleverhans":{
-      "prefix": "ch",
+      "prefix": "ch_",
       "attacks": ["fgm", "pgd"]
     },
     "adversarial_lib": {
-      "prefix": "adv_lib",
+      "prefix": "adv_lib_",
       "attacks": ["apgd", "cw_linf", "fab", "fmn", "pdpgd", "pgd", "tr"]
     },
     "torch_attacks": {
-      "prefix": "ta",
+      "prefix": "ta_",
       "attacks": ["fgsm", "pgd", "apgd"]
     }
   }

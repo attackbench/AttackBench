@@ -9,13 +9,13 @@ from utils import Scenario
 
 def compile_scenario(path: pathlib.Path, scenario: Scenario, recompile_all: bool = False) -> None:
     # find completed experiment results
-    scenario_path = path / scenario.dataset / scenario.threat_model / scenario.model
+    scenario_path = path / scenario.dataset / scenario.threat_model / scenario.model.lower()
     info_files = list(scenario_path.glob(os.path.join('**', 'info.json')))
     if len(info_files) == 0:
         return
 
     # open previous file if already existing
-    best_distances_path = path / f'{scenario.dataset}-{scenario.threat_model}-{scenario.model}.json'
+    best_distances_path = path / f'{scenario.dataset}-{scenario.threat_model}-{scenario.model}-{scenario.batch_size}.json'
     best_distances = {}
     if best_distances_path.exists() and not recompile_all:
         with open(best_distances_path, 'r') as f:

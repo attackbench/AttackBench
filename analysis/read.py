@@ -20,6 +20,7 @@ def read_results(info_file: Union[Path, str],
 
     # extract main configs
     dataset = config['dataset']['name']
+    batch_size = str(config['dataset']['batch_size'])
     model = config['model']['name']
     threat_model = config['attack']['threat_model']
 
@@ -42,5 +43,5 @@ def read_results(info_file: Union[Path, str],
     distances[ori_success] = already_adv_distance
 
     # store results
-    scenario = Scenario(dataset=dataset, threat_model=threat_model, model=model)
+    scenario = Scenario(dataset=dataset, threat_model=threat_model, model=model, batch_size=batch_size)
     return scenario, {hash: distance for (hash, distance) in zip(hashes, distances)}
