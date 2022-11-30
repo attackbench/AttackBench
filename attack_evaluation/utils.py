@@ -67,8 +67,8 @@ def run_attack(model: nn.Module,
         forward_counter.reset(), backward_counter.reset()
 
         # checking box constraint
-        batch_box_failures = ((adv_inputs < 0) | (adv_inputs > 1)).sum(dim=[1, 2, 3])
-        box_failures.extend(batch_box_failures)
+        batch_box_failures = ((adv_inputs < 0) | (adv_inputs > 1)).flatten(1).any(1)
+        box_failures.extend(batch_box_failures.cpu().tolist())
 
         if adv_inputs.min() < 0 or adv_inputs.max() > 1:
             warnings.warn('Values of produced adversarials are not in the [0, 1] range -> Clipping to [0, 1].')

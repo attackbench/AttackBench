@@ -14,6 +14,7 @@ from art.attacks.evasion import (
     SaliencyMapMethod
 )
 
+from .wrapper import ArtMinimalWrapper
 from ..utils import ConfigGetter
 
 _norms = {
@@ -41,6 +42,27 @@ def get_art_apgd(threat_model: str, epsilon: float, step_size: float, num_steps:
                    max_iter=num_steps, nb_random_init=nb_random_init, loss_type=loss_type)
 
 
+def art_apgd_minimal():
+    name = 'apgd_minimal'
+    source = 'art'  # available: ['art']
+    threat_model = 'linf'
+    step_size = 0.1
+    num_steps = 100
+    nb_random_init = 5
+    loss_type = None
+
+    init_eps = 1 / 255  # initial guess for line search
+    search_steps = 20  # number of search steps for line + binary search
+
+
+def get_art_apgd_minimal(threat_model: str, step_size: float, num_steps: int, nb_random_init: int,
+                         loss_type: Optional[str], init_eps: float, search_steps: int) -> Callable:
+    attack = partial(AutoProjectedGradientDescent, norm=_norms[threat_model], eps_step=step_size,
+                     max_iter=num_steps, nb_random_init=nb_random_init, loss_type=loss_type)
+    max_eps = 1 if threat_model == 'linf' else None
+    return ArtMinimalWrapper(attack=attack, init_eps=init_eps, max_eps=max_eps, search_steps=search_steps)
+
+
 def art_bim():
     name = 'bim'
     source = 'art'  # available: ['art']
@@ -52,6 +74,25 @@ def art_bim():
 
 def get_art_bim(epsilon: float, step_size: float, num_steps: int) -> Callable:
     return partial(BasicIterativeMethod, eps=epsilon, eps_step=step_size, max_iter=num_steps)
+
+
+def art_bim_minimal():
+    name = 'bim_minimal'
+    source = 'art'  # available: ['art']
+    threat_model = 'linf'
+    epsilon = 0.3
+    step_size = 0.1
+    num_steps = 100
+
+    init_eps = 1 / 255  # initial guess for line search
+    search_steps = 20  # number of search steps for line + binary search
+
+
+def get_art_bim_minimal(threat_model: str, epsilon: float, step_size: float, num_steps: int,
+                        init_eps: float, search_steps: int) -> Callable:
+    attack = partial(BasicIterativeMethod, eps=epsilon, eps_step=step_size, max_iter=num_steps)
+    max_eps = 1 if threat_model == 'linf' else None
+    return ArtMinimalWrapper(attack=attack, init_eps=init_eps, max_eps=max_eps, search_steps=search_steps)
 
 
 def art_bb():
@@ -164,6 +205,27 @@ def get_art_fgsm(threat_model: str, epsilon: float, step_size: float, num_random
                    num_random_init=num_random_init, minimal=minimal)
 
 
+def art_fgsm_minimal():
+    name = 'fgsm_minimal'
+    source = 'art'  # available: ['art']
+    threat_model = 'linf'
+    epsilon = 0.3
+    step_size = 0.1
+    num_random_init = 0
+    minimal = False
+
+    init_eps = 1 / 255  # initial guess for line search
+    search_steps = 20  # number of search steps for line + binary search
+
+
+def get_art_fgsm_minimal(threat_model: str, epsilon: float, step_size: float, num_random_init: int, minimal: bool,
+                         init_eps: float, search_steps: int) -> Callable:
+    attack = partial(FastGradientMethod, norm=_norms[threat_model], eps=epsilon, eps_step=step_size,
+                     num_random_init=num_random_init, minimal=minimal)
+    max_eps = 1 if threat_model == 'linf' else None
+    return ArtMinimalWrapper(attack=attack, init_eps=init_eps, max_eps=max_eps, search_steps=search_steps)
+
+
 def art_jsma():
     name = 'jsma'
     source = 'art'  # available: ['art']
@@ -193,15 +255,40 @@ def get_art_pgd(threat_model: str, epsilon: float, step_size: float, num_steps: 
                    num_random_init=num_random_init, max_iter=num_steps, random_eps=random_eps)
 
 
+def art_pgd_minimal():
+    name = 'pgd_minimal'
+    source = 'art'  # available: ['art']
+    threat_model = 'linf'
+    step_size = 0.1
+    num_steps = 100
+    num_random_init = 0
+    random_eps = False
+
+    init_eps = 1 / 255  # initial guess for line search
+    search_steps = 20  # number of search steps for line + binary search
+
+
+def get_art_pgd_minimal(threat_model: str, step_size: float, num_steps: int, num_random_init: int,
+                        random_eps: bool, init_eps: float, search_steps: int) -> Callable:
+    attack = partial(ProjectedGradientDescent, norm=_norms[threat_model], eps_step=step_size,
+                     num_random_init=num_random_init, max_iter=num_steps, random_eps=random_eps)
+    max_eps = 1 if threat_model == 'linf' else None
+    return ArtMinimalWrapper(attack=attack, init_eps=init_eps, max_eps=max_eps, search_steps=search_steps)
+
+
 art_index = {
     'apgd': ConfigGetter(config=art_apgd, getter=get_art_apgd),
+    'apgd_minimal': ConfigGetter(config=art_apgd_minimal, getter=get_art_apgd_minimal),
     'bim': ConfigGetter(config=art_bim, getter=get_art_bim),
+    'bim_minimal': ConfigGetter(config=art_bim_minimal, getter=get_art_bim_minimal),
     'bb': ConfigGetter(config=art_bb, getter=get_art_bb),
     'cw_l2': ConfigGetter(config=art_cw_l2, getter=get_art_cw_l2),
     'cw_linf': ConfigGetter(config=art_cw_linf, getter=get_art_cw_linf),
     'deepfool': ConfigGetter(config=art_deepfool, getter=get_art_deepfool),
     'ead': ConfigGetter(config=art_ead, getter=get_art_ead),
     'fgsm': ConfigGetter(config=art_fgsm, getter=get_art_fgsm),
+    'fgsm_minimal': ConfigGetter(config=art_fgsm_minimal, getter=get_art_fgsm_minimal),
     'jsma': ConfigGetter(config=art_jsma, getter=get_art_jsma),
     'pgd': ConfigGetter(config=art_pgd, getter=get_art_pgd),
+    'pgd_minimal': ConfigGetter(config=art_pgd_minimal, getter=get_art_pgd_minimal),
 }
