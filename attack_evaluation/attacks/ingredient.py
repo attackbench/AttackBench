@@ -157,31 +157,31 @@ def get_adv_lib_attack(name: str) -> Callable:
 
 @attack_ingredient.capture
 def get_art_attack(name: str) -> Callable:
-    attack = art_getters[name].getter()
+    attack = art_getters[name]()
     return partial(art_wrapper, attack=attack)
 
 
 @attack_ingredient.capture
 def get_cleverhans_attack(name: str) -> Callable:
-    attack = cleverhans_getters[name].getter()
+    attack = cleverhans_getters[name]()
     return partial(cleverhans_wrapper, attack=attack)
 
 
 @attack_ingredient.capture
 def get_deeprobust_attack(name: str) -> Callable:
-    attack, attack_params = deeprobust_getters[name].getter()
+    attack, attack_params = deeprobust_getters[name]()
     return partial(deeprobust_wrapper, attack=attack, attack_params=attack_params)
 
 
 @attack_ingredient.capture
 def get_foolbox_attack(name: str) -> Callable:
-    attack = foolbox_getters[name].getter()
+    attack = foolbox_getters[name]()
     return partial(foolbox_wrapper, attack=attack)
 
 
 @attack_ingredient.capture
 def get_torchattacks_attack(name: str) -> Callable:
-    attack = torchattacks_getters[name].getter()
+    attack = torchattacks_getters[name]()
     return partial(torchattacks_wrapper, attack=attack)
 
 
