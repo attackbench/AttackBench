@@ -1,22 +1,28 @@
+import itertools
 from functools import partial
 from typing import Callable, Optional
 
 from sacred import Ingredient
 
-from .adv_lib import adv_lib_index, adv_lib_wrapper
-from .art import art_index, art_wrapper
-from .deeprobust import deeprobust_index, deeprobust_wrapper
-from .foolbox import foolbox_index, foolbox_wrapper
+from .adv_lib import adv_lib_configs, adv_lib_getters, adv_lib_wrapper
+from .art import art_configs, art_getters, art_wrapper
+from .cleverhans import cleverhans_configs, cleverhans_getters, cleverhans_wrapper
+from .deeprobust import deeprobust_configs, deeprobust_getters, deeprobust_wrapper
+from .foolbox import foolbox_configs, foolbox_getters, foolbox_wrapper
 from .original import apgd_attack, apgd_t_attack, deepfool_attack, fab_attack, fmn_attack, tr_attack
-from .torchattacks import torchattacks_index, torchattacks_wrapper
-from .cleverhans import cleverhans_index, cleverhans_wrapper
+from .torchattacks import torchattacks_configs, torchattacks_getters, torchattacks_wrapper
 
 attack_ingredient = Ingredient('attack')
 
-for index in [adv_lib_index, art_index, deeprobust_index, foolbox_index, torchattacks_index, cleverhans_index]:
-    for attack in index.values():
-        attack_ingredient.named_config(attack.config)
-        attack.getter = attack_ingredient.capture(attack.getter)
+configs = [adv_lib_configs, art_configs, cleverhans_configs, deeprobust_configs, foolbox_configs, torchattacks_configs]
+getters = [adv_lib_getters, art_getters, cleverhans_getters, deeprobust_getters, foolbox_getters, torchattacks_getters]
+
+for config in itertools.chain.from_iterable(configs):
+    attack_ingredient.named_config(config)
+
+for getter in getters:
+    for attack in getter.keys():
+        getter[attack] = attack_ingredient.capture(getter[attack])
 
 
 @attack_ingredient.named_config
@@ -145,38 +151,38 @@ def get_original_attack(name: str) -> Callable:
 
 @attack_ingredient.capture
 def get_adv_lib_attack(name: str) -> Callable:
-    attack = adv_lib_index[name].getter()
+    attack = adv_lib_getters[name]()
     return partial(adv_lib_wrapper, attack=attack)
 
 
 @attack_ingredient.capture
+def get_art_attack(name: str) -> Callable:
+    attack = art_getters[name].getter()
+    return partial(art_wrapper, attack=attack)
+
+
+@attack_ingredient.capture
+def get_cleverhans_attack(name: str) -> Callable:
+    attack = cleverhans_getters[name].getter()
+    return partial(cleverhans_wrapper, attack=attack)
+
+
+@attack_ingredient.capture
+def get_deeprobust_attack(name: str) -> Callable:
+    attack, attack_params = deeprobust_getters[name].getter()
+    return partial(deeprobust_wrapper, attack=attack, attack_params=attack_params)
+
+
+@attack_ingredient.capture
 def get_foolbox_attack(name: str) -> Callable:
-    attack = foolbox_index[name].getter()
+    attack = foolbox_getters[name].getter()
     return partial(foolbox_wrapper, attack=attack)
 
 
 @attack_ingredient.capture
 def get_torchattacks_attack(name: str) -> Callable:
-    attack = torchattacks_index[name].getter()
+    attack = torchattacks_getters[name].getter()
     return partial(torchattacks_wrapper, attack=attack)
-
-
-@attack_ingredient.capture
-def get_art_attack(name: str) -> Callable:
-    attack = art_index[name].getter()
-    return partial(art_wrapper, attack=attack)
-
-
-@attack_ingredient.capture
-def get_deeprobust_attack(name: str) -> Callable:
-    attack, attack_params = deeprobust_index[name].getter()
-    return partial(deeprobust_wrapper, attack=attack, attack_params=attack_params)
-
-
-@attack_ingredient.capture
-def get_cleverhans_attack(name: str) -> Callable:
-    attack = cleverhans_index[name].getter()
-    return partial(cleverhans_wrapper, attack=attack)
 
 
 _libraries = {

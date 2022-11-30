@@ -1,3 +1,5 @@
+import inspect
+import sys
 from functools import partial
 from typing import Callable, Optional
 
@@ -25,7 +27,6 @@ from foolbox.attacks import (
 )
 
 from .wrapper import FoolboxMinimalWrapper
-from ..utils import ConfigGetter
 
 
 def fb_bb():
@@ -58,7 +59,7 @@ def fb_cw_l2():
     name = 'cw_l2'
     source = 'foolbox'
     threat_model = 'l2'
-    num_steps = 100 # default was 10000
+    num_steps = 100  # default was 10000
     num_binary_search_steps = 9
     step_size = 0.01
     confidence = 0
@@ -275,18 +276,11 @@ def get_fb_bim_minimal(threat_model: str, num_steps: int, step_size: float, abs_
     return partial(FoolboxMinimalWrapper, attack=attack, init_eps=init_eps, search_steps=search_steps, max_eps=max_eps)
 
 
-foolbox_index = {
-    'bb': ConfigGetter(config=fb_bb, getter=get_fb_bb),
-    'cw_l2': ConfigGetter(config=fb_cw_l2, getter=get_fb_cw_l2),
-    'dataset': ConfigGetter(config=fb_dataset, getter=get_fb_dataset),
-    'ddn': ConfigGetter(config=fb_ddn, getter=get_fb_ddn),
-    'deepfool': ConfigGetter(config=fb_deepfool, getter=get_fb_deepfool),
-    'ead': ConfigGetter(config=fb_ead, getter=get_fb_ead),
-    'fmn': ConfigGetter(config=fb_fmn, getter=get_fb_fmn),
-    'pgd': ConfigGetter(config=fb_pgd, getter=get_fb_pgd),
-    'pgd_minimal': ConfigGetter(config=fb_pgd_minimal, getter=get_fb_pgd_minimal),
-    'fgm': ConfigGetter(config=fb_fgm, getter=get_fb_fgm),
-    'fgm_minimal': ConfigGetter(config=fb_fgm_minimal, getter=get_fb_fgm_minimal),
-    'bim': ConfigGetter(config=fb_bim, getter=get_fb_bim),
-    'bim_minimal': ConfigGetter(config=fb_bim_minimal, getter=get_fb_bim_minimal),
-}
+foolbox_funcs = inspect.getmembers(sys.modules[__name__],
+                                   predicate=lambda f: inspect.isfunction(f) and f.__module__ == __name__)
+foolbox_configs, foolbox_getters = [], {}
+for name, func in foolbox_funcs:
+    if name.startswith('fb_'):
+        foolbox_configs.append(func)
+    elif name.startswith('get_fb_'):
+        foolbox_getters[name.removeprefix('get_fb_')] = func

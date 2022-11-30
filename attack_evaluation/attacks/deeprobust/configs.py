@@ -1,3 +1,5 @@
+import inspect
+import sys
 import warnings
 from functools import partial
 from typing import Callable, Tuple
@@ -8,7 +10,6 @@ from deeprobust.image.attack.fgsm import FGSM
 from deeprobust.image.attack.pgd import PGD
 
 from .wrapper import DeepRobustMinimalWrapper
-from ..utils import ConfigGetter
 
 
 def dr_cw_l2():
@@ -17,7 +18,7 @@ def dr_cw_l2():
     threat_model = 'l2'
     confidence = 0.0001
     num_binary_search_steps = 5
-    num_steps = 100 # default was 1000
+    num_steps = 100  # default was 1000
     initial_const = 0.01
     step_size = 0.00001
     abort_early = True
@@ -110,11 +111,11 @@ def get_dr_fgm_minimal(threat_model: str, init_eps: float, search_steps: int) ->
     return attack, dict(order=order[threat_model], clip_min=0, clip_max=1)
 
 
-deeprobust_index = {
-    'cw_l2': ConfigGetter(config=dr_cw_l2, getter=get_dr_cw_l2),
-    'deepfool': ConfigGetter(config=dr_deepfool, getter=get_dr_deepfool),
-    'pgd': ConfigGetter(config=dr_pgd, getter=get_dr_pgd),
-    'pgd_minimal': ConfigGetter(config=dr_pgd_minimal, getter=get_dr_pgd_minimal),
-    'fgm': ConfigGetter(config=dr_fgm, getter=get_dr_fgm),
-    'fgm_minimal': ConfigGetter(config=dr_fgm_minimal, getter=get_dr_fgm_minimal),
-}
+deeprobust_funcs = inspect.getmembers(sys.modules[__name__],
+                                      predicate=lambda f: inspect.isfunction(f) and f.__module__ == __name__)
+deeprobust_configs, deeprobust_getters = [], {}
+for name, func in deeprobust_funcs:
+    if name.startswith('dr_'):
+        deeprobust_configs.append(func)
+    elif name.startswith('get_dr_'):
+        deeprobust_getters[name.removeprefix('get_dr_')] = func

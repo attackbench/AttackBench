@@ -1,3 +1,5 @@
+import inspect
+import sys
 from functools import partial
 from typing import Callable, Optional
 
@@ -15,7 +17,6 @@ from art.attacks.evasion import (
 )
 
 from .wrapper import ArtMinimalWrapper
-from ..utils import ConfigGetter
 
 _norms = {
     'l0': 0,
@@ -276,19 +277,11 @@ def get_art_pgd_minimal(threat_model: str, step_size: float, num_steps: int, num
     return ArtMinimalWrapper(attack=attack, init_eps=init_eps, max_eps=max_eps, search_steps=search_steps)
 
 
-art_index = {
-    'apgd': ConfigGetter(config=art_apgd, getter=get_art_apgd),
-    'apgd_minimal': ConfigGetter(config=art_apgd_minimal, getter=get_art_apgd_minimal),
-    'bim': ConfigGetter(config=art_bim, getter=get_art_bim),
-    'bim_minimal': ConfigGetter(config=art_bim_minimal, getter=get_art_bim_minimal),
-    'bb': ConfigGetter(config=art_bb, getter=get_art_bb),
-    'cw_l2': ConfigGetter(config=art_cw_l2, getter=get_art_cw_l2),
-    'cw_linf': ConfigGetter(config=art_cw_linf, getter=get_art_cw_linf),
-    'deepfool': ConfigGetter(config=art_deepfool, getter=get_art_deepfool),
-    'ead': ConfigGetter(config=art_ead, getter=get_art_ead),
-    'fgsm': ConfigGetter(config=art_fgsm, getter=get_art_fgsm),
-    'fgsm_minimal': ConfigGetter(config=art_fgsm_minimal, getter=get_art_fgsm_minimal),
-    'jsma': ConfigGetter(config=art_jsma, getter=get_art_jsma),
-    'pgd': ConfigGetter(config=art_pgd, getter=get_art_pgd),
-    'pgd_minimal': ConfigGetter(config=art_pgd_minimal, getter=get_art_pgd_minimal),
-}
+art_funcs = inspect.getmembers(sys.modules[__name__],
+                               predicate=lambda f: inspect.isfunction(f) and f.__module__ == __name__)
+art_configs, art_getters = [], {}
+for name, func in art_funcs:
+    if name.startswith('art_'):
+        art_configs.append(func)
+    elif name.startswith('get_art_'):
+        art_getters[name.removeprefix('get_art_')] = func

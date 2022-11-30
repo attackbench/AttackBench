@@ -1,10 +1,11 @@
+import inspect
+import sys
 from functools import partial
 from typing import Callable, Optional
 
 from torchattacks import APGD, APGDT, AutoAttack, CW, DeepFool, FAB, FGSM, PGD, PGDL2, SparseFool
 
 from .wrapper import TorchattacksMinimalWrapper
-from ..utils import ConfigGetter
 
 
 def ta_apgd():
@@ -212,18 +213,11 @@ def get_ta_sparsefool(num_steps: int, lam: float, overshoot: float) -> Callable:
     return partial(SparseFool, steps=num_steps, lam=lam, overshoot=overshoot)
 
 
-torchattacks_index = {
-    'apgd': ConfigGetter(config=ta_apgd, getter=get_ta_apgd),
-    'apgd_minimal': ConfigGetter(config=ta_apgd_minimal, getter=get_ta_apgd_minimal),
-    'auto_attack': ConfigGetter(config=ta_auto_attack, getter=get_ta_auto_attack),
-    'cw_l2': ConfigGetter(config=ta_cw_l2, getter=get_ta_cw_l2),
-    'deepfool': ConfigGetter(config=ta_deepfool, getter=get_ta_deepfool),
-    'fab': ConfigGetter(config=ta_fab, getter=get_ta_fab),
-    'fgsm': ConfigGetter(config=ta_fgsm, getter=get_ta_fgsm),
-    'fgsm_minimal': ConfigGetter(config=ta_fgsm_minimal, getter=get_ta_fgsm_minimal),
-    'pgd': ConfigGetter(config=ta_pgd, getter=get_ta_pgd),
-    'pgd_minimal': ConfigGetter(config=ta_pgd_minimal, getter=get_ta_pgd_minimal),
-    'pgd_l2': ConfigGetter(config=ta_pgd_l2, getter=get_ta_pgd_l2),
-    'pgd_l2_minimal': ConfigGetter(config=ta_pgd_l2_minimal, getter=get_ta_pgd_l2_minimal),
-    'sparsefool': ConfigGetter(config=ta_sparsefool, getter=get_ta_sparsefool),
-}
+torchattacks_funcs = inspect.getmembers(sys.modules[__name__],
+                                        predicate=lambda f: inspect.isfunction(f) and f.__module__ == __name__)
+torchattacks_configs, torchattacks_getters = [], {}
+for name, func in torchattacks_funcs:
+    if name.startswith('ta_'):
+        torchattacks_configs.append(func)
+    elif name.startswith('get_ta_'):
+        torchattacks_getters[name.removeprefix('get_ta_')] = func

@@ -1,3 +1,5 @@
+import inspect
+import sys
 from functools import partial
 from typing import Callable
 
@@ -8,7 +10,6 @@ from cleverhans.torch.attacks.projected_gradient_descent import projected_gradie
 from cleverhans.torch.attacks.spsa import spsa
 
 from .wrapper import cleverhans_minimal_wrapper
-from ..utils import ConfigGetter
 
 _norms = {
     'l0': 0,
@@ -137,12 +138,11 @@ def get_ch_pgd_minimal(threat_model: str, eps_iter: float, steps: int, init_eps:
                    search_steps=search_steps)
 
 
-cleverhans_index = {
-    'cw_l2': ConfigGetter(config=ch_cw_l2, getter=get_ch_cw),
-    'fgm': ConfigGetter(config=ch_fgm, getter=get_ch_fgm),
-    'fgm_minimal': ConfigGetter(config=ch_fgm_minimal, getter=get_ch_fgm_minimal),
-    'hsja': ConfigGetter(config=ch_hsja, getter=get_ch_hsja),
-    'spsa': ConfigGetter(config=ch_spsa, getter=get_ch_spsa),
-    'pgd': ConfigGetter(config=ch_pgd, getter=get_ch_pgd),
-    'pgd_minimal': ConfigGetter(config=ch_pgd_minimal, getter=get_ch_pgd_minimal),
-}
+ch_funcs = inspect.getmembers(sys.modules[__name__],
+                              predicate=lambda f: inspect.isfunction(f) and f.__module__ == __name__)
+cleverhans_configs, cleverhans_getters = [], {}
+for name, func in ch_funcs:
+    if name.startswith('ch_'):
+        cleverhans_configs.append(func)
+    elif name.startswith('get_ch_'):
+        cleverhans_getters[name.removeprefix('get_ch_')] = func

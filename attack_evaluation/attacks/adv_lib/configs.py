@@ -1,3 +1,5 @@
+import inspect
+import sys
 from functools import partial
 from typing import Callable, Optional
 
@@ -18,7 +20,6 @@ from adv_lib.attacks import (
 )
 
 from .wrapper import adv_lib_minimal_wrapper
-from ..utils import ConfigGetter
 
 _norms = {
     'l0': 0,
@@ -302,19 +303,11 @@ def get_adv_lib_vfga(num_steps: int, n_samples: int, large_memory: bool) -> Call
     return partial(vfga, max_iter=num_steps, n_samples=n_samples, large_memory=large_memory)
 
 
-adv_lib_index = {
-    'alma': ConfigGetter(config=adv_lib_alma, getter=get_adv_lib_alma),
-    'apgd': ConfigGetter(config=adv_lib_apgd, getter=get_adv_lib_apgd),
-    'apgd_minimal': ConfigGetter(config=adv_lib_apgd_minimal, getter=get_adv_lib_apgd_minimal),
-    'cw_l2': ConfigGetter(config=adv_lib_cw_l2, getter=get_adv_lib_cw_l2),
-    'cw_linf': ConfigGetter(config=adv_lib_cw_linf, getter=get_adv_lib_cw_linf),
-    'ddn': ConfigGetter(config=adv_lib_ddn, getter=get_adv_lib_ddn),
-    'fab': ConfigGetter(config=adv_lib_fab, getter=get_adv_lib_fab),
-    'fmn': ConfigGetter(config=adv_lib_fmn, getter=get_adv_lib_fmn),
-    'pdgd': ConfigGetter(config=adv_lib_pdgd, getter=get_adv_lib_pdgd),
-    'pdpgd': ConfigGetter(config=adv_lib_pdpgd, getter=get_adv_lib_pdpgd),
-    'pgd': ConfigGetter(config=adv_lib_pgd, getter=get_adv_lib_pgd),
-    'pgd_minimal': ConfigGetter(config=adv_lib_pgd_minimal, getter=get_adv_lib_pgd_minimal),
-    'tr': ConfigGetter(config=adv_lib_tr, getter=get_adv_lib_tr),
-    'vfga': ConfigGetter(config=adv_lib_vfga, getter=get_adv_lib_vfga),
-}
+adv_lib_funcs = inspect.getmembers(sys.modules[__name__],
+                                   predicate=lambda f: inspect.isfunction(f) and f.__module__ == __name__)
+adv_lib_configs, adv_lib_getters = [], {}
+for name, func in adv_lib_funcs:
+    if name.startswith('adv_lib_'):
+        adv_lib_configs.append(func)
+    elif name.startswith('get_adv_lib_'):
+        adv_lib_getters[name.removeprefix('get_adv_lib_')] = func
