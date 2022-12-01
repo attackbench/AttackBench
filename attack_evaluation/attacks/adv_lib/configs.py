@@ -257,12 +257,39 @@ def get_adv_lib_fab(threat_model: str, num_steps: int, epsilon: Optional[float],
                    restarts=num_restarts, targeted_restarts=targeted_restarts)
 
 
-def adv_lib_fmn():
+def adv_lib_fmn_l0():
+    name = 'fmn'
+    source = 'adv_lib'
+    threat_model = 'l0'
+    num_steps = 1000
+    max_stepsize = 1
+    gamma = 0.05
+
+
+def adv_lib_fmn_l1():
+    name = 'fmn'
+    source = 'adv_lib'
+    threat_model = 'l1'
+    num_steps = 1000
+    max_stepsize = 1
+    gamma = 0.05
+
+
+def adv_lib_fmn_l2():
+    name = 'fmn'
+    source = 'adv_lib'
+    threat_model = 'l2'
+    num_steps = 1000
+    max_stepsize = 1
+    gamma = 0.05
+
+
+def adv_lib_fmn_linf():
     name = 'fmn'
     source = 'adv_lib'
     threat_model = 'linf'
     num_steps = 1000
-    max_stepsize = 1
+    max_stepsize = 10
     gamma = 0.05
 
 
