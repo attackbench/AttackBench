@@ -25,8 +25,15 @@
       "attacks": ["cw_l2", "apgd", "deepfool", "fab", "auto_attack", "pgd_l2"]
     },
     "original": {
-      "prefix": "",
-      "attacks": ["apgd", "apgd_t", "deepfool", "fab", "fmn", "tr"]
+      "prefix": "original_",
+      "attacks": [
+        "apgd",
+        "apgd_t",
+        "deepfool",
+        "fab",
+        "fmn",
+        "tr"
+      ]
     }
   },
   "l0": {
@@ -55,8 +62,11 @@
       "attacks": ["apgd", "auto_attack", "cw_l2", "deepfool", "fab", "fgsm", "pgd", "pgd_l2", "sparsefool"]
     },
     "original": {
-      "prefix": "",
-      "attacks": ["apgd", "fmn"]
+      "prefix": "original_",
+      "attacks": [
+        "apgd",
+        "fmn"
+      ]
     }
   },
   "l1": {
