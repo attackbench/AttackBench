@@ -162,7 +162,7 @@ def get_adv_lib_apgd_minimal(threat_model: str, targeted: bool, num_steps: int, 
 
 def adv_lib_cw_l2():
     name = 'cw_l2'
-    source = 'adv_lib'  # available: ['adv_lib']
+    source = 'adv_lib'
     threat_model = 'l2'
     confidence = 0
     step_size = 0.01
@@ -180,7 +180,7 @@ def get_adv_lib_cw_l2(confidence: float, step_size: float, initial_const: float,
 
 def adv_lib_cw_linf():
     name = 'cw_linf'
-    source = 'adv_lib'  # available: ['adv_lib']
+    source = 'adv_lib'
     threat_model = 'linf'
     step_size = 0.01
     num_steps = 1000
@@ -201,7 +201,7 @@ def get_adv_lib_cw_linf(step_size: float, num_steps: int, initial_const: float, 
 
 def adv_lib_ddn():
     name = 'ddn'
-    source = 'adv_lib'  # available: ['adv_lib']
+    source = 'adv_lib'
     threat_model = 'l2'
     num_steps = 1000
     init_norm = 1
@@ -214,7 +214,7 @@ def get_adv_lib_ddn(num_steps: int, gamma: float, init_norm: float) -> Callable:
 
 def adv_lib_fab():
     name = 'fab'
-    source = 'adv_lib'  # available: ['adv_lib']
+    source = 'adv_lib'
     threat_model = 'linf'
     num_steps = 100
     epsilon = None
@@ -233,7 +233,7 @@ def get_adv_lib_fab(threat_model: str, num_steps: int, epsilon: Optional[float],
 
 def adv_lib_fmn():
     name = 'fmn'
-    source = 'adv_lib'  # available: ['original', 'adv_lib']
+    source = 'adv_lib'
     threat_model = 'linf'
     num_steps = 1000
     max_stepsize = 1
@@ -246,7 +246,7 @@ def get_adv_lib_fmn(threat_model: str, num_steps: int, max_stepsize: float, gamm
 
 def adv_lib_pdgd():
     name = 'pdgd'
-    source = 'adv_lib'  # available: ['adv_lib']
+    source = 'adv_lib'
     threat_model = 'l2'
     num_steps = 500
     random_init = 0
@@ -269,7 +269,7 @@ def get_adv_lib_pdgd(num_steps: int, random_init: float, primal_lr: float, prima
 
 def adv_lib_pdpgd():
     name = 'pdpgd'
-    source = 'adv_lib'  # available: ['adv_lib']
+    source = 'adv_lib'
     threat_model = 'linf'
     num_steps = 500
     random_init = 0
@@ -298,7 +298,7 @@ def get_adv_lib_pdpgd(threat_model: str, num_steps: int, random_init: float, pro
 
 def adv_lib_pgd():
     name = 'pgd'
-    source = 'adv_lib'  # available: ['adv_lib']
+    source = 'adv_lib'
     threat_model = 'linf'
     epsilon = 4 / 255
     num_steps = 40
@@ -318,7 +318,7 @@ def get_adv_lib_pgd(epsilon: float, num_steps: int, random_init: bool, num_resta
 
 def adv_lib_pgd_minimal():
     name = 'pgd_minimal'
-    source = 'adv_lib'  # available: ['adv_lib']
+    source = 'adv_lib'
     threat_model = 'linf'
     num_steps = 40
     random_init = True
@@ -344,7 +344,7 @@ def get_adv_lib_pgd_minimal(num_steps: int, random_init: bool, num_restarts: int
 
 def adv_lib_tr():
     name = 'tr'
-    source = 'adv_lib'  # available: ['adv_lib']
+    source = 'adv_lib'
     threat_model = 'linf'
     num_steps = 100
     adaptive = False
@@ -361,7 +361,7 @@ def get_adv_lib_tr(threat_model: str, num_steps: int, adaptive: bool, epsilon: f
 
 def adv_lib_vfga():
     name = 'vfga'
-    source = 'adv_lib'  # available: ['adv_lib']
+    source = 'adv_lib'
     threat_model = 'l0'
     num_steps = None
     n_samples = 10

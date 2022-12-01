@@ -85,7 +85,7 @@ def get_original_fab(threat_model: str, num_restarts: int, num_steps: int, epsil
 
 def original_fmn():
     name = 'fmn'
-    source = 'original'  # available: ['original', 'adv_lib']
+    source = 'original'
     threat_model = 'linf'
     num_steps = 1000
     max_step_size = 1

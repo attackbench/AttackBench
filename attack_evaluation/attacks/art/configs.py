@@ -28,7 +28,7 @@ _norms = {
 
 def art_apgd():
     name = 'apgd'
-    source = 'art'  # available: ['art']
+    source = 'art'
     threat_model = 'linf'
     epsilon = 0.3
     step_size = 0.1
@@ -45,7 +45,7 @@ def get_art_apgd(threat_model: str, epsilon: float, step_size: float, num_steps:
 
 def art_apgd_minimal():
     name = 'apgd_minimal'
-    source = 'art'  # available: ['art']
+    source = 'art'
     threat_model = 'linf'
     step_size = 0.1
     num_steps = 100
@@ -66,7 +66,7 @@ def get_art_apgd_minimal(threat_model: str, step_size: float, num_steps: int, nb
 
 def art_bim():
     name = 'bim'
-    source = 'art'  # available: ['art']
+    source = 'art'
     threat_model = 'linf'
     epsilon = 0.3
     step_size = 0.1
@@ -79,7 +79,7 @@ def get_art_bim(epsilon: float, step_size: float, num_steps: int) -> Callable:
 
 def art_bim_minimal():
     name = 'bim_minimal'
-    source = 'art'  # available: ['art']
+    source = 'art'
     threat_model = 'linf'
     epsilon = 0.3
     step_size = 0.1
@@ -98,7 +98,7 @@ def get_art_bim_minimal(threat_model: str, epsilon: float, step_size: float, num
 
 def art_bb():
     name = 'bb'
-    source = 'art'  # available: ['art']
+    source = 'art'
     threat_model = 'linf'
     overshoot = 1.1
     num_steps = 1000
@@ -120,7 +120,7 @@ def get_art_bb(threat_model: str, overshoot: float, num_steps: int, step_size: f
 
 def art_cw_l2():
     name = 'cw_l2'
-    source = 'art'  # available: ['art']
+    source = 'art'
     threat_model = 'l2'
     confidence = 0.0
     step_size = 0.01
@@ -140,7 +140,7 @@ def get_art_cw_l2(confidence: float, step_size: float, num_binary_search_steps: 
 
 def art_cw_linf():
     name = 'cw_linf'
-    source = 'art'  # available: ['art']
+    source = 'art'
     threat_model = 'linf'
     confidence = 0.0
     step_size = 0.01
@@ -160,7 +160,7 @@ def get_art_cw_linf(confidence: float, step_size: float, num_steps: int, decreas
 
 def art_deepfool():
     name = 'deepfool'
-    source = 'art'  # available: ['art']
+    source = 'art'
     threat_model = 'l2'
     num_steps = 100
     epsilon = 1e-6
@@ -173,7 +173,7 @@ def get_art_deepfool(num_steps: int, epsilon: float, nb_grads: int) -> Callable:
 
 def art_ead():
     name = 'ead'
-    source = 'art'  # available: ['art']
+    source = 'art'
     threat_model = 'l1'
     confidence = 0.0
     step_size = 1e-2
@@ -193,7 +193,7 @@ def get_art_ead(confidence: float, step_size: float, num_binary_search_steps: in
 
 def art_fgsm():
     name = 'fgsm'
-    source = 'art'  # available: ['art']
+    source = 'art'
     threat_model = 'linf'
     epsilon = 0.3
     step_size = 0.1
@@ -208,7 +208,7 @@ def get_art_fgsm(threat_model: str, epsilon: float, step_size: float, num_random
 
 def art_fgsm_minimal():
     name = 'fgsm_minimal'
-    source = 'art'  # available: ['art']
+    source = 'art'
     threat_model = 'linf'
     epsilon = 0.3
     step_size = 0.1
@@ -229,7 +229,7 @@ def get_art_fgsm_minimal(threat_model: str, epsilon: float, step_size: float, nu
 
 def art_jsma():
     name = 'jsma'
-    source = 'art'  # available: ['art']
+    source = 'art'
     threat_model = 'l1'
     theta = 0.1
     gamma = 1.0
@@ -241,7 +241,7 @@ def get_art_jsma(theta: float, gamma: float) -> Callable:
 
 def art_pgd():
     name = 'pgd'
-    source = 'art'  # available: ['art']
+    source = 'art'
     threat_model = 'linf'
     epsilon = 0.3
     step_size = 0.1
@@ -258,7 +258,7 @@ def get_art_pgd(threat_model: str, epsilon: float, step_size: float, num_steps: 
 
 def art_pgd_minimal():
     name = 'pgd_minimal'
-    source = 'art'  # available: ['art']
+    source = 'art'
     threat_model = 'linf'
     step_size = 0.1
     num_steps = 100

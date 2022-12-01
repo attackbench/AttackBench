@@ -10,7 +10,7 @@ _prefix = 'ta'
 
 def ta_apgd():
     name = 'apgd'
-    source = 'torchattacks'  # available: ['torchattacks']
+    source = 'torchattacks'
     threat_model = 'linf'
     targeted = False  # use a targeted objective for the untargeted attack
     steps = 100
@@ -29,7 +29,7 @@ def get_ta_apgd(threat_model: str, targeted: bool, steps: int, epsilon: float, n
 
 def ta_apgd_minimal():
     name = 'apgd_minimal'
-    source = 'torchattacks'  # available: ['torchattacks']
+    source = 'torchattacks'
     threat_model = 'linf'
     targeted = False  # use a targeted objective for the untargeted attack
     steps = 100
@@ -53,7 +53,7 @@ def get_ta_apgd_minimal(threat_model: str, targeted: bool, steps: int, num_resta
 
 def ta_auto_attack():
     name = 'auto_attack'
-    source = 'torchattacks'  # available: ['torchattacks']
+    source = 'torchattacks'
     threat_model = 'linf'  # available: linf, l2
     epsilon = 0.3
     version = 'standard'
@@ -65,7 +65,7 @@ def get_ta_auto_attack(threat_model: str, epsilon: float, version: str) -> Calla
 
 def ta_cw_l2():
     name = 'cw_l2'
-    source = 'torchattacks'  # available: ['torchattacks']
+    source = 'torchattacks'
     threat_model = 'l2'
     num_steps = 1000
     c = 0.0001
@@ -79,7 +79,7 @@ def get_ta_cw_l2(num_steps: int, c: float, kappa: float, step_size: float) -> Ca
 
 def ta_deepfool():
     name = 'deepfool'
-    source = 'torchattacks'  # available: ['torchattacks', 'art']
+    source = 'torchattacks'
     threat_model = 'l2'
     num_steps = 50
     overshoot = 0.02
@@ -91,7 +91,7 @@ def get_ta_deepfool(num_steps: int, overshoot: float) -> Callable:
 
 def ta_fab():
     name = 'fab'
-    source = 'torchattacks'  # available: ['torchattacks']
+    source = 'torchattacks'
     threat_model = 'linf'  # available: linf, l2, l1
     num_steps = 100
     epsilon = None
@@ -109,7 +109,7 @@ def get_ta_fab(threat_model: str, num_steps: int, epsilon: Optional[float], num_
 
 def ta_fgsm():
     name = 'fgsm'
-    source = 'torchattacks'  # available: ['torchattacks']
+    source = 'torchattacks'
     threat_model = 'linf'
     epsilon = 0.007
 
@@ -120,7 +120,7 @@ def get_ta_fgsm(epsilon: float) -> Callable:
 
 def ta_fgsm_minimal():
     name = 'fgsm_minimal'
-    source = 'torchattacks'  # available: ['torchattacks']
+    source = 'torchattacks'
     threat_model = 'linf'
 
     init_eps = 1 / 255  # initial guess for line search
@@ -134,7 +134,7 @@ def get_ta_fgsm_minimal(init_eps: float, search_steps: int) -> Callable:
 
 def ta_pgd():
     name = 'pgd'
-    source = 'torchattacks'  # available: ['torchattacks']
+    source = 'torchattacks'
     threat_model = 'linf'
     num_steps = 40
     epsilon = 0.3
@@ -148,7 +148,7 @@ def get_ta_pgd(num_steps: int, epsilon: float, alpha: float, random_start: bool)
 
 def ta_pgd_minimal():
     name = 'pgd_minimal'
-    source = 'torchattacks'  # available: ['torchattacks']
+    source = 'torchattacks'
     threat_model = 'linf'
     num_steps = 40
     alpha = 2 / 255
@@ -166,7 +166,7 @@ def get_ta_pgd_minimal(num_steps: int, alpha: float, random_start: bool, init_ep
 
 def ta_pgd_l2():
     name = 'pgd_l2'
-    source = 'torchattacks'  # available: ['torchattacks']
+    source = 'torchattacks'
     threat_model = 'l2'
     num_steps = 40
     epsilon = 1.0
@@ -183,7 +183,7 @@ def get_ta_pgd_l2(num_steps: int, epsilon: float, alpha: float, random_start: bo
 
 def ta_pgd_l2_minimal():
     name = 'pgd_l2_minimal'
-    source = 'torchattacks'  # available: ['torchattacks']
+    source = 'torchattacks'
     threat_model = 'l2'
     num_steps = 40
     alpha = 0.2
@@ -202,7 +202,7 @@ def get_ta_pgd_l2_minimal(num_steps: int, alpha: float, random_start: bool, eps_
 
 def ta_sparsefool():
     name = 'sparsefool'
-    source = 'torchattacks'  # available: ['torchattacks']
+    source = 'torchattacks'
     threat_model = 'l0'
     num_steps = 20
     lam = 3
