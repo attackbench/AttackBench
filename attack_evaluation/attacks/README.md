@@ -7,15 +7,11 @@ To add an attack that can be called through the sacred CLI, you need to implemen
 The first function will be the named config and should follow the template:
 
 ```python
-def <library
-
-
-prefix > _ < config
-name > ():
-name = '<name of the attack>'
-source = '<name of the library>'
-threat_model = '<name of the threat model>'
-option1 = 0.01
+def <library prefix>_<config name>():
+    name = '<name of the attack>'
+    source = '<name of the library>'
+    threat_model = '<name of the threat model>'
+    option1 = 0.01
 ```
 
 The library prefix corresponds to a shorter version of the library name; for instance, Foolbox's prefix is `fb`.
@@ -28,13 +24,8 @@ The second function to implemented is the getter function, which will return the
 function should follow the template:
 
 ```python
-def get_<
-
-
-    library
-prefix > _ < attack
-name > (option1: float) -> Callable:
-return ...
+def get_<library prefix>_<attack name>(option1: float) -> Callable:
+    return ...
 ```
 
 The `<attack name>` in the name of the getter function should match exactly the name of the attack in the config
