@@ -29,13 +29,22 @@ _norms = {
 }
 
 
-def adv_lib_alma():
+def adv_lib_alma_l1():
     name = 'alma'
-    source = 'adv_lib'  # available: ['adv_lib']
+    source = 'adv_lib'
+    threat_model = 'l1'
+    num_steps = 1000
+    alpha = 0.9
+    init_lr_distance = 0.5
+
+
+def adv_lib_alma_l2():
+    name = 'alma'
+    source = 'adv_lib'
     threat_model = 'l2'
     num_steps = 1000
     alpha = 0.9
-    init_lr_distance = 1
+    init_lr_distance = 0.1
 
 
 def get_adv_lib_alma(threat_model: str, num_steps: int, alpha: float, init_lr_distance: float) -> Callable:
