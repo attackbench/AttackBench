@@ -212,7 +212,33 @@ def get_adv_lib_ddn(num_steps: int, gamma: float, init_norm: float) -> Callable:
     return partial(ddn, steps=num_steps, γ=gamma, init_norm=init_norm)
 
 
-def adv_lib_fab():
+def adv_lib_fab_l1():
+    name = 'fab'
+    source = 'adv_lib'
+    threat_model = 'l1'
+    num_steps = 100
+    epsilon = None
+    alpha_max = 0.1
+    beta = 0.9
+    eta = 1.05
+    num_restarts = None
+    targeted_restarts = False
+
+
+def adv_lib_fab_l2():
+    name = 'fab'
+    source = 'adv_lib'
+    threat_model = 'l2'
+    num_steps = 100
+    epsilon = None
+    alpha_max = 0.1
+    beta = 0.9
+    eta = 1.05
+    num_restarts = None
+    targeted_restarts = False
+
+
+def adv_lib_fab_linf():
     name = 'fab'
     source = 'adv_lib'
     threat_model = 'linf'
