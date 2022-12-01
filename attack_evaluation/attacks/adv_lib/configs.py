@@ -51,9 +51,37 @@ def get_adv_lib_alma(threat_model: str, num_steps: int, alpha: float, init_lr_di
     return partial(alma, distance=threat_model, num_steps=num_steps, α=alpha, init_lr_distance=init_lr_distance)
 
 
-def adv_lib_apgd():
+def adv_lib_apgd_l1():
     name = 'apgd'
-    source = 'adv_lib'  # available: ['adv_lib']
+    source = 'adv_lib'
+    threat_model = 'l1'
+    epsilon = 10
+    targeted = False  # use a targeted objective for the untargeted attack
+    num_steps = 100
+    num_restarts = 1
+    loss_function = 'dlr'
+    rho = 0.75
+    use_large_reps = True
+    use_rs = True
+
+
+def adv_lib_apgd_l2():
+    name = 'apgd'
+    source = 'adv_lib'
+    threat_model = 'l2'
+    epsilon = 1
+    targeted = False  # use a targeted objective for the untargeted attack
+    num_steps = 100
+    num_restarts = 1
+    loss_function = 'dlr'
+    rho = 0.75
+    use_large_reps = False
+    use_rs = True
+
+
+def adv_lib_apgd_linf():
+    name = 'apgd'
+    source = 'adv_lib'
     threat_model = 'linf'
     epsilon = 4 / 255
     targeted = False  # use a targeted objective for the untargeted attack
@@ -72,7 +100,39 @@ def get_adv_lib_apgd(threat_model: str, epsilon: float, targeted: bool, num_step
                    loss_function=loss_function, rho=rho, use_large_reps=use_large_reps, use_rs=use_rs)
 
 
-def adv_lib_apgd_minimal():
+def adv_lib_apgd_minimal_l1():
+    name = 'apgd_minimal'
+    source = 'adv_lib'
+    threat_model = 'l1'
+    targeted = False  # use a targeted objective for the untargeted attack
+    num_steps = 100
+    num_restarts = 1
+    loss_function = 'dlr'
+    rho = 0.75
+    use_large_reps = True
+    use_rs = True
+
+    init_eps = 10  # initial guess for line search
+    search_steps = 20  # number of search steps for line + binary search
+
+
+def adv_lib_apgd_minimal_l2():
+    name = 'apgd_minimal'
+    source = 'adv_lib'
+    threat_model = 'l2'
+    targeted = False  # use a targeted objective for the untargeted attack
+    num_steps = 100
+    num_restarts = 1
+    loss_function = 'dlr'
+    rho = 0.75
+    use_large_reps = False
+    use_rs = True
+
+    init_eps = 1  # initial guess for line search
+    search_steps = 20  # number of search steps for line + binary search
+
+
+def adv_lib_apgd_minimal_linf():
     name = 'apgd_minimal'
     source = 'adv_lib'
     threat_model = 'linf'
