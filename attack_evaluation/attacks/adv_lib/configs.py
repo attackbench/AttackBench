@@ -335,18 +335,18 @@ def adv_lib_pdpgd():
     dual_ema = 0.9
     dual_min_ratio = 1e-6
     proximal_steps = 5
-    ε_threshold = 1e-2
+    epsilon_threshold = 1e-2
 
 
 def get_adv_lib_pdpgd(threat_model: str, num_steps: int, random_init: float, proximal_operator: Optional[float],
                       primal_lr: float, primal_lr_decrease: float, dual_ratio_init: float, dual_lr: float,
                       dual_lr_decrease: float, dual_ema: float, dual_min_ratio: float, proximal_steps: int,
-                      ε_threshold: float) -> Callable:
+                      epsilon_threshold: float) -> Callable:
     return partial(pdpgd, norm=_norms[threat_model], num_steps=num_steps, random_init=random_init,
                    proximal_operator=proximal_operator, primal_lr=primal_lr, primal_lr_decrease=primal_lr_decrease,
                    dual_ratio_init=dual_ratio_init, dual_lr=dual_lr, dual_lr_decrease=dual_lr_decrease,
                    dual_ema=dual_ema, dual_min_ratio=dual_min_ratio, proximal_steps=proximal_steps,
-                   ε_threshold=ε_threshold)
+                   ε_threshold=epsilon_threshold)
 
 
 def adv_lib_pgd():
