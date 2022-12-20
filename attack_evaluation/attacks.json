@@ -2,27 +2,27 @@
   "l2": {
     "foolbox": {
       "prefix": "fb_",
-      "attacks": ["bb", "cw_l2", "ddn", "deepfool", "fmn", "pgd", "fgm", "bim"]
+      "attacks": ["bb", "cw_l2", "dataset", "ddn", "deepfool", "fmn", "pgd_minimal", "fgm_minimal", "bim_minimal"]
     },
     "art": {
       "prefix": "art_",
-      "attacks": ["apgd", "bb", "cw_l2", "deepfool", "fgsm", "pgd"]
+      "attacks": ["apgd_minimal", "bb", "cw_l2", "deepfool", "fgsm_minimal", "pgd_minimal"]
     },
     "cleverhans":{
       "prefix": "ch_",
-      "attacks": ["cw_l2", "fgm", "pgd"]
+      "attacks": ["cw_l2", "fgm_minimal", "pgd_minimal"]
     },
     "deeprobust":{
       "prefix": "dr_",
-      "attacks": ["cw_l2", "deepfool", "pgd", "fgm"]
+      "attacks": ["cw_l2", "deepfool", "pgd_minimal", "fgm_minimal"]
     },
     "adversarial_lib": {
       "prefix": "adv_lib_",
-      "attacks": ["alma", "apgd", "cw_l2", "ddn", "fab", "fmn", "pdgd", "pdpgd", "pgd", "tr"]
+      "attacks": ["alma_l2", "apgd_minimal_l2", "cw_l2", "ddn", "fab_l2", "fmn_l2", "pdgd", "pdpgd", "pgd_minimal", "tr"]
     },
     "torch_attacks": {
       "prefix": "ta_",
-      "attacks": ["cw_l2", "apgd", "deepfool", "fab", "auto_attack", "pgd_l2"]
+      "attacks": ["cw_l2", "apgd_minimal", "deepfool", "fab", "auto_attack", "pgd_l2_minimal"]
     },
     "original": {
       "prefix": "original_",

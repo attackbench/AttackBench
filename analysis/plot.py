@@ -8,8 +8,8 @@ from collections import defaultdict
 import numpy as np
 from matplotlib import pyplot as plt, ticker
 
-from compile import compile_scenario
 from read import read_results
+from utils import ensemble_gain, _MAX_GAIN
 
 threat_model_labels = {
     'l0': r'$\ell_0$',
@@ -37,7 +37,7 @@ if __name__ == '__main__':
     result_path = pathlib.Path(args.dir)
     assert result_path.exists()
 
-    to_plot = defaultdict(list)
+    to_plot = defaultdict(dict)
     if args.info_files is not None:
         info_files_paths = args.info_files
         info_files = [pathlib.Path(info_file) for info_file in info_files_paths]
@@ -52,72 +52,32 @@ if __name__ == '__main__':
         info_files = result_path.glob(info_files_paths)
 
     for info_file in info_files:
-        scenario, hash_distances = read_results(info_file)
-        to_plot[scenario].append((info_file.parent, hash_distances))
+        scenario, info_attack = read_results(info_file)
+        to_plot[scenario] = info_attack
 
-    for scenario in to_plot.keys():
-        best_distances_file = result_path / f'{scenario.dataset}-{scenario.threat_model}-{scenario.model}-{scenario.batch_size}.json'
-        if not best_distances_file.exists():
-            warnings.warn(f'Best distances files {best_distances_file} does not exist for scenario {scenario}.')
-            warnings.warn(f'Compiling best distances file for scenario {scenario}')
-            compile_scenario(path=result_path, scenario=scenario)
+    atks_gain = np.zeros((len(to_plot), len(to_plot)))
 
-        with open(best_distances_file, 'r') as f:
-            data = json.load(f)
-        best_distances = list(data.values())
+    for i, scenario_atk1 in enumerate(to_plot.keys()):
+        atk1_info = to_plot[scenario_atk1]
+        for j, scenario_atk2 in enumerate(to_plot.keys()):
+            atk2_info = to_plot[scenario_atk2]
+            atks_gain[i, j] = ensemble_gain(atk1_info['adv_success'], atk2_info['adv_success'])
+            atks_gain[j, i] = ensemble_gain(atk2_info['adv_success'], atk1_info['adv_success'])
 
-        # plot best distances
-        fig, ax = plt.subplots(figsize=(5, 4), layout='constrained')
-        ax.set_title(' - '.join(scenario), pad=10)
+    fig, ax = plt.subplots(figsize=(7, 7), layout="constrained")
+    #ax.set_title(f'{args.library} ensemble gain', pad=5)
 
-        distances, counts = np.unique(best_distances, return_counts=True)
-        robust_acc = 1 - counts.cumsum() / len(best_distances)
-        ax.plot(distances, robust_acc, linestyle='-', label=f'Best distances', c='k', linewidth=1)
+    ax.matshow(atks_gain.transpose(), origin='upper', cmap=plt.cm.Blues, alpha=0.75)
+    for i in range(len(atks_gain)):
+        for j in range(len(atks_gain)):
+            c = '$\infty$' if atks_gain[i, j] == _MAX_GAIN else '%.3f' % atks_gain[i, j]
+            ax.text(i, j, c, va='center', ha='center')
 
-        # get quantities for optimality calculation
-        clean_acc = np.count_nonzero(best_distances) / len(best_distances)
-        max_dist = np.amax(distances)
-        best_area = np.trapz(robust_acc, distances)
-        plot_xlim = max_dist * 1.5
+    atk_names = [f"{scenario.attack}" for scenario in to_plot.keys()]
+    atk_names_asr = [f"{atk_names[i]}-{to_plot[scenario]['ASR']:.3f}" for i, scenario in enumerate(to_plot.keys())]
 
-        for attack_folder, hash_distances in sorted(to_plot[scenario]):
-            adv_distances = np.array(list(hash_distances.values()))
-            distances, counts = np.unique(adv_distances, return_counts=True)
-            robust_acc = 1 - counts.cumsum() / len(adv_distances)
-
-            distances_clipped, counts = np.unique(adv_distances.clip(min=None, max=max_dist), return_counts=True)
-            robust_acc_clipped = 1 - counts.cumsum() / len(adv_distances)
-
-            if distances[-1] == np.inf:
-                distances[-1] = plot_xlim
-                robust_acc[-1] = robust_acc[-2]
-                robust_acc_clipped[-1] = robust_acc_clipped[-2]
-
-            area = np.trapz(robust_acc_clipped, distances_clipped)
-            optimality = 1 - (area - best_area) / (clean_acc * max_dist - best_area)
-
-            attack_label = attack_folder.relative_to(attack_folder.parents[1]).as_posix()
-            ax.plot(distances, robust_acc, linewidth=1, linestyle='--', label=f'{attack_label}: {optimality:.2%}')
-
-        ax.grid(True, linestyle='--', c='lightgray', which='major')
-        ax.yaxis.set_major_formatter(ticker.PercentFormatter(1))
-        ax.set_xlim(left=0, right=plot_xlim)
-        ax.set_ylim(bottom=0, top=1)
-        ax.spines['top'].set_visible(False)
-        ax.spines['right'].set_visible(False)
-
-        ax.set_ylabel('Robust Accuracy (%)')
-        ax.set_xlabel(f'Perturbation Size {threat_model_labels[scenario.threat_model]}')
-
-        ax.annotate(text=f'Clean accuracy: {clean_acc:.2%}', xy=(0, clean_acc),
-                    xytext=(ax.get_xlim()[1] / 2, clean_acc), ha='left', va='center',
-                    arrowprops={'arrowstyle': '-', 'linestyle': '--'})
-
-        ax.legend(loc='center right', labelspacing=.1, handletextpad=0.5)
-
-        library = args.library or "all"
-        parts = [scenario.dataset, scenario.threat_model, scenario.model, scenario.batch_size, library]
-        if args.suffix:
-            parts.append(args.suffix)
-        fig_name = result_path / f'{"-".join(parts)}.pdf'
-        fig.savefig(fig_name)
+    ax.set_xticklabels([''] + atk_names, rotation=90)
+    ax.set_yticklabels([''] + atk_names_asr)
+    ax.xaxis.set_major_locator(ticker.MultipleLocator(1))
+    ax.yaxis.set_major_locator(ticker.MultipleLocator(1))
+    plt.show()
