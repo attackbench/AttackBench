@@ -9,6 +9,7 @@
 import math
 import time
 import warnings
+from functools import partial
 from typing import Optional
 
 import torch
@@ -731,3 +732,42 @@ def apgd_t_attack(model: nn.Module,
                   targeted: bool = False, **kwargs) -> Tensor:
     attack = APGDAttack_targeted(predict=model, norm=threat_model.capitalize(), device=inputs.device, **kwargs)
     return attack.perturb(x=inputs, y=labels)
+
+
+def apgd_minimal_wrapper(model: nn.Module,
+                         inputs: Tensor,
+                         labels: Tensor,
+                         attack: partial,
+                         init_eps: float,
+                         targets: Optional[Tensor] = None,
+                         targeted: bool = False,
+                         max_eps: Optional[float] = None,
+                         search_steps: int = 20) -> Tensor:
+    batch_size = len(inputs)
+    adv_inputs = inputs.clone()
+    eps_low = inputs.new_zeros(batch_size)
+    best_eps = torch.full_like(eps_low, float('inf') if max_eps is None else 2 * max_eps)
+    found_high = torch.full_like(eps_low, False, dtype=torch.bool)
+
+    eps = torch.full_like(eps_low, init_eps)
+    for i in range(search_steps):
+
+        adv_inputs_run = inputs.clone()
+        for eps_ in torch.unique(eps):
+            mask = eps == eps_
+            adv_inputs_run[mask] = attack(model=model, inputs=inputs[mask], labels=labels[mask], eps=eps_.item())
+
+        logits = model(adv_inputs_run)
+        preds = logits.argmax(dim=1)
+        is_adv = preds != labels
+
+        better_adv = is_adv & (eps < best_eps)
+        adv_inputs[better_adv] = adv_inputs_run[better_adv]
+
+        found_high.logical_or_(better_adv)
+        eps_low = torch.where(better_adv, eps_low, eps)
+        best_eps = torch.where(better_adv, eps, best_eps)
+
+        eps = torch.where(found_high | ((2 * eps_low) >= best_eps), (eps_low + best_eps) / 2, 2 * eps_low)
+
+    return adv_inputs
