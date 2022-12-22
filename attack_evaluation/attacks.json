@@ -26,7 +26,7 @@
     },
     "original": {
       "prefix": "original_",
-      "attacks": ["apgd", "apgd_t", "deepfool", "fab", "fmn", "tr"]
+      "attacks": ["apgd_minimal", "apgd_t", "deepfool", "fab", "fmn", "tr"]
     }
   },
   "l0": {
