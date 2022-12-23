@@ -124,7 +124,7 @@ def ch_pgd_minimal():
     source = 'cleverhans'
     threat_model = 'l2'  # available: np.inf, 1 or 2.
     eps_iter = 1.0
-    steps = 20
+    steps = 40 # default was 20
 
     init_eps = 1  # initial guess for line search
     search_steps = 20  # number of search steps for line + binary search

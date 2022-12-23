@@ -60,7 +60,7 @@ def fb_cw_l2():
     name = 'cw_l2'
     source = 'foolbox'
     threat_model = 'l2'
-    num_steps = 100  # default was 10000
+    num_steps = 1000  # default was 10000
     num_binary_search_steps = 9
     step_size = 0.01
     confidence = 0
@@ -170,7 +170,7 @@ def fb_pgd():
     source = 'foolbox'
     threat_model = 'l2'
     epsilon = 0.3
-    num_steps = 50
+    num_steps = 40 # default was 50. We decided to keep the original num_steps reported in the paper
     step_size = 0.025
     abs_stepsize = None
 

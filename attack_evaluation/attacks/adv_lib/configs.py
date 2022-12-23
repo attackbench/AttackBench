@@ -168,7 +168,7 @@ def adv_lib_cw_l2():
     step_size = 0.01
     initial_const = 0.001
     num_binary_search_steps = 9
-    num_steps = 100  # default was 10000
+    num_steps = 1000  # default was 10000
     abort_early = True
 
 
@@ -391,7 +391,7 @@ def adv_lib_pgd_minimal():
     name = 'pgd_minimal'
     source = 'adv_lib'
     threat_model = 'linf'
-    num_steps = 40
+    num_steps = 100 # default was 40
     random_init = True
     num_restarts = 1
     loss_function = 'ce'

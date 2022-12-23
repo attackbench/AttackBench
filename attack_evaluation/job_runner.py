@@ -17,7 +17,7 @@ parser.add_argument('--device', type=str, default='quadro_rtx_5000',
                     help='Device over which exp are executed. Eg. quadro_rtx_5000, quadro_rtx_5000, tesla')
 parser.add_argument('--batch_size', type=int, default=512, help='Batch size')
 parser.add_argument('--gpu_count', type=int, default=1, help='Number of gpus for trial')
-parser.add_argument('--cpu_count', type=int, default=10, help='Number of cpus for trial')
+parser.add_argument('--cpu_count', type=int, default=8, help='Number of cpus for trial')
 parser.add_argument('--memory', '--mem', type=int, default=128, help='Number of GB to allocate')
 parser.add_argument('--json_attacks', type=str, default='attacks.json', help='JSON file of attacks to run.')
 args = parser.parse_args()
