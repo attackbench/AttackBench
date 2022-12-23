@@ -245,7 +245,7 @@ def art_pgd():
     threat_model = 'linf'
     epsilon = 0.3
     step_size = 0.1
-    num_steps = 100
+    num_steps = 40  # default was 100. We decided to keep the original num_steps reported in the paper
     num_random_init = 0
     random_eps = False
 
