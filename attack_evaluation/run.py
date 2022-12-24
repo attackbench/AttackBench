@@ -9,7 +9,7 @@ from sacred.observers import FileStorageObserver
 from attacks.ingredient import attack_ingredient, get_attack
 from datasets.ingredient import dataset_ingredient, get_loader
 from models.ingredient import get_model, model_ingredient
-from utils import run_attack
+from utils import run_attack, set_seed
 
 ex = Experiment('attack_evaluation', ingredients=[dataset_ingredient, model_ingredient, attack_ingredient])
 
@@ -42,7 +42,7 @@ def modify_filestorage(options):
         if (n := len(ingredient_updates)) != 1:
             raise ValueError(f'Incorrect {ingredient_name} configuration: {n} (!=1) named configs specified.')
         named_config = ingredient_updates[0].removeprefix(prefix)
-        #names.append(ingredient.named_configs[named_config]()['name'])
+        # names.append(ingredient.named_configs[named_config]()['name'])
         names.append(named_config)
 
     # find threat model
@@ -80,9 +80,11 @@ metrics = OrderedDict([
 def main(cpu: bool,
          cudnn_flag: str,
          save_adv: bool,
-         _config, _run, _log):
+         _config, _run, _log, _seed):
     device = torch.device('cuda' if torch.cuda.is_available() and not cpu else 'cpu')
     setattr(torch.backends.cudnn, cudnn_flag, True)
+
+    set_seed(_seed)
 
     loader = get_loader()
     attack = get_attack()

@@ -5,6 +5,8 @@ from torch.utils.data import DataLoader, Subset
 from torchvision import transforms
 from torchvision.datasets import CIFAR10, MNIST, VisionDataset
 
+import numpy as np
+
 dataset_ingredient = Ingredient('dataset')
 
 
@@ -12,6 +14,8 @@ dataset_ingredient = Ingredient('dataset')
 def config():
     root = 'data'
     num_samples = None  # number of samples to attack, None for all
+    shuffle_seed = 444  # seed for extrapolating subset of data
+    random_subset = True  # True for random subset. False for sequential data in Dataset
 
 
 @dataset_ingredient.named_config
@@ -52,9 +56,12 @@ def get_dataset(name: str):
 
 
 @dataset_ingredient.capture
-def get_loader(batch_size: int, num_samples: Optional[int] = None) -> DataLoader:
+def get_loader(batch_size: int, num_samples: Optional[int] = None, random_subset: bool = True) -> DataLoader:
     dataset = get_dataset()
     if num_samples is not None:
-        dataset = Subset(dataset, indices=list(range(num_samples)))
+        if not random_subset:
+            dataset = Subset(dataset, indices=list(range(num_samples)))
+        else:
+            dataset = Subset(np.random.choice(np.arange(len(dataset)), replace=False, size=num_samples))
     loader = DataLoader(dataset=dataset, batch_size=batch_size)
     return loader
