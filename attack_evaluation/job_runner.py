@@ -64,9 +64,9 @@ if __name__ == "__main__":
 
                 job_file = logs_dir / f'{lib}-runner.job'
                 command = f"python run.py -F {exp_dir} with " \
-                          f"seed={seed}" \
+                          f"seed={seed} " \
                           f"dataset.{dataset} " \
-                          f"dataset.num_samples={num_samples}" \
+                          f"dataset.num_samples={num_samples} " \
                           f"dataset.batch_size={batch_size} " \
                           f"model.{victim} " \
                           f"attack.{attack_name} " \
