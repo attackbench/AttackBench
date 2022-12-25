@@ -62,6 +62,7 @@ def get_loader(batch_size: int, num_samples: Optional[int] = None, random_subset
         if not random_subset:
             dataset = Subset(dataset, indices=list(range(num_samples)))
         else:
-            dataset = Subset(np.random.choice(len(dataset), replace=False, size=num_samples))
+            indices = np.random.choice(len(dataset), replace=False, size=num_samples)
+            dataset = Subset(dataset, indices=indices)
     loader = DataLoader(dataset=dataset, batch_size=batch_size)
     return loader

@@ -85,6 +85,7 @@ def main(cpu: bool,
     setattr(torch.backends.cudnn, cudnn_flag, True)
 
     set_seed(_seed)
+    print(f'Running experiments with seed {_seed}')
 
     loader = get_loader()
     attack = get_attack()
