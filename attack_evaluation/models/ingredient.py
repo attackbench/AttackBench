@@ -34,12 +34,6 @@ def mnist_smallcnn_trades():
 
 
 @model_ingredient.named_config
-def wideresnet_28_10():
-    name = 'wideresnet_28_10'
-    source = 'robustbench'
-
-
-@model_ingredient.named_config
 def carmon_2019():
     name = 'Carmon2019Unlabeled'  # 'Carmon2019'
     source = 'robustbench'
