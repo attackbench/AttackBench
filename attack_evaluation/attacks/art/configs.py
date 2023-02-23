@@ -15,7 +15,7 @@ from art.attacks.evasion import (
 )
 
 from .wrapper import ArtMinimalWrapper, art_wrapper
-from ..ingredient import minimal_init_eps, minimal_search_steps
+from .. import minimal_init_eps, minimal_search_steps
 
 _prefix = 'art'
 _wrapper = art_wrapper

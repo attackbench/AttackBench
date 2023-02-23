@@ -4,7 +4,7 @@ from typing import Callable, Optional
 from torchattacks import APGD, APGDT, AutoAttack, CW, DeepFool, FAB, FGSM, PGD, PGDL2, SparseFool
 
 from .wrapper import TorchattacksMinimalWrapper
-from ..ingredient import minimal_init_eps, minimal_search_steps
+from .. import minimal_init_eps, minimal_search_steps
 
 _prefix = 'ta'
 

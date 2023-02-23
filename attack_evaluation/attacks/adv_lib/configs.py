@@ -18,7 +18,7 @@ from adv_lib.attacks import (
 )
 
 from .wrapper import adv_lib_minimal_wrapper, adv_lib_wrapper
-from ..ingredient import minimal_init_eps, minimal_search_steps
+from .. import minimal_init_eps, minimal_search_steps
 
 _prefix = 'adv_lib'
 _wrapper = adv_lib_wrapper

@@ -8,7 +8,7 @@ from deeprobust.image.attack.fgsm import FGSM
 from deeprobust.image.attack.pgd import PGD
 
 from .wrapper import DeepRobustMinimalWrapper, deeprobust_wrapper
-from ..ingredient import minimal_init_eps, minimal_search_steps
+from .. import minimal_init_eps, minimal_search_steps
 
 _prefix = 'dr'
 _wrapper = deeprobust_wrapper

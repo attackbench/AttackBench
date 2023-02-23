@@ -8,7 +8,7 @@ from cleverhans.torch.attacks.projected_gradient_descent import projected_gradie
 from cleverhans.torch.attacks.spsa import spsa
 
 from .wrapper import cleverhans_minimal_wrapper, cleverhans_wrapper
-from ..ingredient import minimal_init_eps, minimal_search_steps
+from .. import minimal_init_eps, minimal_search_steps
 
 _prefix = 'ch'
 _wrapper = cleverhans_wrapper

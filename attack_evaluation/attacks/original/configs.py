@@ -6,7 +6,7 @@ from .deepfool import deepfool_attack
 from .fast_adaptive_boundary import fab_attack
 from .fast_minimum_norm import fmn_attack
 from .trust_region import tr_attack
-from ..ingredient import minimal_init_eps, minimal_search_steps
+from .. import minimal_init_eps, minimal_search_steps
 
 _prefix = 'original'
 

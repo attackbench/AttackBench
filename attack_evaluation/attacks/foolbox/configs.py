@@ -28,7 +28,7 @@ from foolbox.attacks import (
 )
 
 from .wrapper import FoolboxMinimalWrapper, foolbox_wrapper
-from ..ingredient import minimal_init_eps, minimal_search_steps
+from .. import minimal_init_eps, minimal_search_steps
 
 _prefix = 'fb'
 _wrapper = foolbox_wrapper
