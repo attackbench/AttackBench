@@ -43,7 +43,33 @@ def get_art_apgd(threat_model: str, epsilon: float, step_size: float, num_steps:
                    max_iter=num_steps, nb_random_init=nb_random_init, loss_type=loss_type)
 
 
-def art_apgd_minimal():
+def art_apgd_minimal_l1():
+    name = 'apgd_minimal'
+    source = 'art'
+    threat_model = 'l1'
+    step_size = 0.1
+    num_steps = 100
+    nb_random_init = 5
+    loss_type = None
+
+    init_eps = 10  # initial guess for line search
+    search_steps = 20  # number of search steps for line + binary search
+
+
+def art_apgd_minimal_l2():
+    name = 'apgd_minimal'
+    source = 'art'
+    threat_model = 'l2'
+    step_size = 0.1
+    num_steps = 100
+    nb_random_init = 5
+    loss_type = None
+
+    init_eps = 1  # initial guess for line search
+    search_steps = 20  # number of search steps for line + binary search
+
+
+def art_apgd_minimal_linf():
     name = 'apgd_minimal'
     source = 'art'
     threat_model = 'linf'
@@ -190,8 +216,8 @@ def get_art_ead(confidence: float, step_size: float, num_binary_search_steps: in
                    initial_const=initial_const, decision_rule=decision_rule)
 
 
-def art_fgsm():
-    name = 'fgsm'
+def art_fgm():
+    name = 'fgm'
     source = 'art'
     threat_model = 'linf'
     epsilon = 0.3
@@ -200,13 +226,39 @@ def art_fgsm():
     minimal = False
 
 
-def get_art_fgsm(threat_model: str, epsilon: float, step_size: float, num_random_init: int, minimal: bool) -> Callable:
+def get_art_fgm(threat_model: str, epsilon: float, step_size: float, num_random_init: int, minimal: bool) -> Callable:
     return partial(FastGradientMethod, norm=_norms[threat_model], eps=epsilon, eps_step=step_size,
                    num_random_init=num_random_init, minimal=minimal)
 
 
-def art_fgsm_minimal():
-    name = 'fgsm_minimal'
+def art_fgm_minimal_l1():
+    name = 'fgm_minimal'
+    source = 'art'
+    threat_model = 'l1'
+    epsilon = 0.3
+    step_size = 0.1
+    num_random_init = 0
+    minimal = False
+
+    init_eps = 10  # initial guess for line search
+    search_steps = 20  # number of search steps for line + binary search
+
+
+def art_fgm_minimal_l2():
+    name = 'fgm_minimal'
+    source = 'art'
+    threat_model = 'l2'
+    epsilon = 0.3
+    step_size = 0.1
+    num_random_init = 0
+    minimal = False
+
+    init_eps = 1  # initial guess for line search
+    search_steps = 20  # number of search steps for line + binary search
+
+
+def art_fgm_minimal_linf():
+    name = 'fgm_minimal'
     source = 'art'
     threat_model = 'linf'
     epsilon = 0.3
@@ -218,7 +270,7 @@ def art_fgsm_minimal():
     search_steps = 20  # number of search steps for line + binary search
 
 
-def get_art_fgsm_minimal(threat_model: str, epsilon: float, step_size: float, num_random_init: int, minimal: bool,
+def get_art_fgm_minimal(threat_model: str, epsilon: float, step_size: float, num_random_init: int, minimal: bool,
                          init_eps: float, search_steps: int) -> Callable:
     attack = partial(FastGradientMethod, norm=_norms[threat_model], eps=epsilon, eps_step=step_size,
                      num_random_init=num_random_init, minimal=minimal)
@@ -255,7 +307,33 @@ def get_art_pgd(threat_model: str, epsilon: float, step_size: float, num_steps: 
                    num_random_init=num_random_init, max_iter=num_steps, random_eps=random_eps)
 
 
-def art_pgd_minimal():
+def art_pgd_minimal_l1():
+    name = 'pgd_minimal'
+    source = 'art'
+    threat_model = 'l1'
+    step_size = 0.1
+    num_steps = 40  # default was 100. We decided to keep the original num_steps reported in the paper
+    num_random_init = 0
+    random_eps = False
+
+    init_eps = 10  # initial guess for line search
+    search_steps = 20  # number of search steps for line + binary search
+
+
+def art_pgd_minimal_l2():
+    name = 'pgd_minimal'
+    source = 'art'
+    threat_model = 'l2'
+    step_size = 0.1
+    num_steps = 40  # default was 100. We decided to keep the original num_steps reported in the paper
+    num_random_init = 0
+    random_eps = False
+
+    init_eps = 1  # initial guess for line search
+    search_steps = 20  # number of search steps for line + binary search
+
+
+def art_pgd_minimal_linf():
     name = 'pgd_minimal'
     source = 'art'
     threat_model = 'linf'
