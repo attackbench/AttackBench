@@ -107,7 +107,7 @@ def art_bb():
     lr_num_decay = 20
     momentum = 0.8
     num_binary_search_steps = 10
-    init_size = 32
+    init_size = 100
 
 
 def get_art_bb(threat_model: str, overshoot: float, num_steps: int, step_size: float, lr_decay: float,
