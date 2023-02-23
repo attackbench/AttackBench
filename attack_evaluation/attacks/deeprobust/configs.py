@@ -1,6 +1,6 @@
 import warnings
 from functools import partial
-from typing import Dict
+from typing import Dict, Optional
 
 from deeprobust.image.attack.cw import CarliniWagner
 from deeprobust.image.attack.deepfool import DeepFool
@@ -8,6 +8,7 @@ from deeprobust.image.attack.fgsm import FGSM
 from deeprobust.image.attack.pgd import PGD
 
 from .wrapper import DeepRobustMinimalWrapper, deeprobust_wrapper
+from ..ingredient import minimal_init_eps, minimal_search_steps
 
 _prefix = 'dr'
 _wrapper = deeprobust_wrapper
@@ -57,7 +58,7 @@ def get_dr_deepfool(overshoot: float, num_steps: int, num_classes: int) -> Dict:
 def dr_pgd():
     name = 'pgd'
     source = 'deeprobust'
-    threat_model = 'linf'
+    threat_model = 'linf'  # available: 'l2', 'linf'
     epsilon = 0.3
     num_steps = 40
     step_size = 0.01
@@ -68,29 +69,17 @@ def get_dr_pgd(threat_model: str, epsilon: float, num_steps: int, step_size: flo
                 attack_params=dict(bound=threat_model, epsilon=epsilon, num_steps=num_steps, step_size=step_size))
 
 
-def dr_pgd_minimal_l2():
+def dr_pgd_minimal():
     name = 'pgd_minimal'
     source = 'deeprobust'
-    threat_model = 'l2'
+    threat_model = 'linf'  # available: 'l2', 'linf'
     num_steps = 40
     step_size = 0.01
 
-    init_eps = 1  # initial guess for line search
-    search_steps = 20  # number of search steps for line + binary search
 
-
-def dr_pgd_minimal_linf():
-    name = 'pgd_minimal'
-    source = 'deeprobust'
-    threat_model = 'linf'
-    num_steps = 40
-    step_size = 0.01
-
-    init_eps = 1 / 255  # initial guess for line search
-    search_steps = 20  # number of search steps for line + binary search
-
-
-def get_dr_pgd_minimal(threat_model: str, num_steps: int, step_size: float, init_eps: float, search_steps: int) -> Dict:
+def get_dr_pgd_minimal(threat_model: str, num_steps: int, step_size: float,
+                       init_eps: Optional[float] = None, search_steps: int = minimal_search_steps) -> Dict:
+    init_eps = minimal_init_eps[threat_model] if init_eps is None else init_eps
     max_eps = 1 if threat_model == 'linf' else None
     attack = partial(DeepRobustMinimalWrapper, attack=PGD, init_eps=init_eps, search_steps=search_steps,
                      max_eps=max_eps)
@@ -100,7 +89,7 @@ def get_dr_pgd_minimal(threat_model: str, num_steps: int, step_size: float, init
 def dr_fgm():
     name = 'fgm'
     source = 'deeprobust'
-    threat_model = 'linf'  # [linf, l2]
+    threat_model = 'linf'  # available: 'l2', 'linf'
     epsilon = 0.2
 
 
@@ -109,26 +98,16 @@ def get_dr_fgm(threat_model: str, epsilon: float) -> Dict:
     return dict(attack=FGSM, attack_params=dict(order=order[threat_model], epsilon=epsilon, clip_max=1, clip_min=0))
 
 
-def dr_fgm_minimal_l2():
+def dr_fgm_minimal():
     name = 'fgm_minimal'
     source = 'deeprobust'
-    threat_model = 'l2'
-
-    init_eps = 1  # initial guess for line search
-    search_steps = 20  # number of search steps for line + binary search
+    threat_model = 'linf'  # available: 'l2', 'linf'
 
 
-def dr_fgm_minimal_linf():
-    name = 'fgm_minimal'
-    source = 'deeprobust'
-    threat_model = 'linf'
-
-    init_eps = 1 / 255  # initial guess for line search
-    search_steps = 20  # number of search steps for line + binary search
-
-
-def get_dr_fgm_minimal(threat_model: str, init_eps: float, search_steps: int) -> Dict:
+def get_dr_fgm_minimal(threat_model: str,
+                       init_eps: Optional[float] = None, search_steps: int = minimal_search_steps) -> Dict:
     order = {'linf': float('inf'), 'l2': 2}
+    init_eps = minimal_init_eps[threat_model] if init_eps is None else init_eps
     max_eps = 1 if threat_model == 'linf' else None
     attack = partial(DeepRobustMinimalWrapper, attack=FGSM, init_eps=init_eps, search_steps=search_steps,
                      max_eps=max_eps)

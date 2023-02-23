@@ -6,11 +6,24 @@ from .deepfool import deepfool_attack
 from .fast_adaptive_boundary import fab_attack
 from .fast_minimum_norm import fmn_attack
 from .trust_region import tr_attack
+from ..ingredient import minimal_init_eps, minimal_search_steps
 
 _prefix = 'original'
 
 
 def _wrapper(attack, **kwargs): return attack(**kwargs)
+
+
+def original_apgd():
+    name = 'apgd'
+    source = 'original'
+    threat_model = 'linf'  # available: 'l1', 'l2', 'linf'
+    num_steps = 100
+    num_restarts = 1
+    epsilon = 0.3
+    loss = 'ce'  # loss function in ['ce', 'dlr']
+    rho = .75
+    use_largereps = False  # set True with L1 norm
 
 
 def original_apgd_l1():
@@ -25,34 +38,21 @@ def original_apgd_l1():
     use_largereps = True  # set True with L1 norm
 
 
-def original_apgd_l2():
-    name = 'apgd'
-    source = 'original'
-    threat_model = 'l2'
-    num_steps = 100
-    num_restarts = 1
-    epsilon = 1
-    loss = 'ce'  # loss function in ['ce', 'dlr']
-    rho = .75
-    use_largereps = False  # set True with L1 norm
-
-
-def original_apgd_linf():
-    name = 'apgd'
-    source = 'original'
-    threat_model = 'linf'
-    num_steps = 100
-    num_restarts = 1
-    epsilon = 0.3
-    loss = 'ce'  # loss function in ['ce', 'dlr']
-    rho = .75
-    use_largereps = False  # set True with L1 norm
-
-
 def get_original_apgd(threat_model: str, num_steps: int, num_restarts: int, epsilon: float, loss: str, rho: float,
                       use_largereps: bool) -> Callable:
     return partial(apgd_attack, threat_model=threat_model, n_iter=num_steps, n_restarts=num_restarts, eps=epsilon,
                    loss=loss, rho=rho, use_largereps=use_largereps)
+
+
+def original_apgd_minimal():
+    name = 'apgd_minimal'
+    source = 'original'
+    threat_model = 'linf'  # available: 'l1', 'l2', 'linf'
+    num_steps = 100
+    num_restarts = 1
+    loss = 'ce'  # loss function in ['ce', 'dlr']
+    rho = .75
+    use_largereps = False  # set True with L1 norm
 
 
 def original_apgd_minimal_l1():
@@ -65,44 +65,27 @@ def original_apgd_minimal_l1():
     rho = .75
     use_largereps = True  # set True with L1 norm
 
-    init_eps = 10  # initial guess for line search
-    search_steps = 20  # number of search steps for line + binary search
-
-
-def original_apgd_minimal_l2():
-    name = 'apgd_minimal'
-    source = 'original'
-    threat_model = 'l2'
-    num_steps = 100
-    num_restarts = 1
-    loss = 'ce'  # loss function in ['ce', 'dlr']
-    rho = .75
-    use_largereps = False  # set True with L1 norm
-
-    init_eps = 1  # initial guess for line search
-    search_steps = 20  # number of search steps for line + binary search
-
-
-def original_apgd_minimal_linf():
-    name = 'apgd_minimal'
-    source = 'original'
-    threat_model = 'linf'
-    num_steps = 100
-    num_restarts = 1
-    loss = 'ce'  # loss function in ['ce', 'dlr']
-    rho = .75
-    use_largereps = False  # set True with L1 norm
-
-    init_eps = 1 / 255  # initial guess for line search
-    search_steps = 20  # number of search steps for line + binary search
-
 
 def get_original_apgd_minimal(threat_model: str, num_steps: int, num_restarts: int, loss: str, rho: float,
-                              use_largereps: bool, init_eps: float, search_steps: int) -> Callable:
+                              use_largereps: bool,
+                              init_eps: Optional[float] = None, search_steps: int = minimal_search_steps) -> Callable:
     attack = partial(apgd_attack, threat_model=threat_model, n_iter=num_steps, n_restarts=num_restarts, loss=loss,
                      rho=rho, use_largereps=use_largereps)
+    init_eps = minimal_init_eps[threat_model] if init_eps is None else init_eps
     max_eps = 1 if threat_model == 'linf' else None
     return partial(apgd_minimal_wrapper, attack=attack, init_eps=init_eps, max_eps=max_eps, search_steps=search_steps)
+
+
+def original_apgd_t():
+    name = 'apgd_t'
+    source = 'original'
+    threat_model = 'linf'  # available: 'l1', 'l2', 'linf'
+    num_steps = 100
+    num_restarts = 1
+    num_target_classes = 9
+    epsilon = 0.3
+    rho = .75
+    use_largereps = False  # set True with L1 norm
 
 
 def original_apgd_t_l1():
@@ -117,34 +100,21 @@ def original_apgd_t_l1():
     use_largereps = True  # set True with L1 norm
 
 
-def original_apgd_t_l2():
-    name = 'apgd_t'
-    source = 'original'
-    threat_model = 'l2'
-    num_steps = 100
-    num_restarts = 1
-    num_target_classes = 9
-    epsilon = 1
-    rho = .75
-    use_largereps = False  # set True with L1 norm
-
-
-def original_apgd_t_linf():
-    name = 'apgd_t'
-    source = 'original'
-    threat_model = 'linf'
-    num_steps = 100
-    num_restarts = 1
-    num_target_classes = 9
-    epsilon = 0.3
-    rho = .75
-    use_largereps = False  # set True with L1 norm
-
-
 def get_original_apgd_t(threat_model: str, num_steps: int, num_restarts: int, num_target_classes: int, epsilon: float,
                         rho: float, use_largereps: bool) -> Callable:
     return partial(apgd_t_attack, threat_model=threat_model, n_iter=num_steps, n_restarts=num_restarts,
                    n_target_classes=num_target_classes, eps=epsilon, rho=rho, use_largereps=use_largereps)
+
+
+def original_apgd_t_minimal():
+    name = 'apgd_t_minimal'
+    source = 'original'
+    threat_model = 'linf'  # available: 'l1', 'l2', 'linf'
+    num_steps = 100
+    num_restarts = 1
+    num_target_classes = 9
+    rho = .75
+    use_largereps = False  # set True with L1 norm
 
 
 def original_apgd_t_minimal_l1():
@@ -157,42 +127,13 @@ def original_apgd_t_minimal_l1():
     rho = .75
     use_largereps = True  # set True with L1 norm
 
-    init_eps = 10  # initial guess for line search
-    search_steps = 20  # number of search steps for line + binary search
-
-
-def original_apgd_t_minimal_l2():
-    name = 'apgd_t_minimal'
-    source = 'original'
-    threat_model = 'l2'
-    num_steps = 100
-    num_restarts = 1
-    num_target_classes = 9
-    rho = .75
-    use_largereps = False  # set True with L1 norm
-
-    init_eps = 1  # initial guess for line search
-    search_steps = 20  # number of search steps for line + binary search
-
-
-def original_apgd_t_minimal_linf():
-    name = 'apgd_t_minimal'
-    source = 'original'
-    threat_model = 'linf'
-    num_steps = 100
-    num_restarts = 1
-    num_target_classes = 9
-    rho = .75
-    use_largereps = False  # set True with L1 norm
-
-    init_eps = 1 / 255  # initial guess for line search
-    search_steps = 20  # number of search steps for line + binary search
-
 
 def get_original_apgd_t_minimal(threat_model: str, num_steps: int, num_restarts: int, num_target_classes: int,
-                                rho: float, use_largereps: bool, init_eps: float, search_steps: int) -> Callable:
+                                rho: float, use_largereps: bool,
+                                init_eps: Optional[float] = None, search_steps: int = minimal_search_steps) -> Callable:
     attack = partial(apgd_t_attack, threat_model=threat_model, n_iter=num_steps, n_restarts=num_restarts,
                      n_target_classes=num_target_classes, rho=rho, use_largereps=use_largereps)
+    init_eps = minimal_init_eps[threat_model] if init_eps is None else init_eps
     max_eps = 1 if threat_model == 'linf' else None
     return partial(apgd_minimal_wrapper, attack=attack, init_eps=init_eps, max_eps=max_eps, search_steps=search_steps)
 
@@ -213,7 +154,7 @@ def get_original_deepfool(num_classes: int, overshoot: float, num_steps: int) ->
 def original_fab():
     name = 'fab'
     source = 'original'
-    threat_model = 'linf'
+    threat_model = 'linf'  # available: 'l1', 'l2', 'linf'
     num_restarts = 1
     num_steps = 100
     epsilon = None
@@ -234,7 +175,7 @@ def get_original_fab(threat_model: str, num_restarts: int, num_steps: int, epsil
 def original_fmn():
     name = 'fmn'
     source = 'original'
-    threat_model = 'l2'
+    threat_model = 'l2'  # available: 'l0', 'l1', 'l2', 'linf'
     num_steps = 1000
     max_step_size = 1
     gamma = 0.05
@@ -256,7 +197,7 @@ def get_original_fmn(threat_model: str, num_steps: int, max_step_size: float, ga
 def original_tr():
     name = 'tr'
     source = 'original'
-    threat_model = 'linf'
+    threat_model = 'linf'  # available: 'l2', 'linf'
     adaptive = False
     epsilon = 0.001
     c = 9
@@ -266,7 +207,7 @@ def original_tr():
 def original_tr_adaptive():
     name = 'tr'
     source = 'original'
-    threat_model = 'linf'
+    threat_model = 'linf'  # available: 'l2', 'linf'
     adaptive = True
     epsilon = 0.001
     c = 9

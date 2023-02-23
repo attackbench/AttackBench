@@ -14,6 +14,13 @@ from .foolbox import configs as foolbox_configs
 from .original import configs as original_configs
 from .torchattacks import configs as torchattacks_configs
 
+minimal_search_steps = 20
+minimal_init_eps = {
+    'l1': 10,
+    'l2': 1,
+    'linf': 1 / 255,
+}
+
 attack_ingredient = Ingredient('attack')
 
 library_modules = {

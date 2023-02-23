@@ -18,6 +18,7 @@ from adv_lib.attacks import (
 )
 
 from .wrapper import adv_lib_minimal_wrapper, adv_lib_wrapper
+from ..ingredient import minimal_init_eps, minimal_search_steps
 
 _prefix = 'adv_lib'
 _wrapper = adv_lib_wrapper
@@ -51,6 +52,20 @@ def get_adv_lib_alma(threat_model: str, num_steps: int, alpha: float, init_lr_di
     return partial(alma, distance=threat_model, num_steps=num_steps, α=alpha, init_lr_distance=init_lr_distance)
 
 
+def adv_lib_apgd():
+    name = 'apgd'
+    source = 'adv_lib'
+    threat_model = 'linf'
+    epsilon = 4 / 255
+    targeted = False  # use a targeted objective for the untargeted attack
+    num_steps = 100
+    num_restarts = 1
+    loss_function = 'dlr'
+    rho = 0.75
+    use_large_reps = False
+    use_rs = True
+
+
 def adv_lib_apgd_l1():
     name = 'apgd'
     source = 'adv_lib'
@@ -65,39 +80,24 @@ def adv_lib_apgd_l1():
     use_rs = True
 
 
-def adv_lib_apgd_l2():
-    name = 'apgd'
-    source = 'adv_lib'
-    threat_model = 'l2'
-    epsilon = 1
-    targeted = False  # use a targeted objective for the untargeted attack
-    num_steps = 100
-    num_restarts = 1
-    loss_function = 'dlr'
-    rho = 0.75
-    use_large_reps = False
-    use_rs = True
-
-
-def adv_lib_apgd_linf():
-    name = 'apgd'
-    source = 'adv_lib'
-    threat_model = 'linf'
-    epsilon = 4 / 255
-    targeted = False  # use a targeted objective for the untargeted attack
-    num_steps = 100
-    num_restarts = 1
-    loss_function = 'dlr'
-    rho = 0.75
-    use_large_reps = False
-    use_rs = True
-
-
 def get_adv_lib_apgd(threat_model: str, epsilon: float, targeted: bool, num_steps: int, num_restarts: int,
                      loss_function: str, rho: float, use_large_reps: bool, use_rs: bool) -> Callable:
     attack_func = apgd_targeted if targeted else apgd
     return partial(attack_func, norm=_norms[threat_model], eps=epsilon, n_iter=num_steps, n_restarts=num_restarts,
                    loss_function=loss_function, rho=rho, use_large_reps=use_large_reps, use_rs=use_rs)
+
+
+def adv_lib_apgd_minimal():
+    name = 'apgd_minimal'
+    source = 'adv_lib'
+    threat_model = 'linf'
+    targeted = False  # use a targeted objective for the untargeted attack
+    num_steps = 100
+    num_restarts = 1
+    loss_function = 'dlr'
+    rho = 0.75
+    use_large_reps = False
+    use_rs = True
 
 
 def adv_lib_apgd_minimal_l1():
@@ -112,49 +112,15 @@ def adv_lib_apgd_minimal_l1():
     use_large_reps = True
     use_rs = True
 
-    init_eps = 10  # initial guess for line search
-    search_steps = 20  # number of search steps for line + binary search
-
-
-def adv_lib_apgd_minimal_l2():
-    name = 'apgd_minimal'
-    source = 'adv_lib'
-    threat_model = 'l2'
-    targeted = False  # use a targeted objective for the untargeted attack
-    num_steps = 100
-    num_restarts = 1
-    loss_function = 'dlr'
-    rho = 0.75
-    use_large_reps = False
-    use_rs = True
-
-    init_eps = 1  # initial guess for line search
-    search_steps = 20  # number of search steps for line + binary search
-
-
-def adv_lib_apgd_minimal_linf():
-    name = 'apgd_minimal'
-    source = 'adv_lib'
-    threat_model = 'linf'
-    targeted = False  # use a targeted objective for the untargeted attack
-    num_steps = 100
-    num_restarts = 1
-    loss_function = 'dlr'
-    rho = 0.75
-    use_large_reps = False
-    use_rs = True
-
-    init_eps = 1 / 255  # initial guess for line search
-    search_steps = 20  # number of search steps for line + binary search
-
 
 def get_adv_lib_apgd_minimal(threat_model: str, targeted: bool, num_steps: int, num_restarts: int, loss_function: str,
                              rho: float, use_large_reps: bool, use_rs: bool,
-                             init_eps: float, search_steps: int) -> Callable:
+                             init_eps: Optional[float] = None, search_steps: int = minimal_search_steps) -> Callable:
     attack_func = apgd_targeted if targeted else apgd
     attack = partial(attack_func, norm=_norms[threat_model], n_iter=num_steps, n_restarts=num_restarts,
                      loss_function=loss_function, rho=rho, use_large_reps=use_large_reps, use_rs=use_rs)
 
+    init_eps = minimal_init_eps[threat_model] if init_eps is None else init_eps
     max_eps = 1 if threat_model == 'linf' else None
     return partial(adv_lib_minimal_wrapper, attack=attack, init_eps=init_eps, max_eps=max_eps,
                    search_steps=search_steps)
@@ -354,17 +320,14 @@ def adv_lib_pgd_minimal():
     relative_step_size = 0.01 / 0.3
     absolute_step_size = None
 
-    init_eps = 1 / 255  # initial guess for line search
-    search_steps = 20  # number of search steps for line + binary search
-
 
 def get_adv_lib_pgd_minimal(num_steps: int, random_init: bool, num_restarts: int, loss_function: str,
                             relative_step_size: float, absolute_step_size: Optional[float],
-                            init_eps: float, search_steps: int) -> Callable:
+                            init_eps: Optional[float] = None, search_steps: int = minimal_search_steps) -> Callable:
     attack = partial(pgd_linf, steps=num_steps, random_init=random_init, restarts=num_restarts,
                      loss_function=loss_function, relative_step_size=relative_step_size,
                      absolute_step_size=absolute_step_size)
-
+    init_eps = minimal_init_eps['linf'] if init_eps is None else init_eps
     return partial(adv_lib_minimal_wrapper, attack=attack, init_eps=init_eps, max_eps=1, search_steps=search_steps,
                    eps_name='ε')
 

@@ -1,5 +1,5 @@
 from functools import partial
-from typing import Callable
+from typing import Callable, Optional
 
 from cleverhans.torch.attacks.carlini_wagner_l2 import carlini_wagner_l2
 from cleverhans.torch.attacks.fast_gradient_method import fast_gradient_method
@@ -8,6 +8,7 @@ from cleverhans.torch.attacks.projected_gradient_descent import projected_gradie
 from cleverhans.torch.attacks.spsa import spsa
 
 from .wrapper import cleverhans_minimal_wrapper, cleverhans_wrapper
+from ..ingredient import minimal_init_eps, minimal_search_steps
 
 _prefix = 'ch'
 _wrapper = cleverhans_wrapper
@@ -49,35 +50,16 @@ def get_ch_fgm(threat_model: str, eps: float) -> Callable:
     return partial(fast_gradient_method, norm=_norms[threat_model], eps=eps, clip_min=0, clip_max=1)
 
 
-def ch_fgm_minimal_l1():
-    name = 'fgm_minimal'
-    source = 'cleverhans'
-    threat_model = 'l1'  # available: l1, l2, linf
-
-    init_eps = 10  # initial guess for line search
-    search_steps = 20  # number of search steps for line + binary search
-
-
-def ch_fgm_minimal_l2():
-    name = 'fgm_minimal'
-    source = 'cleverhans'
-    threat_model = 'l2'  # available: l1, l2, linf
-
-    init_eps = 1  # initial guess for line search
-    search_steps = 20  # number of search steps for line + binary search
-
-
-def ch_fgm_minimal_linf():
+def ch_fgm_minimal():
     name = 'fgm_minimal'
     source = 'cleverhans'
     threat_model = 'linf'  # available: l1, l2, linf
 
-    init_eps = 1 / 255  # initial guess for line search
-    search_steps = 20  # number of search steps for line + binary search
 
-
-def get_ch_fgm_minimal(threat_model: str, init_eps: float, search_steps: int) -> Callable:
+def get_ch_fgm_minimal(threat_model: str,
+                       init_eps: Optional[float] = None, search_steps: int = minimal_search_steps) -> Callable:
     attack = partial(fast_gradient_method, norm=_norms[threat_model], clip_min=0, clip_max=1)
+    init_eps = minimal_init_eps[threat_model] if init_eps is None else init_eps
     max_eps = 1 if threat_model == 'linf' else None
     return partial(cleverhans_minimal_wrapper, attack=attack, init_eps=init_eps, max_eps=max_eps,
                    search_steps=search_steps)
@@ -137,42 +119,19 @@ def get_ch_pgd(threat_model: str, eps: float, eps_iter: float, steps: int) -> Ca
                    clip_min=0, clip_max=1, sanity_checks=False)
 
 
-def ch_pgd_minimal_l1():
-    name = 'pgd_minimal'
-    source = 'cleverhans'
-    threat_model = 'l1'  # available: np.inf, 1 or 2.
-    eps_iter = 1.0
-    steps = 40 # default was 20
-
-    init_eps = 10  # initial guess for line search
-    search_steps = 20  # number of search steps for line + binary search
-
-
-def ch_pgd_minimal_l2():
-    name = 'pgd_minimal'
-    source = 'cleverhans'
-    threat_model = 'l2'  # available: np.inf, 1 or 2.
-    eps_iter = 1.0
-    steps = 40 # default was 20
-
-    init_eps = 1  # initial guess for line search
-    search_steps = 20  # number of search steps for line + binary search
-
-
-def ch_pgd_minimal_linf():
+def ch_pgd_minimal():
     name = 'pgd_minimal'
     source = 'cleverhans'
     threat_model = 'linf'  # available: np.inf, 1 or 2.
     eps_iter = 1.0
     steps = 40 # default was 20
 
-    init_eps = 1 / 255  # initial guess for line search
-    search_steps = 20  # number of search steps for line + binary search
 
-
-def get_ch_pgd_minimal(threat_model: str, eps_iter: float, steps: int, init_eps: float, search_steps: int) -> Callable:
+def get_ch_pgd_minimal(threat_model: str, eps_iter: float, steps: int,
+                       init_eps: Optional[float] = None, search_steps: int = minimal_search_steps) -> Callable:
     attack = partial(projected_gradient_descent, norm=_norms[threat_model], nb_iter=steps, eps_iter=eps_iter,
                      clip_min=0, clip_max=1, sanity_checks=False)
+    init_eps = minimal_init_eps[threat_model] if init_eps is None else init_eps
     max_eps = 1 if threat_model == 'linf' else None
     return partial(cleverhans_minimal_wrapper, attack=attack, init_eps=init_eps, max_eps=max_eps,
                    search_steps=search_steps)
