@@ -58,7 +58,7 @@ if __name__ == "__main__":
 
             library_json = configs[threat_model][lib]
             for attack in library_json['attacks']:
-                attack_name = f"{library_json['prefix']}{attack}"
+                attack_name = f"{library_json['prefix']}_{attack}"
 
                 log_name = f"{lib}-{attack}"
 
