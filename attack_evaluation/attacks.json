@@ -74,7 +74,7 @@
     },
     "cleverhans":{
       "prefix": "ch",
-      "attacks": []
+      "attacks": ["fgm_minimal_l1", "pgd_minimal_l1"]
     },
     "adversarial_lib": {
       "prefix": "adv_lib",
