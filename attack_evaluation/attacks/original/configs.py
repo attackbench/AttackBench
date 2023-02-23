@@ -254,5 +254,15 @@ def original_tr():
     num_steps = 100
 
 
+def original_tr_adaptive():
+    name = 'tr'
+    source = 'original'
+    threat_model = 'linf'
+    adaptive = True
+    epsilon = 0.001
+    c = 9
+    num_steps = 100
+
+
 def get_original_tr(threat_model: str, adaptive: bool, epsilon: float, c: int, num_steps: int) -> Callable:
     return partial(tr_attack, threat_model=threat_model, adaptive=adaptive, eps=epsilon, c=c, iter=num_steps)

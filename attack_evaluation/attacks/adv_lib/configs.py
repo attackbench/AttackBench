@@ -391,7 +391,7 @@ def adv_lib_pgd_minimal():
     name = 'pgd_minimal'
     source = 'adv_lib'
     threat_model = 'linf'
-    num_steps = 100 # default was 40
+    num_steps = 100  # default was 40
     random_init = True
     num_restarts = 1
     loss_function = 'ce'
@@ -419,6 +419,17 @@ def adv_lib_tr():
     threat_model = 'linf'
     num_steps = 100
     adaptive = False
+    epsilon = 0.001
+    c = 9
+    worst_case = False
+
+
+def adv_lib_tr_adaptive():
+    name = 'tr'
+    source = 'adv_lib'
+    threat_model = 'linf'
+    num_steps = 100
+    adaptive = True
     epsilon = 0.001
     c = 9
     worst_case = False
