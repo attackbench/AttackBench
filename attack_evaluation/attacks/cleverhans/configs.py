@@ -49,12 +49,30 @@ def get_ch_fgm(threat_model: str, eps: float) -> Callable:
     return partial(fast_gradient_method, norm=_norms[threat_model], eps=eps, clip_min=0, clip_max=1)
 
 
-def ch_fgm_minimal():
+def ch_fgm_minimal_l1():
+    name = 'fgm_minimal'
+    source = 'cleverhans'
+    threat_model = 'l1'  # available: l1, l2, linf
+
+    init_eps = 10  # initial guess for line search
+    search_steps = 20  # number of search steps for line + binary search
+
+
+def ch_fgm_minimal_l2():
     name = 'fgm_minimal'
     source = 'cleverhans'
     threat_model = 'l2'  # available: l1, l2, linf
 
     init_eps = 1  # initial guess for line search
+    search_steps = 20  # number of search steps for line + binary search
+
+
+def ch_fgm_minimal_linf():
+    name = 'fgm_minimal'
+    source = 'cleverhans'
+    threat_model = 'linf'  # available: l1, l2, linf
+
+    init_eps = 1 / 255  # initial guess for line search
     search_steps = 20  # number of search steps for line + binary search
 
 
@@ -119,7 +137,18 @@ def get_ch_pgd(threat_model: str, eps: float, eps_iter: float, steps: int) -> Ca
                    clip_min=0, clip_max=1, sanity_checks=False)
 
 
-def ch_pgd_minimal():
+def ch_pgd_minimal_l1():
+    name = 'pgd_minimal'
+    source = 'cleverhans'
+    threat_model = 'l1'  # available: np.inf, 1 or 2.
+    eps_iter = 1.0
+    steps = 40 # default was 20
+
+    init_eps = 10  # initial guess for line search
+    search_steps = 20  # number of search steps for line + binary search
+
+
+def ch_pgd_minimal_l2():
     name = 'pgd_minimal'
     source = 'cleverhans'
     threat_model = 'l2'  # available: np.inf, 1 or 2.
@@ -127,6 +156,17 @@ def ch_pgd_minimal():
     steps = 40 # default was 20
 
     init_eps = 1  # initial guess for line search
+    search_steps = 20  # number of search steps for line + binary search
+
+
+def ch_pgd_minimal_linf():
+    name = 'pgd_minimal'
+    source = 'cleverhans'
+    threat_model = 'linf'  # available: np.inf, 1 or 2.
+    eps_iter = 1.0
+    steps = 40 # default was 20
+
+    init_eps = 1 / 255  # initial guess for line search
     search_steps = 20  # number of search steps for line + binary search
 
 
