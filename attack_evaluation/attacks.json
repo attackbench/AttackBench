@@ -56,7 +56,7 @@
     },
     "original": {
       "prefix": "original",
-      "attacks": ["apgd", "fmn"]
+      "attacks": ["fmn"]
     }
   },
   "l1": {
@@ -109,6 +109,10 @@
     "torch_attacks": {
       "prefix": "ta",
       "attacks": ["fgsm", "pgd", "apgd"]
+    },
+    "original": {
+      "prefix": "original",
+      "attacks": ["apgd", "fmn"]
     }
   }
 }
