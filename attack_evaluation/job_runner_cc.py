@@ -16,7 +16,7 @@ parser.add_argument('--library', type=str, default='all',
 parser.add_argument('--account', type=str, default=None, help='Account allocation to use')
 parser.add_argument('--device', type=str, default=None,
                     help='Device over which exp are executed. Eg. quadro_rtx_5000, quadro_rtx_5000, tesla')
-parser.add_argument('--batch_size', type=int, default=512, help='Batch size')
+parser.add_argument('--batch-size', type=int, default=512, help='Batch size')
 parser.add_argument('--gpu-count', type=int, default=1, help='Number of gpus for trial')
 parser.add_argument('--cpu-count', type=int, default=10, help='Number of cpus for trial')
 parser.add_argument('--memory', '--mem', type=int, default=128, help='Number of GB to allocate')
