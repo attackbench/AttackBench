@@ -70,7 +70,7 @@ if __name__ == "__main__":
                 if args.account is not None:
                     lines.append(f"#SBATCH --account={args.account}")
 
-                lines.append([
+                lines.extend([
                     "# load modules",
                     "module load python/3.9",
                     "source ~/ADV_BENCH/bin/activate",
