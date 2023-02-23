@@ -111,8 +111,7 @@ def art_bb():
 
 
 def get_art_bb(threat_model: str, overshoot: float, num_steps: int, step_size: float, lr_decay: float,
-               lr_num_decay: int,
-               momentum: float, num_binary_search_steps: int, init_size: int) -> Callable:
+               lr_num_decay: int, momentum: float, num_binary_search_steps: int, init_size: int) -> Callable:
     return partial(BrendelBethgeAttack, norm=_norms[threat_model], overshoot=overshoot, steps=num_steps, lr=step_size,
                    lr_decay=lr_decay, lr_num_decay=lr_num_decay, momentum=momentum,
                    binary_search_steps=num_binary_search_steps, init_size=init_size)
