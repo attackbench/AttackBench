@@ -212,33 +212,7 @@ def get_adv_lib_ddn(num_steps: int, gamma: float, init_norm: float) -> Callable:
     return partial(ddn, steps=num_steps, γ=gamma, init_norm=init_norm)
 
 
-def adv_lib_fab_l1():
-    name = 'fab'
-    source = 'adv_lib'
-    threat_model = 'l1'
-    num_steps = 100
-    epsilon = None
-    alpha_max = 0.1
-    beta = 0.9
-    eta = 1.05
-    num_restarts = None
-    targeted_restarts = False
-
-
-def adv_lib_fab_l2():
-    name = 'fab'
-    source = 'adv_lib'
-    threat_model = 'l2'
-    num_steps = 100
-    epsilon = None
-    alpha_max = 0.1
-    beta = 0.9
-    eta = 1.05
-    num_restarts = None
-    targeted_restarts = False
-
-
-def adv_lib_fab_linf():
+def adv_lib_fab():
     name = 'fab'
     source = 'adv_lib'
     threat_model = 'linf'
@@ -257,25 +231,7 @@ def get_adv_lib_fab(threat_model: str, num_steps: int, epsilon: Optional[float],
                    restarts=num_restarts, targeted_restarts=targeted_restarts)
 
 
-def adv_lib_fmn_l0():
-    name = 'fmn'
-    source = 'adv_lib'
-    threat_model = 'l0'
-    num_steps = 1000
-    max_stepsize = 1
-    gamma = 0.05
-
-
-def adv_lib_fmn_l1():
-    name = 'fmn'
-    source = 'adv_lib'
-    threat_model = 'l1'
-    num_steps = 1000
-    max_stepsize = 1
-    gamma = 0.05
-
-
-def adv_lib_fmn_l2():
+def adv_lib_fmn():
     name = 'fmn'
     source = 'adv_lib'
     threat_model = 'l2'
