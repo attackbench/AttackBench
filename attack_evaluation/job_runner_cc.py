@@ -20,6 +20,7 @@ parser.add_argument('--batch-size', type=int, default=512, help='Batch size')
 parser.add_argument('--gpu-count', type=int, default=1, help='Number of gpus for trial')
 parser.add_argument('--cpu-count', type=int, default=10, help='Number of cpus for trial')
 parser.add_argument('--memory', '--mem', type=int, default=128, help='Number of GB to allocate')
+parser.add_argument('--time', type=str, default='01:00', help='Job duration')
 parser.add_argument('--json-attacks', type=str, default='attacks.json', help='JSON file of attacks to run.')
 parser.add_argument('--seed', type=int, default=4444, help='Set seed for running experiments.')
 
@@ -59,6 +60,7 @@ if __name__ == "__main__":
                     f"#SBATCH --output={Path(logs_dir) / log_name}-log.out",
                     f"#SBATCH --mem={args.memory}G",
                     f"#SBATCH --cpus-per-task={args.cpu_count}",
+                    f"#SBATCH --time={args.time}",
                 ]
 
                 if args.device is not None:
