@@ -88,8 +88,5 @@ _model_getters = {
 def get_model(source: str, requires_grad: bool = False) -> nn.Module:
     model = _model_getters[source]()
     model.eval()
-
-    for param in model.parameters():
-        param.requires_grad_(requires_grad)
-
+    model.requires_grad_(requires_grad)
     return model
