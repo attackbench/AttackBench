@@ -1,34 +1,4 @@
 {
-  "l2": {
-    "foolbox": {
-      "prefix": "fb",
-      "attacks": ["bb", "cw_l2", "dataset", "ddn", "deepfool", "fmn", "pgd_minimal", "fgm_minimal", "bim_minimal"]
-    },
-    "art": {
-      "prefix": "art",
-      "attacks": ["apgd_minimal", "bb", "cw_l2", "deepfool", "fgsm_minimal", "pgd_minimal"]
-    },
-    "cleverhans":{
-      "prefix": "ch",
-      "attacks": ["cw_l2", "fgm_minimal", "pgd_minimal"]
-    },
-    "deeprobust":{
-      "prefix": "dr",
-      "attacks": ["cw_l2", "deepfool", "pgd_minimal", "fgm_minimal"]
-    },
-    "adversarial_lib": {
-      "prefix": "adv_lib",
-      "attacks": ["alma_l2", "apgd_minimal_l2", "cw_l2", "ddn", "fab_l2", "fmn_l2", "pdgd", "pdpgd", "pgd_minimal", "tr", "tr_adaptive"]
-    },
-    "torch_attacks": {
-      "prefix": "ta",
-      "attacks": ["cw_l2", "apgd_minimal", "deepfool", "fab", "auto_attack", "pgd_l2_minimal"]
-    },
-    "original": {
-      "prefix": "original",
-      "attacks": ["apgd_minimal", "apgd_t", "deepfool", "fab", "fmn", "tr", "tr_adaptive"]
-    }
-  },
   "l0": {
     "foolbox": {
       "prefix": "fb",
@@ -62,11 +32,11 @@
   "l1": {
     "foolbox": {
       "prefix": "fb",
-      "attacks": ["bim_minimal_l1","bb", "ead", "fgm_minimal_l1", "fmn", "pgd_minimal_l1"]
+      "attacks": ["bim_minimal", "bb", "ead", "fgm_minimal", "fmn", "pgd_minimal"]
     },
     "art": {
       "prefix": "art",
-      "attacks": ["apgd_minimal_l1", "fgm_minimal_l1", "bb", "ead", "pgd_minimal_l1"]
+      "attacks": ["apgd_minimal", "fgm_minimal", "bb", "ead", "pgd_minimal"]
     },
     "deeprobust":{
       "prefix": "dr",
@@ -74,7 +44,7 @@
     },
     "cleverhans":{
       "prefix": "ch",
-      "attacks": ["fgm_minimal_l1", "pgd_minimal_l1"]
+      "attacks": ["fgm_minimal", "pgd_minimal"]
     },
     "adversarial_lib": {
       "prefix": "adv_lib",
@@ -83,28 +53,62 @@
     "torch_attacks": {
       "prefix": "ta",
       "attacks": ["fab"]
+    },
+    "original": {
+      "prefix": "original",
+      "attacks": ["apgd_minimal_l1", "apgd_t_minimal_l1", "fab", "fmn"]
+    }
+  },
+    "l2": {
+    "foolbox": {
+      "prefix": "fb",
+      "attacks": ["bb", "cw_l2", "dataset", "ddn", "deepfool", "fmn", "pgd_minimal", "fgm_minimal", "bim_minimal"]
+    },
+    "art": {
+      "prefix": "art",
+      "attacks": ["apgd_minimal", "bb", "cw_l2", "deepfool", "fgm_minimal", "pgd_minimal"]
+    },
+    "cleverhans":{
+      "prefix": "ch",
+      "attacks": ["cw_l2", "fgm_minimal", "pgd_minimal"]
+    },
+    "deeprobust":{
+      "prefix": "dr",
+      "attacks": ["cw_l2", "deepfool", "fgm_minimal", "pgd_minimal"]
+    },
+    "adversarial_lib": {
+      "prefix": "adv_lib",
+      "attacks": ["alma_l2", "apgd_minimal", "cw_l2", "ddn", "fab", "fmn", "pdgd", "pdpgd", "tr", "tr_adaptive"]
+    },
+    "torch_attacks": {
+      "prefix": "ta",
+      "attacks": ["cw_l2", "apgd_minimal", "deepfool", "fab", "pgd_l2_minimal"]
+    },
+    "original": {
+      "prefix": "original",
+      "attacks": ["apgd_minimal", "apgd_t_minimal", "deepfool", "fab", "fmn", "tr", "tr_adaptive"]
     }
   },
   "linf": {
     "foolbox": {
       "prefix": "fb",
-      "attacks": ["bb", "deepfool", "fmn", "pgd", "fgm"]
+      "attacks": ["bb", "bim_minimal", "deepfool", "fmn", "pgd_minimal", "fgm_minimal"]
     },
     "art": {
       "prefix": "art",
-      "attacks": ["apgd", "bb", "cw_linf", "fgsm", "pgd"]
+      "attacks": ["apgd_minimal", "bim_minimal", "bb", "cw_linf", "fgm_minimal", "pgd_minimal"]
     },
     "deeprobust":{
       "prefix": "dr",
-      "attacks": ["fgm", "pgd"]
+      "attacks": ["fgm_minimal", "pgd_minimal"]
     },
     "cleverhans":{
       "prefix": "ch",
-      "attacks": ["fgm", "pgd"]
+      "attacks": ["fgm_minimal", "pgd_minimal"]
     },
     "adversarial_lib": {
       "prefix": "adv_lib",
-      "attacks": ["apgd", "cw_linf", "fab", "fmn", "pdpgd", "pgd", "tr", "tr_adaptive"]
+      "attacks": ["apgd_minimal", "cw_linf", "fab", "fmn", "pdpgd", "pgd_minimal", "tr", "tr_adaptive"]
     },
     "torch_attacks": {
       "prefix": "ta",
@@ -112,7 +116,7 @@
     },
     "original": {
       "prefix": "original",
-      "attacks": ["apgd", "fmn"]
+      "attacks": ["apgd_minimal", "apgd_t_minimal", "fab", "fmn_linf", "tr", "tr_adaptive"]
     }
   }
 }
