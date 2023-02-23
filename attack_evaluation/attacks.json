@@ -62,11 +62,11 @@
   "l1": {
     "foolbox": {
       "prefix": "fb",
-      "attacks": ["bb", "ead", "fmn", "pgd"]
+      "attacks": ["bim_minimal_l1","bb", "ead", "fgm_minimal_l1", "fmn", "pgd_minimal_l1"]
     },
     "art": {
       "prefix": "art",
-      "attacks": ["apgd", "bb", "ead", "pgd"]
+      "attacks": ["apgd_minimal_l1", "fgm_minimal_l1", "bb", "ead", "pgd_minimal_l1"]
     },
     "deeprobust":{
       "prefix": "dr",
@@ -78,7 +78,7 @@
     },
     "adversarial_lib": {
       "prefix": "adv_lib",
-      "attacks": ["alma", "apgd", "fab", "fmn", "pdpgd"]
+      "attacks": ["alma_l1", "apgd_minimal_l1", "fab", "fmn", "pdpgd"]
     },
     "torch_attacks": {
       "prefix": "ta",
