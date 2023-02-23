@@ -234,9 +234,18 @@ def get_original_fab(threat_model: str, num_restarts: int, num_steps: int, epsil
 def original_fmn():
     name = 'fmn'
     source = 'original'
-    threat_model = 'linf'
+    threat_model = 'l2'
     num_steps = 1000
     max_step_size = 1
+    gamma = 0.05
+
+
+def original_fmn_linf():
+    name = 'fmn'
+    source = 'original'
+    threat_model = 'linf'
+    num_steps = 1000
+    max_step_size = 10
     gamma = 0.05
 
 
