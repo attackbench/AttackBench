@@ -48,7 +48,7 @@
     },
     "adversarial_lib": {
       "prefix": "adv_lib",
-      "attacks": ["fmn", "pdpgd", "vfga"]
+      "attacks": ["fmn", "pdpgd_l0", "vfga"]
     },
     "torch_attacks": {
       "prefix": "ta",
