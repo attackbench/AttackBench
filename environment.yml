@@ -12,7 +12,7 @@ dependencies:
   - torchvision=0.12
   - cleverhans=4.0.0
   - pip:
-    - adversarial-robustness-toolbox==1.10.2
+    - adversarial-robustness-toolbox==1.13.1
     - foolbox==3.3.3
     - git+https://github.com/RobustBench/robustbench.git
     - git+https://github.com/jeromerony/adversarial-library.git
