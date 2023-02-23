@@ -68,7 +68,18 @@ def get_dr_pgd(threat_model: str, epsilon: float, num_steps: int, step_size: flo
                 attack_params=dict(bound=threat_model, epsilon=epsilon, num_steps=num_steps, step_size=step_size))
 
 
-def dr_pgd_minimal():
+def dr_pgd_minimal_l2():
+    name = 'pgd_minimal'
+    source = 'deeprobust'
+    threat_model = 'l2'
+    num_steps = 40
+    step_size = 0.01
+
+    init_eps = 1  # initial guess for line search
+    search_steps = 20  # number of search steps for line + binary search
+
+
+def dr_pgd_minimal_linf():
     name = 'pgd_minimal'
     source = 'deeprobust'
     threat_model = 'linf'
@@ -98,10 +109,19 @@ def get_dr_fgm(threat_model: str, epsilon: float) -> Dict:
     return dict(attack=FGSM, attack_params=dict(order=order[threat_model], epsilon=epsilon, clip_max=1, clip_min=0))
 
 
-def dr_fgm_minimal():
+def dr_fgm_minimal_l2():
     name = 'fgm_minimal'
     source = 'deeprobust'
-    threat_model = 'linf'  # [linf, l2]
+    threat_model = 'l2'
+
+    init_eps = 1  # initial guess for line search
+    search_steps = 20  # number of search steps for line + binary search
+
+
+def dr_fgm_minimal_linf():
+    name = 'fgm_minimal'
+    source = 'deeprobust'
+    threat_model = 'linf'
 
     init_eps = 1 / 255  # initial guess for line search
     search_steps = 20  # number of search steps for line + binary search
