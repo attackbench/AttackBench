@@ -52,7 +52,7 @@
     },
     "torch_attacks": {
       "prefix": "ta",
-      "attacks": ["apgd", "auto_attack", "cw_l2", "deepfool", "fab", "fgsm", "pgd", "pgd_l2", "sparsefool"]
+      "attacks": ["sparsefool"]
     },
     "original": {
       "prefix": "original",
