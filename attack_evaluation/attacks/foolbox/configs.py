@@ -16,10 +16,13 @@ from foolbox.attacks import (
     L1FMNAttack,
     L2FMNAttack,
     LInfFMNAttack,
+    L1ProjectedGradientDescentAttack,
     L2ProjectedGradientDescentAttack,
     LinfProjectedGradientDescentAttack,
+    L1FastGradientAttack,
     L2FastGradientAttack,
     LinfFastGradientAttack,
+    L1BasicIterativeAttack,
     L2BasicIterativeAttack,
     LinfBasicIterativeAttack,
 )
@@ -176,6 +179,7 @@ def fb_pgd():
 
 
 _pgd_attacks = {
+    'l1': L1ProjectedGradientDescentAttack,
     'l2': L2ProjectedGradientDescentAttack,
     'linf': LinfProjectedGradientDescentAttack,
 }
@@ -186,7 +190,19 @@ def get_fb_pgd(threat_model: str, epsilon: float, num_steps: int, step_size: flo
                    abs_stepsize=abs_stepsize)
 
 
-def fb_pgd_minimal():
+def fb_pgd_minimal_l1():
+    name = 'pgd_minimal'
+    source = 'foolbox'
+    threat_model = 'l1'
+    num_steps = 50
+    step_size = 0.025
+    abs_stepsize = None
+
+    init_eps = 10  # initial guess for line search
+    search_steps = 20  # number of search steps for line + binary search
+
+
+def fb_pgd_minimal_l2():
     name = 'pgd_minimal'
     source = 'foolbox'
     threat_model = 'l2'
@@ -195,6 +211,18 @@ def fb_pgd_minimal():
     abs_stepsize = None
 
     init_eps = 1  # initial guess for line search
+    search_steps = 20  # number of search steps for line + binary search
+
+
+def fb_pgd_minimal_linf():
+    name = 'pgd_minimal'
+    source = 'foolbox'
+    threat_model = 'linf'
+    num_steps = 50
+    step_size = 0.025
+    abs_stepsize = None
+
+    init_eps = 1 / 255  # initial guess for line search
     search_steps = 20  # number of search steps for line + binary search
 
 
@@ -213,6 +241,7 @@ def fb_fgm():
 
 
 _fgm_attacks = {
+    'l1': L1FastGradientAttack,
     'l2': L2FastGradientAttack,
     'linf': LinfFastGradientAttack,
 }
@@ -222,12 +251,30 @@ def get_fb_fgm(threat_model: str, epsilon: float) -> Callable:
     return partial(_fgm_attacks[threat_model], epsilon=epsilon)
 
 
-def fb_fgm_minimal():
+def fb_fgm_minimal_l1():
+    name = 'fgm_minimal'
+    source = 'foolbox'
+    threat_model = 'l1'
+
+    init_eps = 10  # initial guess for line search
+    search_steps = 20  # number of search steps for line + binary search
+
+
+def fb_fgm_minimal_l2():
     name = 'fgm_minimal'
     source = 'foolbox'
     threat_model = 'l2'
 
     init_eps = 1  # initial guess for line search
+    search_steps = 20  # number of search steps for line + binary search
+
+
+def fb_fgm_minimal_linf():
+    name = 'fgm_minimal'
+    source = 'foolbox'
+    threat_model = 'linf'
+
+    init_eps = 1 / 255  # initial guess for line search
     search_steps = 20  # number of search steps for line + binary search
 
 
@@ -248,6 +295,7 @@ def fb_bim():
 
 
 _bim_attacks = {
+    'l1': L1BasicIterativeAttack,
     'l2': L2BasicIterativeAttack,
     'linf': LinfBasicIterativeAttack,
 }
@@ -258,7 +306,31 @@ def get_fb_bim(threat_model: str, epsilon: float, num_steps: int, step_size: flo
                    abs_stepsize=abs_stepsize)
 
 
+def fb_bim_minimal_l1():
+    name = 'bim_minimal'
+    source = 'foolbox'
+    threat_model = 'l1'
+    num_steps = 10
+    step_size = 0.2
+    abs_stepsize = None
+
+    init_eps = 10  # initial guess for line search
+    search_steps = 20  # number of search steps for line + binary search
+
+
 def fb_bim_minimal():
+    name = 'bim_minimal'
+    source = 'foolbox'
+    threat_model = 'l2'
+    num_steps = 10
+    step_size = 0.2
+    abs_stepsize = None
+
+    init_eps = 1  # initial guess for line search
+    search_steps = 20  # number of search steps for line + binary search
+
+
+def fb_bim_minimal_linf():
     name = 'bim_minimal'
     source = 'foolbox'
     threat_model = 'linf'
