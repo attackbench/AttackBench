@@ -89,6 +89,7 @@ if __name__ == "__main__":
                           f"model.{victim} " \
                           f"attack.{attack_name} " \
                           f"attack.threat_model={threat_model} "
+                lines.append(command)
 
                 with open(job_file, 'w') as fh:
                     fh.write('\n'.join(lines))
