@@ -3,10 +3,10 @@ from typing import Callable, Optional
 
 from torchattacks import APGD, APGDT, AutoAttack, CW, DeepFool, FAB, FGSM, PGD, PGDL2, SparseFool
 
-from .wrapper import TorchattacksMinimalWrapper
+from .wrapper import TorchattacksMinimalWrapper, torchattacks_wrapper
 
 _prefix = 'ta'
-
+_wrapper = torchattacks_wrapper
 
 def ta_apgd():
     name = 'apgd'
