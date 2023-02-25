@@ -15,6 +15,7 @@ from art.attacks.evasion import (
 )
 
 from .wrapper import ArtMinimalWrapper, art_wrapper
+from .. import minimal_init_eps, minimal_search_steps
 
 _prefix = 'art'
 _wrapper = art_wrapper
@@ -29,7 +30,7 @@ _norms = {
 def art_apgd():
     name = 'apgd'
     source = 'art'
-    threat_model = 'linf'
+    threat_model = 'linf'  # available: 'l1', 'l2', 'linf'
     epsilon = 0.3
     step_size = 0.1
     num_steps = 100
@@ -46,20 +47,19 @@ def get_art_apgd(threat_model: str, epsilon: float, step_size: float, num_steps:
 def art_apgd_minimal():
     name = 'apgd_minimal'
     source = 'art'
-    threat_model = 'linf'
+    threat_model = 'linf'  # available: 'l1', 'l2', 'linf'
     step_size = 0.1
     num_steps = 100
     nb_random_init = 5
     loss_type = None
 
-    init_eps = 1 / 255  # initial guess for line search
-    search_steps = 20  # number of search steps for line + binary search
-
 
 def get_art_apgd_minimal(threat_model: str, step_size: float, num_steps: int, nb_random_init: int,
-                         loss_type: Optional[str], init_eps: float, search_steps: int) -> Callable:
+                         loss_type: Optional[str], init_eps: Optional[float] = None,
+                         search_steps: int = minimal_search_steps) -> Callable:
     attack = partial(AutoProjectedGradientDescent, norm=_norms[threat_model], eps_step=step_size,
                      max_iter=num_steps, nb_random_init=nb_random_init, loss_type=loss_type)
+    init_eps = minimal_init_eps[threat_model] if init_eps is None else init_eps
     max_eps = 1 if threat_model == 'linf' else None
     return ArtMinimalWrapper(attack=attack, init_eps=init_eps, max_eps=max_eps, search_steps=search_steps)
 
@@ -81,17 +81,14 @@ def art_bim_minimal():
     name = 'bim_minimal'
     source = 'art'
     threat_model = 'linf'
-    epsilon = 0.3
     step_size = 0.1
     num_steps = 100
 
-    init_eps = 1 / 255  # initial guess for line search
-    search_steps = 20  # number of search steps for line + binary search
-
 
 def get_art_bim_minimal(threat_model: str, epsilon: float, step_size: float, num_steps: int,
-                        init_eps: float, search_steps: int) -> Callable:
+                        init_eps: Optional[float] = None, search_steps: int = minimal_search_steps) -> Callable:
     attack = partial(BasicIterativeMethod, eps=epsilon, eps_step=step_size, max_iter=num_steps)
+    init_eps = minimal_init_eps[threat_model] if init_eps is None else init_eps
     max_eps = 1 if threat_model == 'linf' else None
     return ArtMinimalWrapper(attack=attack, init_eps=init_eps, max_eps=max_eps, search_steps=search_steps)
 
@@ -107,12 +104,11 @@ def art_bb():
     lr_num_decay = 20
     momentum = 0.8
     num_binary_search_steps = 10
-    init_size = 32
+    init_size = 100
 
 
 def get_art_bb(threat_model: str, overshoot: float, num_steps: int, step_size: float, lr_decay: float,
-               lr_num_decay: int,
-               momentum: float, num_binary_search_steps: int, init_size: int) -> Callable:
+               lr_num_decay: int, momentum: float, num_binary_search_steps: int, init_size: int) -> Callable:
     return partial(BrendelBethgeAttack, norm=_norms[threat_model], overshoot=overshoot, steps=num_steps, lr=step_size,
                    lr_decay=lr_decay, lr_num_decay=lr_num_decay, momentum=momentum,
                    binary_search_steps=num_binary_search_steps, init_size=init_size)
@@ -191,38 +187,33 @@ def get_art_ead(confidence: float, step_size: float, num_binary_search_steps: in
                    initial_const=initial_const, decision_rule=decision_rule)
 
 
-def art_fgsm():
-    name = 'fgsm'
+def art_fgm():
+    name = 'fgm'
     source = 'art'
-    threat_model = 'linf'
+    threat_model = 'linf'  # available: 'l1', 'l2', 'linf'
     epsilon = 0.3
     step_size = 0.1
     num_random_init = 0
-    minimal = False
 
 
-def get_art_fgsm(threat_model: str, epsilon: float, step_size: float, num_random_init: int, minimal: bool) -> Callable:
+def get_art_fgm(threat_model: str, epsilon: float, step_size: float, num_random_init: int) -> Callable:
     return partial(FastGradientMethod, norm=_norms[threat_model], eps=epsilon, eps_step=step_size,
-                   num_random_init=num_random_init, minimal=minimal)
+                   num_random_init=num_random_init)
 
 
-def art_fgsm_minimal():
-    name = 'fgsm_minimal'
+def art_fgm_minimal():
+    name = 'fgm_minimal'
     source = 'art'
-    threat_model = 'linf'
-    epsilon = 0.3
+    threat_model = 'linf'  # available: 'l1', 'l2', 'linf'
     step_size = 0.1
     num_random_init = 0
-    minimal = False
-
-    init_eps = 1 / 255  # initial guess for line search
-    search_steps = 20  # number of search steps for line + binary search
 
 
-def get_art_fgsm_minimal(threat_model: str, epsilon: float, step_size: float, num_random_init: int, minimal: bool,
-                         init_eps: float, search_steps: int) -> Callable:
+def get_art_fgm_minimal(threat_model: str, epsilon: float, step_size: float, num_random_init: int,
+                        init_eps: Optional[float] = None, search_steps: int = minimal_search_steps) -> Callable:
     attack = partial(FastGradientMethod, norm=_norms[threat_model], eps=epsilon, eps_step=step_size,
-                     num_random_init=num_random_init, minimal=minimal)
+                     num_random_init=num_random_init)
+    init_eps = minimal_init_eps[threat_model] if init_eps is None else init_eps
     max_eps = 1 if threat_model == 'linf' else None
     return ArtMinimalWrapper(attack=attack, init_eps=init_eps, max_eps=max_eps, search_steps=search_steps)
 
@@ -242,7 +233,7 @@ def get_art_jsma(theta: float, gamma: float) -> Callable:
 def art_pgd():
     name = 'pgd'
     source = 'art'
-    threat_model = 'linf'
+    threat_model = 'linf'  # available: 'l1', 'l2', 'linf'
     epsilon = 0.3
     step_size = 0.1
     num_steps = 40  # default was 100. We decided to keep the original num_steps reported in the paper
@@ -259,19 +250,17 @@ def get_art_pgd(threat_model: str, epsilon: float, step_size: float, num_steps: 
 def art_pgd_minimal():
     name = 'pgd_minimal'
     source = 'art'
-    threat_model = 'linf'
+    threat_model = 'linf'  # available: 'l1', 'l2', 'linf'
     step_size = 0.1
     num_steps = 40  # default was 100. We decided to keep the original num_steps reported in the paper
     num_random_init = 0
     random_eps = False
 
-    init_eps = 1 / 255  # initial guess for line search
-    search_steps = 20  # number of search steps for line + binary search
 
-
-def get_art_pgd_minimal(threat_model: str, step_size: float, num_steps: int, num_random_init: int,
-                        random_eps: bool, init_eps: float, search_steps: int) -> Callable:
+def get_art_pgd_minimal(threat_model: str, step_size: float, num_steps: int, num_random_init: int, random_eps: bool,
+                        init_eps: Optional[float] = None, search_steps: int = minimal_search_steps) -> Callable:
     attack = partial(ProjectedGradientDescent, norm=_norms[threat_model], eps_step=step_size,
                      num_random_init=num_random_init, max_iter=num_steps, random_eps=random_eps)
+    init_eps = minimal_init_eps[threat_model] if init_eps is None else init_eps
     max_eps = 1 if threat_model == 'linf' else None
     return ArtMinimalWrapper(attack=attack, init_eps=init_eps, max_eps=max_eps, search_steps=search_steps)

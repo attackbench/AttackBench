@@ -34,12 +34,6 @@ def mnist_smallcnn_trades():
 
 
 @model_ingredient.named_config
-def wideresnet_28_10():
-    name = 'wideresnet_28_10'
-    source = 'robustbench'
-
-
-@model_ingredient.named_config
 def carmon_2019():
     name = 'Carmon2019Unlabeled'  # 'Carmon2019'
     source = 'robustbench'
@@ -94,8 +88,5 @@ _model_getters = {
 def get_model(source: str, requires_grad: bool = False) -> nn.Module:
     model = _model_getters[source]()
     model.eval()
-
-    for param in model.parameters():
-        param.requires_grad_(requires_grad)
-
+    model.requires_grad_(requires_grad)
     return model

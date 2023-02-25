@@ -3,10 +3,11 @@ from typing import Callable, Optional
 
 from torchattacks import APGD, APGDT, AutoAttack, CW, DeepFool, FAB, FGSM, PGD, PGDL2, SparseFool
 
-from .wrapper import TorchattacksMinimalWrapper, torchattacks_wrapper
+from .wrapper import TorchattacksMinimalWrapper
+from .. import minimal_init_eps, minimal_search_steps
 
 _prefix = 'ta'
-_wrapper = torchattacks_wrapper
+
 
 def ta_apgd():
     name = 'apgd'
@@ -37,12 +38,10 @@ def ta_apgd_minimal():
     loss = 'ce'
     rho = 0.75
 
-    init_eps = 1 / 255  # initial guess for line search
-    search_steps = 20  # number of search steps for line + binary search
-
 
 def get_ta_apgd_minimal(threat_model: str, targeted: bool, steps: int, num_restarts: int, loss: str, rho: float,
-                        init_eps: float, search_steps: int) -> Callable:
+                        init_eps: Optional[float] = None, search_steps: int = minimal_search_steps) -> Callable:
+    init_eps = minimal_init_eps[threat_model] if init_eps is None else init_eps
     max_eps = 1 if threat_model == 'linf' else None
     apgd_func = APGDT if targeted else APGD
     attack = partial(apgd_func, norm=threat_model.capitalize(), steps=steps, n_restarts=num_restarts,
@@ -123,11 +122,9 @@ def ta_fgsm_minimal():
     source = 'torchattacks'
     threat_model = 'linf'
 
-    init_eps = 1 / 255  # initial guess for line search
-    search_steps = 20  # number of search steps for line + binary search
 
-
-def get_ta_fgsm_minimal(init_eps: float, search_steps: int) -> Callable:
+def get_ta_fgsm_minimal(init_eps: Optional[float] = None, search_steps: int = minimal_search_steps) -> Callable:
+    init_eps = minimal_init_eps['linf'] if init_eps is None else init_eps
     return partial(TorchattacksMinimalWrapper, attack=FGSM, init_eps=init_eps, search_steps=search_steps, max_eps=1,
                    batched=True)
 
@@ -154,12 +151,10 @@ def ta_pgd_minimal():
     alpha = 2 / 255
     random_start = True
 
-    init_eps = 1 / 255  # initial guess for line search
-    search_steps = 20  # number of search steps for line + binary search
 
-
-def get_ta_pgd_minimal(num_steps: int, alpha: float, random_start: bool, init_eps: float,
-                       search_steps: int) -> Callable:
+def get_ta_pgd_minimal(num_steps: int, alpha: float, random_start: bool,
+                       init_eps: Optional[float] = None, search_steps: int = minimal_search_steps) -> Callable:
+    init_eps = minimal_init_eps['linf'] if init_eps is None else init_eps
     attack = partial(PGD, steps=num_steps, alpha=alpha, random_start=random_start)
     return partial(TorchattacksMinimalWrapper, attack=attack, init_eps=init_eps, search_steps=search_steps, max_eps=1)
 
@@ -190,14 +185,12 @@ def ta_pgd_l2_minimal():
     random_start = True
     eps_for_division = 1e-10
 
-    init_eps = 1  # initial guess for line search
-    search_steps = 20  # number of search steps for line + binary search
 
-
-def get_ta_pgd_l2_minimal(num_steps: int, alpha: float, random_start: bool, eps_for_division: float, init_eps: float,
-                          search_steps: int) -> Callable:
+def get_ta_pgd_l2_minimal(num_steps: int, alpha: float, random_start: bool, eps_for_division: float,
+                          init_eps: Optional[float] = None, search_steps: int = minimal_search_steps) -> Callable:
+    init_eps = minimal_init_eps['l2'] if init_eps is None else init_eps
     attack = partial(PGDL2, steps=num_steps, alpha=alpha, random_start=random_start, eps_for_division=eps_for_division)
-    return partial(TorchattacksMinimalWrapper, attack=attack, init_eps=init_eps, search_steps=search_steps, max_eps=1)
+    return partial(TorchattacksMinimalWrapper, attack=attack, init_eps=init_eps, search_steps=search_steps)
 
 
 def ta_sparsefool():

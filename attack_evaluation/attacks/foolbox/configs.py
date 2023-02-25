@@ -16,15 +16,19 @@ from foolbox.attacks import (
     L1FMNAttack,
     L2FMNAttack,
     LInfFMNAttack,
+    L1ProjectedGradientDescentAttack,
     L2ProjectedGradientDescentAttack,
     LinfProjectedGradientDescentAttack,
+    L1FastGradientAttack,
     L2FastGradientAttack,
     LinfFastGradientAttack,
+    L1BasicIterativeAttack,
     L2BasicIterativeAttack,
     LinfBasicIterativeAttack,
 )
 
 from .wrapper import FoolboxMinimalWrapper, foolbox_wrapper
+from .. import minimal_init_eps, minimal_search_steps
 
 _prefix = 'fb'
 _wrapper = foolbox_wrapper
@@ -33,7 +37,7 @@ _wrapper = foolbox_wrapper
 def fb_bb():
     name = 'bb'
     source = 'foolbox'
-    threat_model = 'linf'
+    threat_model = 'linf'  # available: 'l0', 'l1', 'l2', 'linf'
     num_steps = 1000
     step_size = 0.001
     lr_decay = 0.5
@@ -100,7 +104,7 @@ def get_fb_ddn(init_epsilon: float, num_steps: int, gamma: float) -> Callable:
 def fb_deepfool():
     name = 'deepfool'
     source = 'foolbox'
-    threat_model = 'linf'
+    threat_model = 'linf'  # available: 'l2', 'linf'
     num_steps = 50
     candidates = 10
     overshoot = 0.02
@@ -142,7 +146,7 @@ def get_fb_ead(num_binary_search_steps: float, num_steps: int, step_size: float,
 def fb_fmn():
     name = 'fmn'
     source = 'foolbox'
-    threat_model = 'linf'
+    threat_model = 'linf'  # available: 'l0', 'l1', 'l2', 'linf'
     num_steps = 100
     max_stepsize = 1
     min_stepsize = None
@@ -168,7 +172,7 @@ def get_fb_fmn(threat_model: str, num_steps: int, max_stepsize: float, gamma: fl
 def fb_pgd():
     name = 'pgd'
     source = 'foolbox'
-    threat_model = 'l2'
+    threat_model = 'l2'  # available: 'l1', 'l2', 'linf'
     epsilon = 0.3
     num_steps = 40 # default was 50. We decided to keep the original num_steps reported in the paper
     step_size = 0.025
@@ -176,6 +180,7 @@ def fb_pgd():
 
 
 _pgd_attacks = {
+    'l1': L1ProjectedGradientDescentAttack,
     'l2': L2ProjectedGradientDescentAttack,
     'linf': LinfProjectedGradientDescentAttack,
 }
@@ -189,17 +194,15 @@ def get_fb_pgd(threat_model: str, epsilon: float, num_steps: int, step_size: flo
 def fb_pgd_minimal():
     name = 'pgd_minimal'
     source = 'foolbox'
-    threat_model = 'l2'
+    threat_model = 'linf'  # available: 'l1', 'l2', 'linf'
     num_steps = 50
     step_size = 0.025
     abs_stepsize = None
 
-    init_eps = 1  # initial guess for line search
-    search_steps = 20  # number of search steps for line + binary search
-
 
 def get_fb_pgd_minimal(threat_model: str, num_steps: int, step_size: float, abs_stepsize: float,
-                       init_eps: float, search_steps: int) -> Callable:
+                       init_eps: Optional[float] = None, search_steps: int = minimal_search_steps) -> Callable:
+    init_eps = minimal_init_eps[threat_model] if init_eps is None else init_eps
     max_eps = 1 if threat_model == 'linf' else None
     attack = partial(_pgd_attacks[threat_model], steps=num_steps, rel_stepsize=step_size, abs_stepsize=abs_stepsize)
     return partial(FoolboxMinimalWrapper, attack=attack, init_eps=init_eps, search_steps=search_steps, max_eps=max_eps)
@@ -208,11 +211,12 @@ def get_fb_pgd_minimal(threat_model: str, num_steps: int, step_size: float, abs_
 def fb_fgm():
     name = 'fgm'
     source = 'foolbox'
-    threat_model = 'l2'
+    threat_model = 'l2'  # available: 'l1', 'l2', 'linf'
     epsilon = 0.3
 
 
 _fgm_attacks = {
+    'l1': L1FastGradientAttack,
     'l2': L2FastGradientAttack,
     'linf': LinfFastGradientAttack,
 }
@@ -225,13 +229,12 @@ def get_fb_fgm(threat_model: str, epsilon: float) -> Callable:
 def fb_fgm_minimal():
     name = 'fgm_minimal'
     source = 'foolbox'
-    threat_model = 'l2'
-
-    init_eps = 1  # initial guess for line search
-    search_steps = 20  # number of search steps for line + binary search
+    threat_model = 'linf'  # available: 'l1', 'l2', 'linf'
 
 
-def get_fb_fgm_minimal(threat_model: str, init_eps: float, search_steps: int) -> Callable:
+def get_fb_fgm_minimal(threat_model: str,
+                       init_eps: Optional[float] = None, search_steps: int = minimal_search_steps) -> Callable:
+    init_eps = minimal_init_eps[threat_model] if init_eps is None else init_eps
     max_eps = 1 if threat_model == 'linf' else None
     attack = _fgm_attacks[threat_model]
     return partial(FoolboxMinimalWrapper, attack=attack, init_eps=init_eps, search_steps=search_steps, max_eps=max_eps)
@@ -240,7 +243,7 @@ def get_fb_fgm_minimal(threat_model: str, init_eps: float, search_steps: int) ->
 def fb_bim():
     name = 'bim'
     source = 'foolbox'
-    threat_model = 'linf'
+    threat_model = 'linf'  # available: 'l1', 'l2', 'linf'
     epsilon = 0.3
     num_steps = 10
     step_size = 0.2
@@ -248,6 +251,7 @@ def fb_bim():
 
 
 _bim_attacks = {
+    'l1': L1BasicIterativeAttack,
     'l2': L2BasicIterativeAttack,
     'linf': LinfBasicIterativeAttack,
 }
@@ -261,17 +265,15 @@ def get_fb_bim(threat_model: str, epsilon: float, num_steps: int, step_size: flo
 def fb_bim_minimal():
     name = 'bim_minimal'
     source = 'foolbox'
-    threat_model = 'linf'
+    threat_model = 'linf'  # available: 'l1', 'l2', 'linf'
     num_steps = 10
     step_size = 0.2
     abs_stepsize = None
 
-    init_eps = 1 / 255  # initial guess for line search
-    search_steps = 20  # number of search steps for line + binary search
-
 
 def get_fb_bim_minimal(threat_model: str, num_steps: int, step_size: float, abs_stepsize: float,
-                       init_eps: float, search_steps: int) -> Callable:
+                       init_eps: Optional[float] = None, search_steps: int = minimal_search_steps) -> Callable:
+    init_eps = minimal_init_eps[threat_model] if init_eps is None else init_eps
     max_eps = 1 if threat_model == 'linf' else None
     attack = partial(_bim_attacks[threat_model], steps=num_steps, rel_stepsize=step_size, abs_stepsize=abs_stepsize)
     return partial(FoolboxMinimalWrapper, attack=attack, init_eps=init_eps, search_steps=search_steps, max_eps=max_eps)

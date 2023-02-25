@@ -1,26 +1,27 @@
-from pathlib import Path
 import argparse
-import os
 import json
+from pathlib import Path
 
 parser = argparse.ArgumentParser(description='Slurm runner for attacks benchmark.')
-parser.add_argument('--exp_dir', type=str, default=None, help="Directory where to store results.")
+parser.add_argument('--exp-dir', type=str, default=None, help="Directory where to store results.")
 parser.add_argument('--dataset', type=str, default='cifar10', choices=['cifar10', 'mnist'], help='Dataset')
-parser.add_argument('--num_samples', type=int, default=None, help='Number of samples for SubDataset.')
+parser.add_argument('--num-samples', type=int, default=None, help='Number of samples for SubDataset.')
 parser.add_argument('--model', type=str, default='standard',
                     choices=['standard', 'mnist_smallcnn', 'wideresnet_28_10', 'carmon_2019', 'augustin_2020'],
                     help='Victim model')
-parser.add_argument('--threat_model', type=str, default='l2', choices=['l0', 'l1', 'l2', 'linf'], help='Attack norm')
+parser.add_argument('--threat-model', type=str, default='l2', choices=['l0', 'l1', 'l2', 'linf'], help='Attack norm')
 parser.add_argument('--library', type=str, default='all',
                     choices=["foolbox", "art", "adversarial_lib", "torch_attacks", "cleverhans", "deeprobust", "all"],
                     help='Attack library')
-parser.add_argument('--device', type=str, default='quadro_rtx_5000',
+parser.add_argument('--account', type=str, default=None, help='Account allocation to use')
+parser.add_argument('--device', type=str, default=None,
                     help='Device over which exp are executed. Eg. quadro_rtx_5000, quadro_rtx_5000, tesla')
-parser.add_argument('--batch_size', type=int, default=512, help='Batch size')
-parser.add_argument('--gpu_count', type=int, default=1, help='Number of gpus for trial')
-parser.add_argument('--cpu_count', type=int, default=10, help='Number of cpus for trial')
+parser.add_argument('--batch-size', type=int, default=512, help='Batch size')
+parser.add_argument('--gpu-count', type=int, default=1, help='Number of gpus for trial')
+parser.add_argument('--cpu-count', type=int, default=10, help='Number of cpus for trial')
 parser.add_argument('--memory', '--mem', type=int, default=128, help='Number of GB to allocate')
-parser.add_argument('--json_attacks', type=str, default='attacks.json', help='JSON file of attacks to run.')
+parser.add_argument('--time', type=str, default='01:00', help='Job duration')
+parser.add_argument('--json-attacks', type=str, default='attacks.json', help='JSON file of attacks to run.')
 parser.add_argument('--seed', type=int, default=4444, help='Set seed for running experiments.')
 
 args = parser.parse_args()
@@ -28,12 +29,6 @@ args = parser.parse_args()
 _conda_env_name = 'atkbench'
 
 if __name__ == "__main__":
-    # machine setup
-    device = args.device
-    gpu_count = args.gpu_count
-    cpu_count = args.cpu_count
-    memory = args.memory
-
     # exp setup
     exp_dir = Path(args.exp_dir or 'results')
     dataset = args.dataset
@@ -58,12 +53,35 @@ if __name__ == "__main__":
 
             library_json = configs[threat_model][lib]
             for attack in library_json['attacks']:
-                attack_name = f"{library_json['prefix']}_{attack}"
-
                 log_name = f"{lib}-{attack}"
+                lines = [
+                    "#!/bin/bash",
+                    f"#SBATCH --job-name={lib}-{attack}.job",
+                    f"#SBATCH --output={Path(logs_dir) / log_name}-log.out",
+                    f"#SBATCH --mem={args.memory}G",
+                    f"#SBATCH --cpus-per-task={args.cpu_count}",
+                    f"#SBATCH --time={args.time}",
+                ]
 
+                if args.device is not None:
+                    sbatch_gpu = f"#SBATCH --gres=gpu:{args.device}:{args.gpu_count}"
+                else:
+                    sbatch_gpu = f"#SBATCH --gres=gpu:{args.gpu_count}"
+                lines.append(sbatch_gpu)
+
+                if args.account is not None:
+                    lines.append(f"#SBATCH --account={args.account}")
+
+                lines.extend([
+                    "# load modules",
+                    "module load python/3.9",
+                    "source ~/ADV_BENCH/bin/activate",
+                    "cd ~/ib_projects/attack_benchmark",
+                ])
+
+                attack_name = f"{library_json['prefix']}_{attack}"
                 job_file = logs_dir / f'{lib}-runner.job'
-                command = f"python run.py -F {exp_dir} with " \
+                command = f"python attack_evaluation/run.py -F {exp_dir} with " \
                           f"seed={seed} " \
                           f"dataset.{dataset} " \
                           f"dataset.num_samples={num_samples} " \
@@ -71,19 +89,7 @@ if __name__ == "__main__":
                           f"model.{victim} " \
                           f"attack.{attack_name} " \
                           f"attack.threat_model={threat_model} "
-                lines = [
-                    "#!/bin/bash",
-                    f"#SBATCH --job-name={lib}-{attack}.job",
-                    f"#SBATCH --output={Path(logs_dir) / log_name}-log.out",
-                    f"#SBATCH --mem={memory}gb",
-                    f"#SBATCH --ntasks={cpu_count}",
-                    f"#SBATCH --gres gpu:{device}:{gpu_count}",
-                    command,
-                ]
+                lines.append(command)
 
                 with open(job_file, 'w') as fh:
                     fh.write('\n'.join(lines))
-
-                print(f'Running {command} ...')
-                os.system("sbatch %s" % job_file)
-                print(f'Job Started')
