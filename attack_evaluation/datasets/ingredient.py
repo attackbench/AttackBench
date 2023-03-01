@@ -13,7 +13,6 @@ dataset_ingredient = Ingredient('dataset')
 def config():
     root = 'data'
     num_samples = None  # number of samples to attack, None for all
-    shuffle_seed = 444  # seed for extrapolating subset of data
     random_subset = True  # True for random subset. False for sequential data in Dataset
 
 
