@@ -37,18 +37,24 @@ def mnist_smallcnn_trades():
 def carmon_2019():
     name = 'Carmon2019Unlabeled'  # 'Carmon2019'
     source = 'robustbench'
+    dataset = 'cifar10'
+    threat_model = 'Linf'  # training threat model
 
 
 @model_ingredient.named_config
 def augustin_2020():
-    name = 'Augustin2020'
+    name = 'Augustin2020Adversarial'
     source = 'robustbench'
+    dataset = 'cifar10'
+    threat_model = 'L2'  # training threat model
 
 
 @model_ingredient.named_config
 def standard():
     name = 'Standard'
     source = 'robustbench'
+    dataset = 'cifar10'
+    threat_model = 'Linf'  # training threat model
 
 
 @model_ingredient.capture
@@ -73,8 +79,8 @@ def get_local_model(name: str) -> nn.Module:
 
 
 @model_ingredient.capture
-def get_robustbench_model(name: str) -> nn.Module:
-    model = load_model(model_name=name)
+def get_robustbench_model(name: str, dataset: str, threat_model: str) -> nn.Module:
+    model = load_model(model_name=name, dataset=dataset, threat_model=threat_model)
     return model
 
 
