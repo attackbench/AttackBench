@@ -21,16 +21,19 @@ def config():
 @model_ingredient.named_config
 def mnist_smallcnn():
     name = 'MNIST_SmallCNN'
+    dataset = 'mnist'
 
 
 @model_ingredient.named_config
 def mnist_smallcnn_ddn():
     name = 'MNIST_SmallCNN_ddn'
+    dataset = 'mnist'
 
 
 @model_ingredient.named_config
 def mnist_smallcnn_trades():
     name = 'MNIST_SmallCNN_trades'
+    dataset = 'mnist'
 
 
 @model_ingredient.named_config
@@ -74,7 +77,7 @@ _local_models = {
 
 
 @model_ingredient.capture
-def get_local_model(name: str) -> nn.Module:
+def get_local_model(name: str, dataset: str) -> nn.Module:
     return _local_models[name]()
 
 
