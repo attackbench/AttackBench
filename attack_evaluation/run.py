@@ -34,8 +34,8 @@ def modify_filestorage(options):
     update = options['UPDATE']
 
     # find dataset, model and attack names from CLI
-    names = []
-    for ingredient in (dataset_ingredient, model_ingredient, attack_ingredient):
+    names = {}
+    for ingredient in (model_ingredient, attack_ingredient):
         ingredient_name = ingredient.path
         prefix = ingredient_name + '.'
         ingredient_updates = list(filter(lambda s: s.startswith(prefix) and '=' not in s, update))
@@ -43,7 +43,10 @@ def modify_filestorage(options):
             raise ValueError(f'Incorrect {ingredient_name} configuration: {n} (!=1) named configs specified.')
         named_config = ingredient_updates[0].removeprefix(prefix)
         # names.append(ingredient.named_configs[named_config]()['name'])
-        names.append(named_config)
+        names[ingredient_name] = named_config
+
+    # get dataset from model named config
+    dataset = model_ingredient.named_configs[names['model']]()['dataset']
 
     # find threat model
     attack_updates = list(filter(lambda s: s.startswith('attack.') and 'threat_model=' in s, update))
@@ -59,13 +62,9 @@ def modify_filestorage(options):
         batch_size = dataset_ingredient.named_configs[names[0]]()['batch_size']
     batch_name = f'batch_size_{batch_size}'
 
-    # insert batch_size at desired position for folder structure
-    names.insert(2, batch_name)
-
-    # insert threat model at desired position for folder structure
-    names.insert(1, threat_model)
-
-    options['--file_storage'] = Path(file_storage).joinpath(*names).as_posix()
+    # insert threat model and batch_size at desired position for folder structure
+    subdirs = [dataset, threat_model, names['model'], batch_name, names['attack']]
+    options['--file_storage'] = Path(file_storage).joinpath(*subdirs).as_posix()
 
 
 metrics = OrderedDict([
@@ -87,7 +86,7 @@ def main(cpu: bool,
     set_seed(_seed)
     print(f'Running experiments with seed {_seed}')
 
-    loader = get_loader()
+    loader = get_loader(dataset=_config['model']['dataset'])
     attack = get_attack()
     model = get_model()
     model.to(device)
