@@ -1,95 +1,142 @@
 import argparse
 import json
+import math
+import os
+import time
+from importlib import resources
+from itertools import product
 from pathlib import Path
 
-parser = argparse.ArgumentParser(description='Slurm runner for attacks benchmark.')
-parser.add_argument('--exp-dir', type=str, default=None, help="Directory where to store results.")
-parser.add_argument('--dataset', type=str, default='cifar10', choices=['cifar10', 'mnist'], help='Dataset')
-parser.add_argument('--num-samples', type=int, default=None, help='Number of samples for SubDataset.')
-parser.add_argument('--model', type=str, default='standard',
-                    choices=['standard', 'mnist_smallcnn', 'wideresnet_28_10', 'carmon_2019', 'augustin_2020'],
-                    help='Victim model')
-parser.add_argument('--threat-model', type=str, default='l2', choices=['l0', 'l1', 'l2', 'linf'], help='Attack norm')
-parser.add_argument('--library', type=str, default='all',
-                    choices=["foolbox", "art", "adversarial_lib", "torch_attacks", "cleverhans", "deeprobust", "all"],
-                    help='Attack library')
-parser.add_argument('--account', type=str, default=None, help='Account allocation to use')
-parser.add_argument('--device', type=str, default=None,
-                    help='Device over which exp are executed. Eg. quadro_rtx_5000, quadro_rtx_5000, tesla')
-parser.add_argument('--batch-size', type=int, default=512, help='Batch size')
-parser.add_argument('--gpu-count', type=int, default=1, help='Number of gpus for trial')
-parser.add_argument('--cpu-count', type=int, default=10, help='Number of cpus for trial')
-parser.add_argument('--memory', '--mem', type=int, default=128, help='Number of GB to allocate')
-parser.add_argument('--time', type=str, default='01:00', help='Job duration')
-parser.add_argument('--json-attacks', type=str, default='attacks.json', help='JSON file of attacks to run.')
-parser.add_argument('--seed', type=int, default=4444, help='Set seed for running experiments.')
+import numpy as np
 
-args = parser.parse_args()
+import attack_evaluation
+from run import ex
 
-_conda_env_name = 'atkbench'
+dataset_lengths = {
+    'mnist': 10000,
+    'cifar10': 10000,
+    'cifar100': 10000,
+    'imagenet': 50000,
+}
 
-if __name__ == "__main__":
+if __name__ == '__main__':
+    all_named_configs = list(ex.gather_named_configs())
+    available_models = [name.removeprefix('model.') for name, config in all_named_configs if name.startswith('model.')]
+
+    with resources.open_text(attack_evaluation, 'attacks.json') as f:
+        attack_configs = json.load(f)
+
+    available_libraries, available_threat_models, available_attacks = [], [], []
+    for threat_model, libraries in attack_configs.items():
+        available_threat_models.append(threat_model)
+        for library, attacks in libraries.items():
+            available_libraries.append(library)
+            for attack in attacks['attacks']:
+                available_attacks.append(attack)
+
+    available_libraries = sorted(list(set(available_libraries)))
+    available_attacks = sorted(list(set(available_attacks)))
+
+    parser = argparse.ArgumentParser(description='Compute Canada Slurm runner for attack benchmark')
+
+    # location args
+    parser.add_argument('--result-dir', '-r', type=str, required=True, help='Directory where the results are saved')
+
+    # slurm args
+    parser.add_argument('--account', type=str, default=None, help='Account allocation to use')
+    parser.add_argument('--gpu-type', type=str, default=None, help='Device over which exp are executed')
+    parser.add_argument('--gpu-count', type=int, default=1, help='Number of gpus for trial')
+    parser.add_argument('--cpu-count', type=int, default=2, help='Number of cpus for trial')
+    parser.add_argument('--memory', '--mem', type=int, default=16, help='Number of GB to allocate')
+    parser.add_argument('--time', type=str, default='benchmark',
+                        help='Job duration in DD-HH:MM format. "benchmark" to evaluate on 2 batches and extrapolate.')
+    parser.add_argument('--environment', '--env', type=str, required=True, help='VirtualEnv to use')
+    parser.add_argument('--submit', action='store_true', help='Submit the job to slurm')
+
+    # benchmark args
+    parser.add_argument('--models', type=str, default='all', nargs='+',
+                        choices=available_models + ['all'], help='Victim model')
+    parser.add_argument('--threat-models', type=str, default='all', nargs='+',
+                        choices=available_threat_models + ['all'], help='Threat model for which to run the attacks')
+    parser.add_argument('--libraries', '--lib', type=str, default='all', nargs='+',
+                        choices=available_libraries + ['all'], help='Attack library')
+    parser.add_argument('--attacks', type=str, default='all', nargs='+',
+                        choices=available_attacks + ['all'], help='Attacks to run')
+    parser.add_argument('--batch-size', type=int, default=128, help='Batch size')
+    parser.add_argument('--num-samples', type=int, default=None, help='Number of samples for SubDataset.')
+    parser.add_argument('--seed', type=int, default=42, help='Seed for the experiments')
+
+    args = parser.parse_args()
+
     # exp setup
-    exp_dir = Path(args.exp_dir or 'results')
-    dataset = args.dataset
-    num_samples = args.num_samples
-    batch_size = args.batch_size
-    victim = args.model
-    threat_model = args.threat_model
-    seed = args.seed
+    exp_dir = Path(os.path.dirname(os.path.realpath(__file__))).parent
+    result_dir = Path(args.result_dir)
 
-    with open(args.json_attacks, 'r') as f:
-        configs = json.load(f)
+    # replace 'all' args
+    potential_all_args = ['models', 'threat_models', 'libraries', 'attacks']
+    available_all_args = [available_models, available_threat_models, available_libraries, available_attacks]
+    for arg_name, available_args in zip(potential_all_args, available_all_args):
+        if 'all' in getattr(args, arg_name):
+            setattr(args, arg_name, available_args)
 
-    for lib in configs[threat_model].keys():
+    combinations = product(args.models, args.threat_models, args.libraries, args.attacks)
+    for (model, threat_model, library, attack) in combinations:
 
-        if lib == args.library or args.library == 'all':
+        attack_named_config = attack_configs[threat_model][library]
+        attack_name = f'{attack_named_config["prefix"]}_{attack}'
 
-            logs_dir = exp_dir / 'logs' / dataset / threat_model / victim / ('batch_size_' + str(batch_size))
-            lib_batch_size = f'{lib}-batch_size_{batch_size}'
-            # folder setup
-            exp_dir.mkdir(exist_ok=True, parents=True)
-            logs_dir.mkdir(exist_ok=True, parents=True)
+        if attack not in attack_configs[threat_model][library]['attacks']:
+            continue  # skip if attack is not available for threat model and library
 
-            library_json = configs[threat_model][lib]
-            for attack in library_json['attacks']:
-                log_name = f"{lib}-{attack}"
-                lines = [
-                    "#!/bin/bash",
-                    f"#SBATCH --job-name={lib}-{attack}.job",
-                    f"#SBATCH --output={Path(logs_dir) / log_name}-log.out",
-                    f"#SBATCH --mem={args.memory}G",
-                    f"#SBATCH --cpus-per-task={args.cpu_count}",
-                    f"#SBATCH --time={args.time}",
-                ]
+        dataset = ex.ingredients[1].named_configs[model]()['dataset']
+        result_path = result_dir / dataset / threat_model / model / f'batch_size_{args.batch_size}' / attack_name
+        result_path.mkdir(parents=True, exist_ok=True)
 
-                if args.device is not None:
-                    sbatch_gpu = f"#SBATCH --gres=gpu:{args.device}:{args.gpu_count}"
-                else:
-                    sbatch_gpu = f"#SBATCH --gres=gpu:{args.gpu_count}"
-                lines.append(sbatch_gpu)
+        lines = [
+            '#!/bin/bash',
+            f'#SBATCH --output=%j_%x.out',
+            f'#SBATCH --mem={args.memory}G',
+            f'#SBATCH --cpus-per-task={args.cpu_count}',
+        ]
 
-                if args.account is not None:
-                    lines.append(f"#SBATCH --account={args.account}")
+        gpu_options = ['gpu', args.gpu_count]
+        if args.gpu_type is not None:
+            gpu_options.insert(1, args.gpu_type)
+        lines.append(f'#SBATCH --gres={":".join(map(str, gpu_options))}')
 
-                lines.extend([
-                    "# load modules",
-                    "module load python/3.9",
-                    "source ~/ADV_BENCH/bin/activate",
-                    "cd ~/ib_projects/attack_benchmark",
-                ])
+        if args.account is not None:
+            lines.append(f'#SBATCH --account={args.account}')
 
-                attack_name = f"{library_json['prefix']}_{attack}"
-                job_file = logs_dir / f'{lib}-runner.job'
-                command = f"python attack_evaluation/run.py -F {exp_dir} with " \
-                          f"seed={seed} " \
-                          f"dataset.{dataset} " \
-                          f"dataset.num_samples={num_samples} " \
-                          f"dataset.batch_size={batch_size} " \
-                          f"model.{victim} " \
-                          f"attack.{attack_name} " \
-                          f"attack.threat_model={threat_model} "
-                lines.append(command)
+        if args.time == 'benchmark':
+            named_configs = (f'model.{model}', f'attack.{attack_name}')
+            config_updates = {'attack': {'threat_model': threat_model},
+                              'dataset': {'batch_size': args.batch_size, 'num_samples': 2 * args.batch_size}}
+            run = ex.run(config_updates=config_updates, named_configs=named_configs)
+            times = run.info['times']
+            time_per_batch = np.median(times)
+            num_samples = dataset_lengths[dataset] if args.num_samples is not None else dataset_lengths[dataset]
+            num_batches = math.ceil(min(num_samples, dataset_lengths[dataset]) / args.batch_size)
+            total_time = math.ceil(time_per_batch * num_batches * 1.1)  # add 10%
+            lines.append(f'#SBATCH --time={time.strftime("%d-%H:%M:%S", time.gmtime(total_time))}')
 
-                with open(job_file, 'w') as fh:
-                    fh.write('\n'.join(lines))
+        lines.extend([
+            'module load python/3.9',
+            f'source ~/{args.environment}/bin/activate',
+            f'cd {exp_dir.as_posix()}',
+        ])
+
+        job_file = result_path / f'{threat_model}-{model}-{library}-{attack}.job'
+        command = f'python attack_evaluation/run.py -F {result_dir} with ' \
+                  f'seed={args.seed} ' \
+                  f'dataset.num_samples={args.num_samples} ' \
+                  f'dataset.batch_size={args.batch_size} ' \
+                  f'model.{model} ' \
+                  f'attack.{attack_name} ' \
+                  f'attack.threat_model={threat_model}'
+        lines.append(command)
+
+        with open(job_file, 'w') as fh:
+            fh.write('\n'.join(lines))
+
+        if args.submit:
+            os.system(f'sbatch {job_file}')
