@@ -14,6 +14,7 @@ def config():
     root = 'data'
     num_samples = None  # number of samples to attack, None for all
     random_subset = True  # True for random subset. False for sequential data in Dataset
+    batch_size = 128
 
 
 @dataset_ingredient.capture

@@ -59,7 +59,7 @@ def modify_filestorage(options):
     if len(batch_size_update):
         batch_size = batch_size_update[-1].split('=')[-1]
     else:
-        batch_size = dataset_ingredient.named_configs[names[0]]()['batch_size']
+        batch_size = dataset_ingredient.configurations[0]()['batch_size']
     batch_name = f'batch_size_{batch_size}'
 
     # insert threat model and batch_size at desired position for folder structure
