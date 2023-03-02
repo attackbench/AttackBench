@@ -21,34 +21,43 @@ def config():
 @model_ingredient.named_config
 def mnist_smallcnn():
     name = 'MNIST_SmallCNN'
+    dataset = 'mnist'
 
 
 @model_ingredient.named_config
 def mnist_smallcnn_ddn():
     name = 'MNIST_SmallCNN_ddn'
+    dataset = 'mnist'
 
 
 @model_ingredient.named_config
 def mnist_smallcnn_trades():
     name = 'MNIST_SmallCNN_trades'
+    dataset = 'mnist'
 
 
 @model_ingredient.named_config
 def carmon_2019():
     name = 'Carmon2019Unlabeled'  # 'Carmon2019'
     source = 'robustbench'
+    dataset = 'cifar10'
+    threat_model = 'Linf'  # training threat model
 
 
 @model_ingredient.named_config
 def augustin_2020():
-    name = 'Augustin2020'
+    name = 'Augustin2020Adversarial'
     source = 'robustbench'
+    dataset = 'cifar10'
+    threat_model = 'L2'  # training threat model
 
 
 @model_ingredient.named_config
 def standard():
     name = 'Standard'
     source = 'robustbench'
+    dataset = 'cifar10'
+    threat_model = 'Linf'  # training threat model
 
 
 @model_ingredient.capture
@@ -68,13 +77,13 @@ _local_models = {
 
 
 @model_ingredient.capture
-def get_local_model(name: str) -> nn.Module:
+def get_local_model(name: str, dataset: str) -> nn.Module:
     return _local_models[name]()
 
 
 @model_ingredient.capture
-def get_robustbench_model(name: str) -> nn.Module:
-    model = load_model(model_name=name)
+def get_robustbench_model(name: str, dataset: str, threat_model: str) -> nn.Module:
+    model = load_model(model_name=name, dataset=dataset, threat_model=threat_model)
     return model
 
 
