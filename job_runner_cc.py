@@ -2,7 +2,6 @@ import argparse
 import json
 import math
 import os
-import time
 from importlib import resources
 from itertools import product
 from pathlib import Path
@@ -50,6 +49,7 @@ if __name__ == '__main__':
     parser.add_argument('--memory', '--mem', type=int, default=16, help='Number of GB to allocate')
     parser.add_argument('--time', type=str, default='benchmark',
                         help='Job duration in DD-HH:MM format. "benchmark" to evaluate on 2 batches and extrapolate.')
+    parser.add_argument('--min-time', type=int, default=120, help='Minimum time in seconds.')
     parser.add_argument('--environment', '--env', type=str, default=None, help='VirtualEnv to use')
     parser.add_argument('--submit', action='store_true', help='Submit the job to slurm')
 
@@ -69,7 +69,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # exp setup
-    exp_dir = Path(os.path.dirname(os.path.realpath(__file__))).parent
+    exp_dir = Path(os.path.dirname(os.path.realpath(__file__)))
     result_dir = Path(args.result_dir)
 
     # replace 'all' args
@@ -110,21 +110,32 @@ if __name__ == '__main__':
         if args.time == 'benchmark':
             named_configs = (f'model.{model}', f'attack.{attack_name}')
             config_updates = {'attack': {'threat_model': threat_model},
-                              'dataset': {'batch_size': args.batch_size, 'num_samples': 2 * args.batch_size}}
-            run = ex.run(config_updates=config_updates, named_configs=named_configs)
+                              'dataset': {'batch_size': args.batch_size, 'num_samples': 3 * args.batch_size}}
+            try:
+                run = ex.run(config_updates=config_updates, named_configs=named_configs,
+                             options={'--loglevel': 'ERROR'})
+            except:
+                print(f'Skipping {threat_model} | {model} | {library} | {attack} (crashed).')
+                continue
+
             times = run.info['times']
             time_per_batch = np.median(times)
             num_samples = dataset_lengths[dataset] if args.num_samples is not None else dataset_lengths[dataset]
             num_batches = math.ceil(min(num_samples, dataset_lengths[dataset]) / args.batch_size)
-            total_time = math.ceil(time_per_batch * num_batches * 1.1)  # add 10%
-            lines.append(f'#SBATCH --time={time.strftime("%d-%H:%M:%S", time.gmtime(total_time))}')
+            total_time = max(args.min_time, math.ceil(time_per_batch * num_batches * 1.1))  # add 10%
+            hours, minutes, seconds = total_time // 3600, (total_time % 3600) // 60, total_time % 60
+            time_string = f'{hours:02d}:{minutes:02d}:{seconds:02d}'
+            print(f'Running {threat_model} | {model} | {library} | {attack} for {total_time}s = {time_string}')
+            lines.append(f'#SBATCH --time={time_string}')
+        else:
+            lines.append(f'#SBATCH --time={args.time}')
 
         lines.extend(['module load python/3.9', f'cd {exp_dir.as_posix()}'])
         if args.environment is not None:
             lines.append(f'source {args.environment}/bin/activate')
 
         job_file = result_path / f'{threat_model}-{model}-{library}-{attack}.job'
-        command = f'python attack_evaluation/run.py -F {result_dir} with ' \
+        command = f'python -m attack_evaluation.run -F {result_dir} with ' \
                   f'seed={args.seed} ' \
                   f'dataset.num_samples={args.num_samples} ' \
                   f'dataset.batch_size={args.batch_size} ' \
