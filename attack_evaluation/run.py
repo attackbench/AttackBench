@@ -6,10 +6,10 @@ from adv_lib.distances.lp_norms import l0_distances, l1_distances, l2_distances,
 from sacred import Experiment
 from sacred.observers import FileStorageObserver
 
-from attacks.ingredient import attack_ingredient, get_attack
-from datasets.ingredient import dataset_ingredient, get_loader
-from models.ingredient import get_model, model_ingredient
-from utils import run_attack, set_seed
+from .attacks.ingredient import attack_ingredient, get_attack
+from .datasets.ingredient import dataset_ingredient, get_loader
+from .models.ingredient import get_model, model_ingredient
+from .utils import run_attack, set_seed
 
 ex = Experiment('attack_evaluation', ingredients=[dataset_ingredient, model_ingredient, attack_ingredient])
 

@@ -10,7 +10,7 @@ from pathlib import Path
 import numpy as np
 
 import attack_evaluation
-from run import ex
+from attack_evaluation.run import ex
 
 dataset_lengths = {
     'mnist': 10000,
@@ -50,7 +50,7 @@ if __name__ == '__main__':
     parser.add_argument('--memory', '--mem', type=int, default=16, help='Number of GB to allocate')
     parser.add_argument('--time', type=str, default='benchmark',
                         help='Job duration in DD-HH:MM format. "benchmark" to evaluate on 2 batches and extrapolate.')
-    parser.add_argument('--environment', '--env', type=str, required=True, help='VirtualEnv to use')
+    parser.add_argument('--environment', '--env', type=str, default=None, help='VirtualEnv to use')
     parser.add_argument('--submit', action='store_true', help='Submit the job to slurm')
 
     # benchmark args
@@ -119,11 +119,9 @@ if __name__ == '__main__':
             total_time = math.ceil(time_per_batch * num_batches * 1.1)  # add 10%
             lines.append(f'#SBATCH --time={time.strftime("%d-%H:%M:%S", time.gmtime(total_time))}')
 
-        lines.extend([
-            'module load python/3.9',
-            f'source ~/{args.environment}/bin/activate',
-            f'cd {exp_dir.as_posix()}',
-        ])
+        lines.extend(['module load python/3.9', f'cd {exp_dir.as_posix()}'])
+        if args.environment is not None:
+            lines.append(f'source {args.environment}/bin/activate')
 
         job_file = result_path / f'{threat_model}-{model}-{library}-{attack}.job'
         command = f'python attack_evaluation/run.py -F {result_dir} with ' \
