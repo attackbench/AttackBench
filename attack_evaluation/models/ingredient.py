@@ -60,6 +60,13 @@ def standard():
     threat_model = 'Linf'  # training threat model
 
 
+def engstrom_2019():
+    name = 'Engstrom2019Robustness'
+    source = 'robustbench'
+    dataset = 'cifar10'
+    threat_model = 'L2'  # training threat model. Available [Linf, L2]
+
+
 @model_ingredient.capture
 def get_mnist_smallcnn(checkpoint: str) -> nn.Module:
     model = SmallCNN()

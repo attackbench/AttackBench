@@ -6,10 +6,10 @@ from adv_lib.distances.lp_norms import l0_distances, l1_distances, l2_distances,
 from sacred import Experiment
 from sacred.observers import FileStorageObserver
 
-from attacks.ingredient import attack_ingredient, get_attack
-from datasets.ingredient import dataset_ingredient, get_loader
-from models.ingredient import get_model, model_ingredient
-from utils import run_attack, set_seed
+from .attacks.ingredient import attack_ingredient, get_attack
+from .datasets.ingredient import dataset_ingredient, get_loader
+from .models.ingredient import get_model, model_ingredient
+from .utils import run_attack, set_seed
 
 ex = Experiment('attack_evaluation', ingredients=[dataset_ingredient, model_ingredient, attack_ingredient])
 
@@ -59,7 +59,7 @@ def modify_filestorage(options):
     if len(batch_size_update):
         batch_size = batch_size_update[-1].split('=')[-1]
     else:
-        batch_size = dataset_ingredient.named_configs[names[0]]()['batch_size']
+        batch_size = dataset_ingredient.configurations[0]()['batch_size']
     batch_name = f'batch_size_{batch_size}'
 
     # insert threat model and batch_size at desired position for folder structure
