@@ -12,6 +12,7 @@ dependencies:
   - torchvision=0.12
   - cleverhans=4.0.0
   - pip:
+    - h5py==3.8.0
     - adversarial-robustness-toolbox==1.13.1
     - foolbox==3.3.3
     - git+https://github.com/RobustBench/robustbench.git
@@ -22,3 +23,5 @@ dependencies:
     - scipy<1.8.0
     - torchattacks==3.3.0
     - tqdm==4.56.2
+    - wget==3.2
+

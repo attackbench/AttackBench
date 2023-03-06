@@ -6,6 +6,7 @@ from robustbench import load_model
 from sacred import Ingredient
 from torch import nn
 
+from models.original.utils import load_original_model
 from . import checkpoints
 from .mnist import SmallCNN
 
@@ -60,11 +61,20 @@ def standard():
     threat_model = 'Linf'  # training threat model
 
 
+@model_ingredient.named_config
 def engstrom_2019():
     name = 'Engstrom2019Robustness'
     source = 'robustbench'
     dataset = 'cifar10'
     threat_model = 'L2'  # training threat model. Available [Linf, L2]
+
+
+@model_ingredient.named_config
+def stutz_2020():
+    name = 'Stutz2020CCAT'
+    source = 'original'
+    dataset = 'cifar10'
+    threat_model = 'Linf'
 
 
 @model_ingredient.capture
@@ -93,10 +103,16 @@ def get_robustbench_model(name: str, dataset: str, threat_model: str) -> nn.Modu
     model = load_model(model_name=name, dataset=dataset, threat_model=threat_model)
     return model
 
+@model_ingredient.capture
+def get_original_model(name: str, dataset: str, threat_model: str) -> nn.Module:
+    model = load_original_model(model_name=name, dataset=dataset, threat_model=threat_model)
+    return model
+
 
 _model_getters = {
     'local': get_local_model,
     'robustbench': get_robustbench_model,
+    'original': get_original_model
 }
 
 
