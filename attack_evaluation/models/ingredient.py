@@ -6,9 +6,9 @@ from robustbench import load_model
 from sacred import Ingredient
 from torch import nn
 
-from models.original.utils import load_original_model
 from . import checkpoints
 from .mnist import SmallCNN
+from .original.utils import load_original_model
 
 model_ingredient = Ingredient('model')
 
@@ -102,6 +102,7 @@ def get_local_model(name: str, dataset: str) -> nn.Module:
 def get_robustbench_model(name: str, dataset: str, threat_model: str) -> nn.Module:
     model = load_model(model_name=name, dataset=dataset, threat_model=threat_model)
     return model
+
 
 @model_ingredient.capture
 def get_original_model(name: str, dataset: str, threat_model: str) -> nn.Module:
