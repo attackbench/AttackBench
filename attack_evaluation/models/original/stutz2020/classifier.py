@@ -1,6 +1,6 @@
 import torch
 from .resnet_block import ResNetBlock
-import models.original.stutz2020.common.torch as ctorch
+from .torch import Clamp, Normalize, Scale
 
 
 class Classifier(torch.nn.Module):
@@ -25,7 +25,8 @@ class Classifier(torch.nn.Module):
         assert N_class > 0, 'positive N_class expected'
         assert len(resolution) <= 3
 
-        self.N_class = int(N_class)  # Having strange bug where torch complaints about numpy.in64 being passed to nn.Linear.
+        self.N_class = int(
+            N_class)  # Having strange bug where torch complaints about numpy.in64 being passed to nn.Linear.
         """ (int) Number of classes. """
 
         self.resolution = list(resolution)
@@ -51,18 +52,18 @@ class Classifier(torch.nn.Module):
         """ (int) Number of outputs. """
 
         if self.include_clamp:
-            self.append_layer('clamp', ctorch.Clamp())
+            self.append_layer('clamp', Clamp())
 
         assert not (self.include_whiten and self.include_scale)
 
         if self.include_whiten:
             # Note that the weight and bias needs to set manually corresponding to mean and std!
-            whiten = ctorch.Normalize(resolution[0])
+            whiten = Normalize(resolution[0])
             self.append_layer('whiten', whiten)
 
         if self.include_scale:
             # Note that the weight and bias needs to set manually!
-            scale = ctorch.Scale(1)
+            scale = Scale(1)
             scale.weight.data[0] = -1
             scale.bias.data[0] = 1
             self.append_layer('scale', scale)

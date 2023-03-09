@@ -3,7 +3,7 @@ ResNet.
 Take from https://github.com/pytorch/vision/blob/master/torchvision/models/resnet.py.
 """
 import torch
-import models.original.stutz2020.common.torch as ctorch
+from .torch import View
 from .classifier import Classifier
 from .resnet_block import ResNetBlock
 
@@ -86,7 +86,7 @@ class ResNet(Classifier):
         pool = torch.nn.AvgPool2d((self.resolution[1] // downsampled, self.resolution[2] // downsampled), stride=1)
         self.append_layer('avgpool', pool)
 
-        view = ctorch.View(-1, representation)
+        view = View(-1, representation)
         self.append_layer('view', view)
 
         gain = torch.nn.init.calculate_gain('relu')
