@@ -57,8 +57,12 @@ def run_attack(model: nn.Module,
 
         forward_counter.reset(), backward_counter.reset()
         start.record()
-        adv_inputs = attack(model=model, inputs=inputs, labels=labels, targeted=targeted, targets=targets)
-        # performance monitoring
+
+        try:
+            adv_inputs = attack(model=model, inputs=inputs, labels=labels, targeted=targeted, targets=targets)
+        except:
+            adv_inputs = inputs
+
         end.record()
         torch.cuda.synchronize()
         times.append((start.elapsed_time(end)) / 1000)  # times for cuda Events are in milliseconds
