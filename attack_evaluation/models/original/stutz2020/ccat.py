@@ -26,7 +26,7 @@ def download_model(dataset='cifar10', model='stutz_2020'):
     os.rename(model_dir + zip_ref.infolist()[0].filename, model_dir + _model_name)
 
 
-def load_model(dataset='cifar10', model='stutz2020', threat_model='Linf'):
+def load_ccat_model(dataset='cifar10', model='stutz2020', threat_model='Linf'):
     assert dataset in ['cifar10']  # , 'svhn', 'mnist']
     # assert model in ['normal', 'at', 'stutz_2020', 'msd']
 
@@ -40,3 +40,4 @@ def load_model(dataset='cifar10', model='stutz2020', threat_model='Linf'):
     model = ResNet(**arguments)
     model.load_state_dict(checkpoint['model'])
     return model
+

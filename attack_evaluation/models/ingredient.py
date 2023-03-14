@@ -77,6 +77,22 @@ def stutz_2020():
     threat_model = 'Linf'
 
 
+@model_ingredient.named_config
+def zhang_2020_large():
+    name = 'Zhang2020CrownLarge'
+    source = 'original'
+    dataset = 'cifar10'
+    threat_model = 'Linf'
+
+
+@model_ingredient.named_config
+def zhang_2020_small():
+    name = 'Zhang2020CrownSmall'
+    source = 'original'
+    dataset = 'cifar10'
+    threat_model = 'Linf'
+
+
 @model_ingredient.capture
 def get_mnist_smallcnn(checkpoint: str) -> nn.Module:
     model = SmallCNN()
