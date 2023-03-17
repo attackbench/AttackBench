@@ -91,6 +91,9 @@ def main(cpu: bool,
     model = get_model()
     model.to(device)
 
+    if len(loader) == 0:  # end experiment if there are no inputs to attack
+        return
+
     # find the current folder where the artifacts are saved
     file_observers = [obs for obs in _run.observers if isinstance(obs, FileStorageObserver)]
     save_dir = file_observers[0].dir if len(file_observers) else None
