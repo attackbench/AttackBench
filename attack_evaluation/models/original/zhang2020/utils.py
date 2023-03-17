@@ -2,7 +2,7 @@ import torch
 
 
 def load_crown_dict(model_file):
-    checkpoint = torch.load(model_file)
+    checkpoint = torch.load(model_file, map_location='cpu')
     if isinstance(checkpoint["state_dict"], list):
         checkpoint["state_dict"] = checkpoint["state_dict"][0]
     new_state_dict = {}
