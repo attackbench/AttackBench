@@ -23,6 +23,7 @@ def download_model(dataset='cifar10', model='stutz_2020'):
     model_dir = './models/checkpoints/'
     with zipfile.ZipFile(filename, 'r') as zip_ref:
         zip_ref.extractall(model_dir)
+    os.remove(filename)
     os.rename(model_dir + zip_ref.infolist()[0].filename, model_dir + _model_name)
 
 
