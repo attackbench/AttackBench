@@ -12,8 +12,8 @@
 
 To download all the models and datasets in advance (for instance, to run on a cluster where nodes cannot access internet), run the following command:
 ```bash
-for model in `python -m attack_evaluation.run print_named_configs G model.`; do
-  python -m attack_evaluation.run with dataset.num_samples=0 $model attack.adv_lib_ddn;
+for model in `python -m attack_evaluation.run print_named_configs | grep model.`; do
+python -m attack_evaluation.run with dataset.num_samples=0 $model attack.adv_lib_ddn;
 done
 ```
 
