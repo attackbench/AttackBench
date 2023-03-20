@@ -92,6 +92,13 @@ def zhang_2020_small():
     dataset = 'cifar10'
     threat_model = 'Linf'
 
+@model_ingredient.named_config
+def xiao_2020():
+    name = 'Xiao2020KWTA'
+    source = 'original'
+    dataset = 'cifar10'
+    threat_model = 'Linf'
+
 
 @model_ingredient.capture
 def get_mnist_smallcnn(checkpoint: str) -> nn.Module:
