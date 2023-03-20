@@ -70,6 +70,22 @@ def engstrom_2019():
 
 
 @model_ingredient.named_config
+def gowal_2021():
+    name = 'Gowal2021Improving_70_16_ddpm_100m'
+    source = 'robustbench'
+    dataset = 'cifar10'
+    threat_model = 'Linf'
+
+
+@model_ingredient.named_config
+def chen_2020():
+    name = 'Chen2020Adversarial'
+    source = 'robustbench'
+    dataset = 'cifar10'
+    threat_model = 'Linf'
+
+
+@model_ingredient.named_config
 def stutz_2020():
     name = 'Stutz2020CCAT'
     source = 'original'
@@ -91,6 +107,7 @@ def zhang_2020_small():
     source = 'original'
     dataset = 'cifar10'
     threat_model = 'Linf'
+
 
 @model_ingredient.named_config
 def xiao_2020():
