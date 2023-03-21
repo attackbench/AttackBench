@@ -20,6 +20,17 @@ _pretrained_model_info = {'cifar10': {
     }}}
 
 
+def convert_state_dict(state_dict):
+    new_state_dict = {}
+    for key, value in state_dict.items():
+        if key.startswith('module.'):
+            # Remove 'module.' prefix
+            new_key = key[7:]
+        else:
+            new_key = key
+        new_state_dict[new_key] = value
+    return new_state_dict
+
 def download_model(dataset='cifar10', model='stutz_2020', threat_model='LInf'):
     model_info = _pretrained_model_info[dataset][model]
 
@@ -34,11 +45,10 @@ def create_model(checkpoint_path, model_info):
     checkpoint = torch.load(checkpoint_path, map_location='cpu')
     model = model_info['constructor'](model_info['name'])
 
+    # checkpoints were stored inside a dataparallel and a sequential.
     model = torch.nn.Sequential(model)
-    model = torch.nn.DataParallel(model)
-    # checkpoints are stored in dataparallel modules.
-    model.load_state_dict(checkpoint['model_state_dict'])
-    return model.module
+    model.load_state_dict(convert_state_dict(checkpoint['model_state_dict']))
+    return model
 
 
 def load_dm_adv_model(dataset='cifar10', model='stutz2020', threat_model='Linf'):
