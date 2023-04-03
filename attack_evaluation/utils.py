@@ -49,7 +49,6 @@ def run_attack(model: BenchModel,
 
         # move data to device and get predictions for clean samples
         inputs, labels = inputs.to(device), labels.to(device)
-        model.register_batch(inputs)
 
         logits = model(inputs)
         predictions = logits.argmax(dim=1)
@@ -59,16 +58,16 @@ def run_attack(model: BenchModel,
 
         forward_counter.reset(), backward_counter.reset()
         start.record()
-        model.reset_query_budget()
-        model.register_batch(inputs)
+        model.start_tracking(inputs)
 
-       #try:
+        #try:
         adv_inputs = attack(model=model, inputs=inputs, labels=labels, targeted=targeted, targets=targets)
         #except:
         #    adv_inputs = inputs
 
-        zz
         end.record()
+        model.end_tracking(inputs)
+
         torch.cuda.synchronize()
         times.append((start.elapsed_time(end)) / 1000)  # times for cuda Events are in milliseconds
         forwards.append(forward_counter.num_samples_called)
