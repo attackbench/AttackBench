@@ -101,7 +101,7 @@ class BenchModel(nn.Module):
 
     def init_metrics(self):
         self.metrics = _default_metrics
-        self.best_distances = {k: [] for k in self.metrics.keys()}
+        self.min_dist = {k: [] for k in self.metrics.keys()}
 
     def start_tracking(self, inputs):
         self.reset_query_budget()
@@ -127,21 +127,21 @@ class BenchModel(nn.Module):
 
                 threat_model_str = 'l' + str(self.threat_model)
 
-                if not len(self.best_distances[threat_model_str]) > 0:
+                if not len(self.min_dist[threat_model_str]) > 0:
                     # init best distances to float inf.
                     # we init a vector with best distances equal to infinity
-                    self.best_distances[threat_model_str] = (
+                    self.min_dist[threat_model_str] = (
                                 torch.ones(x.shape[0], requires_grad=False) * float('inf')).to(x.device)
 
-                dist_success = current_distances < self.best_distances[threat_model_str][idx_success]
+                dist_success = current_distances < self.min_dist[threat_model_str][idx_success]
                 if dist_success.any():
                     dist_success_idx = torch.nonzero(dist_success, as_tuple=True)
                     distances_to_change = idx_success[0][dist_success_idx]
-                    self.best_distances[threat_model_str][distances_to_change] = current_distances[dist_success]
+                    self.min_dist[threat_model_str][distances_to_change] = current_distances[dist_success]
 
                     #for metric, metric_func in self.metrics.items():
                     #    metric_str = 'l'+str(metric)
-                    #    self.best_distances[metric_str][distances_to_change] = metric_func(x, self.x_origin).detach().cpu().tolist()
+                    #    self.min_dist[metric_str][distances_to_change] = metric_func(x, self.x_origin).detach().cpu().tolist()
 
     @torch.no_grad()
     def _predict_no_forward_counting(self, x):
