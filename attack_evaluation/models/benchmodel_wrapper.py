@@ -2,6 +2,7 @@ from torch import nn
 from distutils.version import LooseVersion
 import torch
 from adv_lib.utils.attack_utils import _default_metrics
+from typing import Callable, Dict, Optional, Union
 
 
 class ForwardQueryCounter:
@@ -69,16 +70,9 @@ class BenchModel(nn.Module):
             model.register_backward_hook(self.query_stopper)
         self.model = model
         self.execution_time = None
-        self.threat_model = 2  # TODO: adapt to the scenario
         self.benchmark_mode = False
 
     def forward(self, x):
-        """
-        if self.is_out_of_query_budget():
-            with torch.no_grad():
-                print(x.shape, (x - self.inputs).norm(2))
-            return torch.zeros_like(self.model(x))
-        """
         if self.benchmark_mode:
             self.track_optimization(x)
             print('#forwards: ', self.forward_counter.num_queries_called)
@@ -96,6 +90,9 @@ class BenchModel(nn.Module):
         self.query_stopper.reset(self.forward_counter, self.backward_counter)
 
     def register_batch(self, inputs):
+        self.batch_size = inputs.shape[0]
+        self.device = inputs.device
+
         self.x_origin = inputs
         self.y_origin = self._predict_no_forward_counting(inputs)
 
@@ -103,15 +100,19 @@ class BenchModel(nn.Module):
         self.metrics = _default_metrics
         self.min_dist = {k: [] for k in self.metrics.keys()}
 
-    def start_tracking(self, inputs):
+        for metric, metric_func in self.metrics.items():
+            self.min_dist[metric] = torch.full((self.batch_size,), float('inf')).to(self.device)
+
+    def start_tracking(self, inputs, tracking_metric: Callable, tracking_threat_model: str):
         self.reset_query_budget()
         self.register_batch(inputs)
         self.init_metrics()
         self.benchmark_mode = True
+        self.tracking_metric = tracking_metric
+        self.tracking_threat_model = tracking_threat_model
 
     def end_tracking(self):
-        del self.x_origin
-        del self.y_true
+        del self.x_origin, self.y_true, self.min_dist, self.metric
         self.benchmark_mode = False
 
     @torch.no_grad()
@@ -121,27 +122,13 @@ class BenchModel(nn.Module):
             success = (predictions != self.y_origin)  # TODO: need to adapt in case of targeted attacks
 
             if success.any():
-                idx_success = torch.nonzero(success, as_tuple=True)
-                current_delta = (x[idx_success] - self.x_origin[idx_success])
-                current_distances = current_delta.flatten(1).norm(self.threat_model, dim=1)
-
-                threat_model_str = 'l' + str(self.threat_model)
-
-                if not len(self.min_dist[threat_model_str]) > 0:
-                    # init best distances to float inf.
-                    # we init a vector with best distances equal to infinity
-                    self.min_dist[threat_model_str] = (
-                                torch.ones(x.shape[0], requires_grad=False) * float('inf')).to(x.device)
-
-                dist_success = current_distances < self.min_dist[threat_model_str][idx_success]
+                current_distances = self.tracking_metric(x[success], self.x_origin[success])
+                dist_success = current_distances < self.min_dist[self.tracking_threat_model][success]
                 if dist_success.any():
-                    dist_success_idx = torch.nonzero(dist_success, as_tuple=True)
-                    distances_to_change = idx_success[0][dist_success_idx]
-                    self.min_dist[threat_model_str][distances_to_change] = current_distances[dist_success]
-
-                    #for metric, metric_func in self.metrics.items():
-                    #    metric_str = 'l'+str(metric)
-                    #    self.min_dist[metric_str][distances_to_change] = metric_func(x, self.x_origin).detach().cpu().tolist()
+                    v = torch.zeros_like(success)
+                    v[success] = dist_success
+                    for metric, metric_func in self.metrics.items():
+                        self.min_dist[metric][v] = metric_func(x[v], self.x_origin[v], dim=1)
 
     @torch.no_grad()
     def _predict_no_forward_counting(self, x):

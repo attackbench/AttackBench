@@ -58,7 +58,7 @@ def run_attack(model: BenchModel,
 
         forward_counter.reset(), backward_counter.reset()
         start.record()
-        model.start_tracking(inputs)
+        model.start_tracking(inputs, tracking_metric=_default_metrics['l2'], tracking_threat_model='l2')
 
         #try:
         adv_inputs = attack(model=model, inputs=inputs, labels=labels, targeted=targeted, targets=targets)
