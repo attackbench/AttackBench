@@ -86,6 +86,7 @@ def main(cpu: bool,
     set_seed(_seed)
     print(f'Running experiments with seed {_seed}')
 
+    threat_model = _config['attack']['threat_model']
     loader = get_loader(dataset=_config['model']['dataset'])
     attack = get_attack()
     model = get_model()
@@ -99,7 +100,7 @@ def main(cpu: bool,
     save_dir = file_observers[0].dir if len(file_observers) else None
 
     attack_data = run_attack(model=model, loader=loader, attack=attack, metrics=metrics,
-                             return_adv=save_adv and save_dir is not None)
+                             threat_model=threat_model, return_adv=save_adv and save_dir is not None)
 
     if save_adv and save_dir is not None:
         torch.save(attack_data, Path(save_dir) / f'attack_data.pt')

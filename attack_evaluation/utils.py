@@ -13,11 +13,13 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 from .models.benchmodel_wrapper import BenchModel
 
+
 def run_attack(model: BenchModel,
                loader: DataLoader,
                attack: Callable,
                targets: Optional[Union[int, Tensor]] = None,
                metrics: Dict[str, Callable] = _default_metrics,
+               threat_model: str = 'l2',
                return_adv: bool = False) -> dict:
     device = next(model.parameters()).device
     targeted = True if targets is not None else False
@@ -58,11 +60,12 @@ def run_attack(model: BenchModel,
 
         forward_counter.reset(), backward_counter.reset()
         start.record()
-        model.start_tracking(inputs, tracking_metric=_default_metrics['l2'], tracking_threat_model='l2')
+        model.start_tracking(inputs, tracking_metric=_default_metrics[threat_model], tracking_threat_model=threat_model)
 
-        #try:
+        # try:
+        # TODO: use again the try-catch
         adv_inputs = attack(model=model, inputs=inputs, labels=labels, targeted=targeted, targets=targets)
-        #except:
+        # except:
         #    adv_inputs = inputs
 
         end.record()

@@ -38,7 +38,6 @@ class StopBackwardQuery:
 
     def __call__(self, module, grad_input, grad_output) -> None:
         if self.is_out_of_query_budget():
-            print('\n', "Out of query budget", '\n')
             input_gradients = (torch.zeros_like(grad_input[0]),)
             return input_gradients
         return grad_input
@@ -69,7 +68,6 @@ class BenchModel(nn.Module):
             model.register_backward_hook(self.backward_counter)
             model.register_backward_hook(self.query_stopper)
         self.model = model
-        self.execution_time = None
         self.benchmark_mode = False
 
     def forward(self, x):
@@ -77,8 +75,6 @@ class BenchModel(nn.Module):
             self.track_optimization(x)
             print('#forwards: ', self.forward_counter.num_queries_called)
             print('#backwards: ', self.backward_counter.num_queries_called)
-        # with torch.no_grad():
-        #    print(x.shape, (x-self.inputs).norm(2))
         return self.model(x)
 
     def is_out_of_query_budget(self):
@@ -107,13 +103,21 @@ class BenchModel(nn.Module):
         self.reset_query_budget()
         self.register_batch(inputs)
         self.init_metrics()
+        self.init_timing()
+
         self.benchmark_mode = True
+
         self.tracking_metric = tracking_metric
         self.tracking_threat_model = tracking_threat_model
 
     def end_tracking(self):
-        del self.x_origin, self.y_true, self.min_dist, self.metric
+        if not self.is_out_of_query_budget():
+            """
+            Tracking reached the end before using the maximum query budget.
+            """
+            self.stop_timing()
         self.benchmark_mode = False
+        del self.x_origin, self.y_true, self.min_dist, self.metric
 
     @torch.no_grad()
     def track_optimization(self, x):
@@ -129,6 +133,14 @@ class BenchModel(nn.Module):
                     v[success] = dist_success
                     for metric, metric_func in self.metrics.items():
                         self.min_dist[metric][v] = metric_func(x[v], self.x_origin[v], dim=1)
+        elif self.elapsed_time is None:
+            """
+            We stop the timing after reaching maximum amount of queries.
+            """
+            print('Tracking off. Out of query budget and time already set.')
+            self.stop_timing()
+        else:
+            print('Tracking off. Out of query budget and time already set.')
 
     @torch.no_grad()
     def _predict_no_forward_counting(self, x):
@@ -136,3 +148,15 @@ class BenchModel(nn.Module):
         predictions = logits.argmax(dim=1)
         self.forward_counter.num_queries_called -= 1
         return predictions
+
+    def init_timing(self):
+        self.elapsed_time = None
+
+        self._start_time = torch.cuda.Event(enable_timing=True)
+        self._end_time = torch.cuda.Event(enable_timing=True)
+        self._start_time.record()
+
+    def stop_timing(self):
+        self._end_time.record()
+        torch.cuda.synchronize()
+        self.elapsed_time = self._start_time.elapsed_time(self._end_time) / 1000  # times for cuda Events are in milliseconds
