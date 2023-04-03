@@ -11,9 +11,9 @@ from adv_lib.utils.attack_utils import _default_metrics
 from torch import Tensor, nn
 from torch.utils.data import DataLoader
 from tqdm import tqdm
+from .models.benchmodel_wrapper import BenchModel
 
-
-def run_attack(model: nn.Module,
+def run_attack(model: BenchModel,
                loader: DataLoader,
                attack: Callable,
                targets: Optional[Union[int, Tensor]] = None,
@@ -49,6 +49,7 @@ def run_attack(model: nn.Module,
 
         # move data to device and get predictions for clean samples
         inputs, labels = inputs.to(device), labels.to(device)
+        model.register_batch(inputs)
 
         logits = model(inputs)
         predictions = logits.argmax(dim=1)
@@ -58,12 +59,15 @@ def run_attack(model: nn.Module,
 
         forward_counter.reset(), backward_counter.reset()
         start.record()
+        model.reset_query_budget()
+        model.register_batch(inputs)
 
-        try:
-            adv_inputs = attack(model=model, inputs=inputs, labels=labels, targeted=targeted, targets=targets)
-        except:
-            adv_inputs = inputs
+       #try:
+        adv_inputs = attack(model=model, inputs=inputs, labels=labels, targeted=targeted, targets=targets)
+        #except:
+        #    adv_inputs = inputs
 
+        zz
         end.record()
         torch.cuda.synchronize()
         times.append((start.elapsed_time(end)) / 1000)  # times for cuda Events are in milliseconds

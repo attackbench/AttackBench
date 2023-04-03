@@ -9,6 +9,7 @@ from torch import nn
 from . import checkpoints
 from .mnist import SmallCNN
 from .original.utils import load_original_model
+from .benchmodel_wrapper import BenchModel
 
 model_ingredient = Ingredient('model')
 
@@ -17,6 +18,7 @@ model_ingredient = Ingredient('model')
 def config():
     source = 'local'
     requires_grad = False  # if some model requires gradient computations in the forward pass
+    n_query_limit = None
 
 
 @model_ingredient.named_config
@@ -174,8 +176,8 @@ _model_getters = {
 
 
 @model_ingredient.capture
-def get_model(source: str, requires_grad: bool = False) -> nn.Module:
+def get_model(source: str, requires_grad: bool = False, n_query_limit: int = None) -> nn.Module:
     model = _model_getters[source]()
     model.eval()
     model.requires_grad_(requires_grad)
-    return model
+    return BenchModel(model, n_query_limit)
