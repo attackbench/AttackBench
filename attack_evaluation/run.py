@@ -1,5 +1,6 @@
 from collections import OrderedDict
 from pathlib import Path
+from pprint import pprint
 
 import torch
 from adv_lib.distances.lp_norms import l0_distances, l1_distances, l2_distances, linf_distances
@@ -108,3 +109,6 @@ def main(cpu: bool,
     if 'inputs' in attack_data.keys():
         del attack_data['inputs'], attack_data['adv_inputs']
     _run.info = attack_data
+
+    if _run.debug:
+        pprint(_run.info)
