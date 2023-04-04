@@ -1,6 +1,7 @@
 import hashlib
 import random
 import warnings
+from collections import defaultdict
 from distutils.version import LooseVersion
 from typing import Callable, Dict, Optional, Union
 
@@ -8,9 +9,10 @@ import numpy as np
 import torch
 from adv_lib.utils import BackwardCounter, ForwardCounter
 from adv_lib.utils.attack_utils import _default_metrics
-from torch import Tensor, nn
+from torch import Tensor
 from torch.utils.data import DataLoader
 from tqdm import tqdm
+
 from .models.benchmodel_wrapper import BenchModel
 
 
@@ -35,7 +37,7 @@ def run_attack(model: BenchModel,
     forwards, backwards = [], []  # number of forward and backward calls per sample
 
     times, accuracies, ori_success, adv_success, hashes, box_failures = [], [], [], [], [], []
-    distances = {k: [] for k in metrics.keys()}
+    distances = defaultdict(list)
 
     if return_adv:
         all_inputs, all_adv_inputs = [], []
