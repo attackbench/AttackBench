@@ -1,5 +1,4 @@
 from torch import nn
-from distutils.version import LooseVersion
 import torch
 from adv_lib.utils.attack_utils import _default_metrics
 from typing import Callable, Dict, Optional, Union
@@ -28,13 +27,13 @@ class BackwardQueryCounter:
 
 
 class StopBackwardQuery:
-    def __init__(self, forward_counter, backward_counter, n_query_limit):
-        self.reset(forward_counter, backward_counter)
+    def __init__(self, fw_count: ForwardQueryCounter, bk_count: BackwardQueryCounter, n_query_limit: int):
+        self.reset(fw_count, bk_count)
         self.n_query_limit = n_query_limit
 
-    def reset(self, forward_counter, backward_counter):
-        self.forward_counter = forward_counter
-        self.backward_counter = backward_counter
+    def reset(self, fw_count: ForwardQueryCounter, bk_count: BackwardQueryCounter):
+        self.forward_counter = fw_count
+        self.backward_counter = bk_count
 
     def __call__(self, module, grad_input, grad_output) -> None:
         if self.is_out_of_query_budget():
@@ -61,16 +60,13 @@ class BenchModel(nn.Module):
         self.query_stopper = StopBackwardQuery(self.forward_counter, self.backward_counter, self.n_query_limit)
 
         model.register_forward_pre_hook(self.forward_counter)
-        if LooseVersion(torch.__version__) >= LooseVersion('1.8'):
-            model.register_full_backward_hook(self.backward_counter)
-            model.register_full_backward_hook(self.query_stopper)
-        else:
-            model.register_backward_hook(self.backward_counter)
-            model.register_backward_hook(self.query_stopper)
+        model.register_full_backward_hook(self.backward_counter)
+        model.register_full_backward_hook(self.query_stopper)
+
         self.model = model
         self.benchmark_mode = False
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         if self.benchmark_mode:
             self.track_optimization(x)
             print('#forwards: ', self.forward_counter.num_queries_called)
@@ -85,7 +81,7 @@ class BenchModel(nn.Module):
         self.backward_counter.reset()
         self.query_stopper.reset(self.forward_counter, self.backward_counter)
 
-    def register_batch(self, inputs):
+    def register_batch(self, inputs: torch.Tensor):
         self.batch_size = inputs.shape[0]
         self.device = inputs.device
 
@@ -99,7 +95,7 @@ class BenchModel(nn.Module):
         for metric, metric_func in self.metrics.items():
             self.min_dist[metric] = torch.full((self.batch_size,), float('inf')).to(self.device)
 
-    def start_tracking(self, inputs, tracking_metric: Callable, tracking_threat_model: str):
+    def start_tracking(self, inputs: torch.Tensor, tracking_metric: Callable, tracking_threat_model: str):
         self.reset_query_budget()
         self.register_batch(inputs)
         self.init_metrics()
@@ -120,7 +116,7 @@ class BenchModel(nn.Module):
         del self.x_origin, self.y_true, self.min_dist, self.metric
 
     @torch.no_grad()
-    def track_optimization(self, x):
+    def track_optimization(self, x: torch.Tensor):
         if not self.is_out_of_query_budget():
             predictions = self._predict_no_forward_counting(x)
             success = (predictions != self.y_origin)  # TODO: need to adapt in case of targeted attacks
@@ -143,7 +139,7 @@ class BenchModel(nn.Module):
             print('Tracking off. Out of query budget and time already set.')
 
     @torch.no_grad()
-    def _predict_no_forward_counting(self, x):
+    def _predict_no_forward_counting(self, x: torch.Tensor):
         logits = self.model(x)
         predictions = logits.argmax(dim=1)
         self.forward_counter.num_queries_called -= 1
@@ -159,4 +155,5 @@ class BenchModel(nn.Module):
     def stop_timing(self):
         self._end_time.record()
         torch.cuda.synchronize()
-        self.elapsed_time = self._start_time.elapsed_time(self._end_time) / 1000  # times for cuda Events are in milliseconds
+        self.elapsed_time = self._start_time.elapsed_time(
+            self._end_time) / 1000  # times for cuda Events are in milliseconds
