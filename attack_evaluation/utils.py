@@ -69,7 +69,7 @@ def run_attack(model: BenchModel,
         #    adv_inputs = inputs
 
         end.record()
-        model.end_tracking(inputs)
+        model.end_tracking()
 
         torch.cuda.synchronize()
         times.append((start.elapsed_time(end)) / 1000)  # times for cuda Events are in milliseconds

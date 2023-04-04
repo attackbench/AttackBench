@@ -113,7 +113,7 @@ class BenchModel(nn.Module):
             """
             self.stop_timing()
         self.benchmark_mode = False
-        del self.x_origin, self.y_true, self.min_dist, self.metric
+        del self.x_origin, self.y_origin, self.min_dist, self.metrics  # clean-up
 
     @torch.no_grad()
     def track_optimization(self, x: torch.Tensor):
