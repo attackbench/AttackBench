@@ -1,18 +1,9 @@
-from torch import nn
+import warnings
+from typing import Callable, Optional, Tuple
+
 import torch
 from adv_lib.utils.attack_utils import _default_metrics
-from typing import Callable, Dict, Optional, Union
-
-
-class ForwardQueryCounter:
-    def __init__(self):
-        self.reset()
-
-    def reset(self):
-        self.num_queries_called = 0
-
-    def __call__(self, module, input) -> None:
-        self.num_queries_called += 1
+from torch import Tensor, nn
 
 
 class BackwardQueryCounter:
@@ -20,140 +11,128 @@ class BackwardQueryCounter:
         self.reset()
 
     def reset(self):
-        self.num_queries_called = 0
+        self.num_backwards = 0
 
-    def __call__(self, module, grad_input, grad_output) -> None:
-        self.num_queries_called += 1
-
-
-class StopBackwardQuery:
-    def __init__(self, fw_count: ForwardQueryCounter, bk_count: BackwardQueryCounter, n_query_limit: int):
-        self.reset(fw_count, bk_count)
-        self.n_query_limit = n_query_limit
-
-    def reset(self, fw_count: ForwardQueryCounter, bk_count: BackwardQueryCounter):
-        self.forward_counter = fw_count
-        self.backward_counter = bk_count
-
-    def __call__(self, module, grad_input, grad_output) -> None:
-        if self.is_out_of_query_budget():
-            input_gradients = (torch.zeros_like(grad_input[0]),)
-            return input_gradients
-        return grad_input
-
-    def is_out_of_query_budget(self):
-        if self.n_query_limit is None:
-            return None
-
-        n_forwards = self.forward_counter.num_queries_called
-        n_backwards = self.backward_counter.num_queries_called
-        return (n_forwards + n_backwards) > self.n_query_limit
+    def __call__(self, module, grad_input: Tuple[Tensor], grad_output: Tuple[Tensor]) -> None:
+        self.num_backwards += 1
 
 
 class BenchModel(nn.Module):
+    _start_event = torch.cuda.Event(enable_timing=True)
+    _end_event = torch.cuda.Event(enable_timing=True)
+    _benchmark_mode = False
+    _elapsed_time = None
 
-    def __init__(self, model: nn.Module, n_query_limit: int):
+    def __init__(self, model: nn.Module, n_query_limit: Optional[int] = None):
         super(BenchModel, self).__init__()
         self.n_query_limit = n_query_limit
 
-        self.forward_counter, self.backward_counter = ForwardQueryCounter(), BackwardQueryCounter()
-        self.query_stopper = StopBackwardQuery(self.forward_counter, self.backward_counter, self.n_query_limit)
-
-        model.register_forward_pre_hook(self.forward_counter)
+        self.num_forwards = 0
+        self.backward_counter = BackwardQueryCounter()
         model.register_full_backward_hook(self.backward_counter)
-        model.register_full_backward_hook(self.query_stopper)
 
         self.model = model
-        self.benchmark_mode = False
+        self.num_classes = None
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        if self.benchmark_mode:
-            self.track_optimization(x)
-            print('#forwards: ', self.forward_counter.num_queries_called)
-            print('#backwards: ', self.backward_counter.num_queries_called)
-        return self.model(x)
+    def forward(self, input: Tensor) -> Tensor:
+        if self.can_query:
+            output = self.model(input)
+            self.num_forwards += 1
 
-    def is_out_of_query_budget(self):
-        return self.query_stopper.is_out_of_query_budget()
+            if self.num_classes is None:  # get number of classes from first inference
+                self.num_classes = output.shape[1]
 
-    def reset_query_budget(self):
-        self.forward_counter.reset()
+            if self._benchmark_mode:
+                self.track_optimization(input=input, output=output)
+
+        else:
+            # prevents meaningful forward and backward without breaking computations graph and attack logic
+            output = input.flatten(1)[:, :self.num_classes] * 0
+
+        return output
+
+    @property
+    def num_backwards(self) -> int:
+        return self.backward_counter.num_backwards
+
+    def reset_counters(self):
+        self.num_forwards = 0
         self.backward_counter.reset()
-        self.query_stopper.reset(self.forward_counter, self.backward_counter)
 
-    def register_batch(self, inputs: torch.Tensor):
+    @property
+    def is_out_of_query_budget(self) -> bool:
+        if self.n_query_limit is None:
+            return False
+
+        return (self.num_forwards + self.num_backwards) > self.n_query_limit
+
+    @property
+    def can_query(self) -> bool:
+        if self._benchmark_mode is False or self.n_query_limit is None:
+            return True
+
+        return (self.num_forwards + self.num_backwards) < self.n_query_limit
+
+    def register_batch(self, inputs: Tensor, labels: Tensor, targeted: bool) -> None:
+        self.inputs = inputs
+        self.labels = labels
         self.batch_size = inputs.shape[0]
         self.device = inputs.device
+        self.targeted = targeted
 
-        self.x_origin = inputs
-        self.y_origin = self._predict_no_forward_counting(inputs)
-
-    def init_metrics(self):
-        self.metrics = _default_metrics
-        self.min_dist = {k: [] for k in self.metrics.keys()}
-
-        for metric, metric_func in self.metrics.items():
-            self.min_dist[metric] = torch.full((self.batch_size,), float('inf')).to(self.device)
-
-    def start_tracking(self, inputs: torch.Tensor, tracking_metric: Callable, tracking_threat_model: str):
-        self.reset_query_budget()
-        self.register_batch(inputs)
-        self.init_metrics()
-        self.init_timing()
-
-        self.benchmark_mode = True
-
+    def start_tracking(self, tracking_metric: Callable, tracking_threat_model: str) -> None:
+        self.reset_counters()
+        # init metrics
         self.tracking_metric = tracking_metric
         self.tracking_threat_model = tracking_threat_model
+        self.metrics = _default_metrics
+        self.min_dist = {m: torch.full((self.batch_size,), float('inf'), device=self.device) for m in self.metrics}
 
-    def end_tracking(self):
-        if not self.is_out_of_query_budget():
-            """
-            Tracking reached the end before using the maximum query budget.
-            """
+        self._benchmark_mode = True
+        self._elapsed_time = None
+        self.start_timing()
+
+    def end_tracking(self) -> None:
+        self.stop_timing()
+        self._benchmark_mode = False
+        # clean-up
+        del self.inputs, self.labels, self.batch_size, self.device, self.targeted, self.min_dist, self.metrics
+
+    def track_optimization(self, input: Tensor, output: Tensor) -> None:
+        if (bs := len(input)) != self.batch_size:
+            warnings.warn(f'Number of inputs ({bs}) different from tracked ({self.batch_size}) -> cannot track.')
+            return
+
+        if self.is_out_of_query_budget:
             self.stop_timing()
-        self.benchmark_mode = False
-        del self.x_origin, self.y_origin, self.min_dist, self.metrics  # clean-up
-
-    @torch.no_grad()
-    def track_optimization(self, x: torch.Tensor):
-        if not self.is_out_of_query_budget():
-            predictions = self._predict_no_forward_counting(x)
-            success = (predictions != self.y_origin)  # TODO: need to adapt in case of targeted attacks
+            print('Tracking off. Out of query budget and time already set.')
+        else:
+            predictions = output.argmax(dim=1)
+            success = (predictions == self.labels) if self.targeted else (predictions != self.labels)
 
             if success.any():
-                current_distances = self.tracking_metric(x[success], self.x_origin[success])
-                dist_success = current_distances < self.min_dist[self.tracking_threat_model][success]
-                if dist_success.any():
-                    v = torch.zeros_like(success)
-                    v[success] = dist_success
+                current_distances = self.tracking_metric(input[success], self.inputs[success])
+                better_distance = current_distances < self.min_dist[self.tracking_threat_model][success]
+                success.masked_scatter_(success, better_distance)  # cannot use [] indexing with self
+                if success.any():
+                    modified_inputs, original_inputs = input[success], self.inputs[success]
                     for metric, metric_func in self.metrics.items():
-                        self.min_dist[metric][v] = metric_func(x[v], self.x_origin[v], dim=1)
-        elif self.elapsed_time is None:
-            """
-            We stop the timing after reaching maximum amount of queries.
-            """
-            print('Tracking off. Out of query budget and time already set.')
-            self.stop_timing()
-        else:
-            print('Tracking off. Out of query budget and time already set.')
+                        self.min_dist[metric][success] = metric_func(modified_inputs, original_inputs, dim=1)
 
-    @torch.no_grad()
-    def _predict_no_forward_counting(self, x: torch.Tensor):
-        logits = self.model(x)
-        predictions = logits.argmax(dim=1)
-        self.forward_counter.num_queries_called -= 1
-        return predictions
+    def start_timing(self) -> None:
+        self._start_event.record()
 
-    def init_timing(self):
-        self.elapsed_time = None
-
-        self._start_time = torch.cuda.Event(enable_timing=True)
-        self._end_time = torch.cuda.Event(enable_timing=True)
-        self._start_time.record()
-
-    def stop_timing(self):
-        self._end_time.record()
+    def stop_timing(self) -> None:
+        self._end_event.record()
         torch.cuda.synchronize()
-        self.elapsed_time = self._start_time.elapsed_time(
-            self._end_time) / 1000  # times for cuda Events are in milliseconds
+        self._elapsed_time = self._start_event.elapsed_time(
+            self._end_event) / 1000  # times for cuda Events are in milliseconds
+
+    @property
+    def elapsed_time(self) -> float:
+        if self._elapsed_time is None:
+            self._end_event.record()
+            torch.cuda.synchronize()
+            self._elapsed_time = self._start_event.elapsed_time(self._end_event) / 1000
+        else:
+            return self._elapsed_time
