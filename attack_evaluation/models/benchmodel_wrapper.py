@@ -64,7 +64,7 @@ class BenchModel(nn.Module):
         if self.n_query_limit is None:
             return False
 
-        return (self.num_forwards + self.num_backwards) > self.n_query_limit
+        return (self.num_forwards + self.num_backwards) >= self.n_query_limit
 
     @property
     def can_query(self) -> bool:
