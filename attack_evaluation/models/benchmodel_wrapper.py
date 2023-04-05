@@ -111,11 +111,11 @@ class BenchModel(nn.Module):
             success = (predictions == self.labels) if self.targeted else (predictions != self.labels)
 
             if success.any():
-                current_distances = self.tracking_metric(input[success], self.inputs[success])
+                current_distances = self.tracking_metric(input.detach()[success], self.inputs[success])
                 better_distance = current_distances < self.min_dist[self.tracking_threat_model][success]
                 success.masked_scatter_(success, better_distance)  # cannot use [] indexing with self
                 if success.any():
-                    modified_inputs, original_inputs = input[success], self.inputs[success]
+                    modified_inputs, original_inputs = input.detach()[success], self.inputs[success]
                     for metric, metric_func in self.metrics.items():
                         self.min_dist[metric][success] = metric_func(modified_inputs, original_inputs, dim=1)
 
