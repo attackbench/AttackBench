@@ -133,6 +133,6 @@ class BenchModel(nn.Module):
         if self._elapsed_time is None:
             self._end_event.record()
             torch.cuda.synchronize()
-            self._elapsed_time = self._start_event.elapsed_time(self._end_event) / 1000
+            return self._start_event.elapsed_time(self._end_event) / 1000
         else:
             return self._elapsed_time
