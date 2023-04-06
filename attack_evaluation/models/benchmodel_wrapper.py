@@ -76,7 +76,7 @@ class BenchModel(nn.Module):
         self.num_classes = logits.shape[1]
         predictions = logits.argmax(dim=1)
         self.correct = predictions == labels
-        self.ori_success = (predictions == labels) if targeted else (predictions != labels)
+        self.ori_success = (predictions == targets) if targeted else (predictions != labels)
 
         # init metrics
         self.reset_counters()
