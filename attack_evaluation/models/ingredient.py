@@ -7,9 +7,9 @@ from sacred import Ingredient
 from torch import nn
 
 from . import checkpoints
+from .benchmodel_wrapper import BenchModel
 from .mnist import SmallCNN
 from .original.utils import load_original_model
-from .benchmodel_wrapper import BenchModel
 
 model_ingredient = Ingredient('model')
 
@@ -18,6 +18,7 @@ model_ingredient = Ingredient('model')
 def config():
     source = 'local'
     requires_grad = False  # if some model requires gradient computations in the forward pass
+    enforce_box = True  # enforce box constraint by clamping to [0, 1] in model forward
     n_query_limit = None
 
 
@@ -176,8 +177,8 @@ _model_getters = {
 
 
 @model_ingredient.capture
-def get_model(source: str, requires_grad: bool = False, n_query_limit: int = None) -> BenchModel:
+def get_model(source: str, requires_grad: bool, enforce_box: bool, n_query_limit: int) -> BenchModel:
     model = _model_getters[source]()
     model.eval()
     model.requires_grad_(requires_grad)
-    return BenchModel(model, n_query_limit)
+    return BenchModel(model, enforce_box=enforce_box, n_query_limit=n_query_limit)
