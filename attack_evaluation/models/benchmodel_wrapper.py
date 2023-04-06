@@ -4,6 +4,7 @@ from typing import Callable, Optional, Tuple
 import torch
 from adv_lib.utils.attack_utils import _default_metrics
 from torch import Tensor, nn
+from torch.nn import functional as F
 
 
 class BenchModel(nn.Module):
@@ -35,7 +36,8 @@ class BenchModel(nn.Module):
 
         else:
             # prevents meaningful forward and backward without breaking computations graph and attack logic
-            output = input.flatten(1)[:, :self.num_classes] * 0
+            sign = -1 if self.targeted else 1
+            output = input.flatten(1).narrow(1, 0, 1) * 0 + sign * F.one_hot(self.labels, num_classes=self.num_classes)
 
         return output
 
