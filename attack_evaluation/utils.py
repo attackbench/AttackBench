@@ -53,11 +53,10 @@ def run_attack(model: BenchModel,
         model.start_tracking(inputs=inputs, labels=labels, targeted=targeted,
                              tracking_metric=_default_metrics[threat_model], tracking_threat_model=threat_model)
 
-        # try:
-        # TODO: use again the try-catch
-        adv_inputs = attack(model=model, inputs=inputs, labels=labels, targeted=targeted, targets=targets)
-        # except:
-        #    adv_inputs = inputs
+        try:
+            adv_inputs = attack(model=model, inputs=inputs, labels=labels, targeted=targeted, targets=targets)
+        except:
+            adv_inputs = inputs
 
         model.end_tracking()
         times.append(model.elapsed_time)
