@@ -25,9 +25,6 @@ class BenchModel(nn.Module):
 
             output = self.model(input)
 
-            if self.num_classes is None:  # get number of classes from first inference
-                self.num_classes = output.shape[1]
-
             if self._benchmark_mode:
                 self.num_forwards += 1
                 self.track_optimization(input=input, output=output)
@@ -35,7 +32,8 @@ class BenchModel(nn.Module):
         else:
             # prevents meaningful forward and backward without breaking computations graph and attack logic
             sign = -1 if self.targeted else 1
-            output = input.flatten(1).narrow(1, 0, 1) * 0 + sign * F.one_hot(self.labels, num_classes=self.num_classes)
+            one_hot = F.one_hot(self.targets if self.targeted else self.labels, num_classes=self.num_classes)
+            output = input.flatten(1).narrow(1, 0, 1) * 0 + sign * one_hot
 
         return output
 
@@ -64,13 +62,21 @@ class BenchModel(nn.Module):
 
         return (self.num_forwards + self.num_backwards) < self.n_query_limit
 
-    def start_tracking(self, inputs: Tensor, labels: Tensor, targeted: bool,
-                       tracking_metric: Callable, tracking_threat_model: str) -> None:
+    def start_tracking(self, inputs: Tensor, labels: Tensor, targeted: bool, tracking_metric: Callable,
+                       tracking_threat_model: str, targets: Optional[Tensor] = None) -> None:
         self.inputs = inputs
         self.labels = labels
         self.batch_size = len(inputs)
         self.device = inputs.device
         self.targeted = targeted
+        self.targets = targets
+
+        # check if inputs are already adversarial (i.e. misclassified for untargeted)
+        logits = self.forward(inputs)
+        self.num_classes = logits.shape[1]
+        predictions = logits.argmax(dim=1)
+        self.correct = predictions == labels
+        self.ori_success = (predictions == labels) if targeted else (predictions != labels)
 
         # init metrics
         self.reset_counters()
@@ -78,12 +84,15 @@ class BenchModel(nn.Module):
         self.tracking_threat_model = tracking_threat_model
         self.metrics = _default_metrics
         self.min_dist = {m: torch.full((self.batch_size,), float('inf'), device=self.device) for m in self.metrics}
+        for dists in self.min_dist.values():
+            dists.masked_fill_(self.ori_success, 0)  # replace minimum distances with 0 for already adversarial inputs
 
         # timing objects
         self._start_event = torch.cuda.Event(enable_timing=True)
         self._end_event = torch.cuda.Event(enable_timing=True)
         self._benchmark_mode = True
         self._elapsed_time = None
+        torch.cuda.synchronize()
         self.start_timing()
 
     def end_tracking(self) -> None:
@@ -100,7 +109,7 @@ class BenchModel(nn.Module):
             print('Tracking off. Out of query budget and time already set.')
         else:
             predictions = output.argmax(dim=1)
-            success = (predictions == self.labels) if self.targeted else (predictions != self.labels)
+            success = (predictions == self.targets) if self.targeted else (predictions != self.labels)
 
             if success.any():
                 current_distances = self.tracking_metric(input.detach()[success], self.inputs[success])

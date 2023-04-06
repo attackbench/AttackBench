@@ -44,13 +44,8 @@ def run_attack(model: BenchModel,
         # move data to device and get predictions for clean samples
         inputs, labels = inputs.to(device), labels.to(device)
 
-        logits = model(inputs)
-        predictions = logits.argmax(dim=1)
-        accuracies.extend((predictions == labels).cpu().tolist())
-        success = (predictions == targets) if targeted else (predictions != labels)
-        ori_success.extend(success.cpu().tolist())
-
-        model.start_tracking(inputs=inputs, labels=labels, targeted=targeted,
+        # start tracking of the batch
+        model.start_tracking(inputs=inputs, labels=labels, targeted=targeted, targets=targets,
                              tracking_metric=_default_metrics[threat_model], tracking_threat_model=threat_model)
 
         try:
@@ -62,6 +57,10 @@ def run_attack(model: BenchModel,
         times.append(model.elapsed_time)
         forwards.append(model.num_forwards)
         backwards.append(model.num_backwards)
+
+        # original inputs
+        accuracies.extend(model.correct.cpu().tolist())
+        ori_success.extend(model.ori_success.cpu().tolist())
 
         # checking box constraint
         batch_box_failures = ((adv_inputs < 0) | (adv_inputs > 1)).flatten(1).any(1)
