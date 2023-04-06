@@ -50,8 +50,8 @@ def run_attack(model: BenchModel,
         success = (predictions == targets) if targeted else (predictions != labels)
         ori_success.extend(success.cpu().tolist())
 
-        model.register_batch(inputs=inputs, labels=labels, targeted=targeted)
-        model.start_tracking(tracking_metric=_default_metrics[threat_model], tracking_threat_model=threat_model)
+        model.start_tracking(inputs=inputs, labels=labels, targeted=targeted,
+                             tracking_metric=_default_metrics[threat_model], tracking_threat_model=threat_model)
 
         # try:
         # TODO: use again the try-catch

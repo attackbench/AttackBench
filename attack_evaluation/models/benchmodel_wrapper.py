@@ -65,16 +65,16 @@ class BenchModel(nn.Module):
 
         return (self.num_forwards + self.num_backwards) < self.n_query_limit
 
-    def register_batch(self, inputs: Tensor, labels: Tensor, targeted: bool) -> None:
+    def start_tracking(self, inputs: Tensor, labels: Tensor, targeted: bool,
+                       tracking_metric: Callable, tracking_threat_model: str) -> None:
         self.inputs = inputs
         self.labels = labels
         self.batch_size = len(inputs)
         self.device = inputs.device
         self.targeted = targeted
 
-    def start_tracking(self, tracking_metric: Callable, tracking_threat_model: str) -> None:
-        self.reset_counters()
         # init metrics
+        self.reset_counters()
         self.tracking_metric = tracking_metric
         self.tracking_threat_model = tracking_threat_model
         self.metrics = _default_metrics
