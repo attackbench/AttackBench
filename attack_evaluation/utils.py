@@ -27,7 +27,7 @@ def run_attack(model: BenchModel,
 
     accuracies, ori_success, adv_success, hashes, box_failures, = [], [], [], [], []
     forwards, backwards, times = [], [], []
-    distances = defaultdict(list)
+    distances, best_optim_distances = defaultdict(list), defaultdict(list)
 
     if return_adv:
         all_inputs, all_adv_inputs = [], []
@@ -60,12 +60,9 @@ def run_attack(model: BenchModel,
         #    adv_inputs = inputs
 
         model.end_tracking()
-
-        times.append(model.elapsed_time)  # times for cuda Events are in milliseconds
+        times.append(model.elapsed_time)
         forwards.append(model.num_forwards)
         backwards.append(model.num_backwards)
-
-        # TODO: fetch adv_inputs from ModelBench
 
         # checking box constraint
         batch_box_failures = ((adv_inputs < 0) | (adv_inputs > 1)).flatten(1).any(1)
@@ -86,6 +83,7 @@ def run_attack(model: BenchModel,
 
         for metric, metric_func in metrics.items():
             distances[metric].extend(metric_func(adv_inputs, inputs).detach().cpu().tolist())
+            best_optim_distances[metric].extend(model.min_dist[metric].cpu().tolist())
 
     data = {
         'hashes': hashes,
@@ -98,6 +96,7 @@ def run_attack(model: BenchModel,
         'num_forwards': forwards,
         'num_backwards': backwards,
         'distances': dict(distances),
+        'best_optim_distances': dict(best_optim_distances),
         'box_failures': box_failures,
     }
 
