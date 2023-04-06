@@ -8,21 +8,15 @@ from torch.nn import functional as F
 
 
 class BenchModel(nn.Module):
-    _start_event = torch.cuda.Event(enable_timing=True)
-    _end_event = torch.cuda.Event(enable_timing=True)
-    _benchmark_mode = False
-    _elapsed_time = None
-
     def __init__(self, model: nn.Module, enforce_box: bool = True, n_query_limit: Optional[int] = None):
         super(BenchModel, self).__init__()
         self.enforce_box = enforce_box
         self.n_query_limit = n_query_limit
-        self.num_forwards = 0
-        self.num_backwards = 0
 
         self.model = model
         model.register_full_backward_hook(self.backward_hook)
         self.num_classes = None
+        self._benchmark_mode = False
 
     def forward(self, input: Tensor) -> Tensor:
         if self.can_query:
@@ -30,12 +24,12 @@ class BenchModel(nn.Module):
                 input = input.clamp(min=0, max=1)
 
             output = self.model(input)
-            self.num_forwards += 1
 
             if self.num_classes is None:  # get number of classes from first inference
                 self.num_classes = output.shape[1]
 
             if self._benchmark_mode:
+                self.num_forwards += 1
                 self.track_optimization(input=input, output=output)
 
         else:
@@ -47,7 +41,8 @@ class BenchModel(nn.Module):
 
     def backward_hook(self, module, grad_input: Tuple[Tensor], grad_output: Tuple[Tensor]) -> Optional[Tuple[Tensor]]:
         if self.can_query:
-            self.num_backwards += 1
+            if self._benchmark_mode:
+                self.num_backwards += 1
         else:
             return tuple(torch.zeros_like(g) for g in grad_input)
 
@@ -84,6 +79,9 @@ class BenchModel(nn.Module):
         self.metrics = _default_metrics
         self.min_dist = {m: torch.full((self.batch_size,), float('inf'), device=self.device) for m in self.metrics}
 
+        # timing objects
+        self._start_event = torch.cuda.Event(enable_timing=True)
+        self._end_event = torch.cuda.Event(enable_timing=True)
         self._benchmark_mode = True
         self._elapsed_time = None
         self.start_timing()
