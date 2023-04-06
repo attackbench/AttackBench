@@ -43,7 +43,7 @@ class BenchModel(nn.Module):
         if self.can_query:
             self.num_backwards += 1
         else:
-            return tuple(torch.zeros_like(g) for g in grad_output)
+            return tuple(torch.zeros_like(g) for g in grad_input)
 
     def reset_counters(self):
         self.num_forwards = 0
