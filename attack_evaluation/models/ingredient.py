@@ -176,7 +176,7 @@ _model_getters = {
 
 
 @model_ingredient.capture
-def get_model(source: str, requires_grad: bool = False, n_query_limit: int = None) -> nn.Module:
+def get_model(source: str, requires_grad: bool = False, n_query_limit: int = None) -> BenchModel:
     model = _model_getters[source]()
     model.eval()
     model.requires_grad_(requires_grad)
