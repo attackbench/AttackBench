@@ -6,17 +6,6 @@ from adv_lib.utils.attack_utils import _default_metrics
 from torch import Tensor, nn
 
 
-class BackwardQueryCounter:
-    def __init__(self):
-        self.reset()
-
-    def reset(self):
-        self.num_backwards = 0
-
-    def __call__(self, module, grad_input: Tuple[Tensor], grad_output: Tuple[Tensor]) -> None:
-        self.num_backwards += 1
-
-
 class BenchModel(nn.Module):
     _start_event = torch.cuda.Event(enable_timing=True)
     _end_event = torch.cuda.Event(enable_timing=True)
@@ -26,12 +15,11 @@ class BenchModel(nn.Module):
     def __init__(self, model: nn.Module, n_query_limit: Optional[int] = None):
         super(BenchModel, self).__init__()
         self.n_query_limit = n_query_limit
-
         self.num_forwards = 0
-        self.backward_counter = BackwardQueryCounter()
-        model.register_full_backward_hook(self.backward_counter)
+        self.num_backwards = 0
 
         self.model = model
+        model.register_full_backward_hook(self.backward_hook)
         self.num_classes = None
 
     def forward(self, input: Tensor) -> Tensor:
@@ -51,13 +39,15 @@ class BenchModel(nn.Module):
 
         return output
 
-    @property
-    def num_backwards(self) -> int:
-        return self.backward_counter.num_backwards
+    def backward_hook(self, module, grad_input: Tuple[Tensor], grad_output: Tuple[Tensor]) -> Optional[Tuple[Tensor]]:
+        if self.can_query:
+            self.num_backwards += 1
+        else:
+            return tuple(torch.zeros_like(g) for g in grad_output)
 
     def reset_counters(self):
         self.num_forwards = 0
-        self.backward_counter.reset()
+        self.num_backwards = 0
 
     @property
     def is_out_of_query_budget(self) -> bool:
