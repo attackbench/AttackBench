@@ -97,7 +97,7 @@ def run_attack(model: BenchModel,
         'times': times,
         'num_forwards': forwards,
         'num_backwards': backwards,
-        'distances': distances,
+        'distances': dict(distances),
         'box_failures': box_failures,
     }
 
