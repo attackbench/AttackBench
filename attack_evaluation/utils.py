@@ -41,9 +41,7 @@ def run_attack(model: BenchModel,
             input_hash = hashlib.sha512(np.ascontiguousarray(input.numpy())).hexdigest()
             hashes.append(input_hash)
 
-        # move data to device and get predictions for clean samples
-        inputs, labels = inputs.to(device), labels.to(device)
-
+        inputs, labels = inputs.to(device), labels.to(device)  # move data to device
         # start tracking of the batch
         model.start_tracking(inputs=inputs, labels=labels, targeted=targeted, targets=targets,
                              tracking_metric=_default_metrics[threat_model], tracking_threat_model=threat_model)
