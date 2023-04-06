@@ -13,8 +13,9 @@ class BenchModel(nn.Module):
     _benchmark_mode = False
     _elapsed_time = None
 
-    def __init__(self, model: nn.Module, n_query_limit: Optional[int] = None):
+    def __init__(self, model: nn.Module, enforce_box: bool = True, n_query_limit: Optional[int] = None):
         super(BenchModel, self).__init__()
+        self.enforce_box = enforce_box
         self.n_query_limit = n_query_limit
         self.num_forwards = 0
         self.num_backwards = 0
@@ -25,6 +26,9 @@ class BenchModel(nn.Module):
 
     def forward(self, input: Tensor) -> Tensor:
         if self.can_query:
+            if self.enforce_box:
+                input = input.clamp(min=0, max=1)
+
             output = self.model(input)
             self.num_forwards += 1
 
