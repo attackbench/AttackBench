@@ -87,8 +87,6 @@ class BenchModel(nn.Module):
     def end_tracking(self) -> None:
         self.stop_timing()
         self._benchmark_mode = False
-        # clean-up
-        del self.inputs, self.labels, self.batch_size, self.device, self.targeted, self.min_dist, self.metrics
 
     def track_optimization(self, input: Tensor, output: Tensor) -> None:
         if (bs := len(input)) != self.batch_size:
