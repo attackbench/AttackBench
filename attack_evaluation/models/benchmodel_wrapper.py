@@ -68,7 +68,7 @@ class BenchModel(nn.Module):
     def register_batch(self, inputs: Tensor, labels: Tensor, targeted: bool) -> None:
         self.inputs = inputs
         self.labels = labels
-        self.batch_size = inputs.shape[0]
+        self.batch_size = len(inputs)
         self.device = inputs.device
         self.targeted = targeted
 
