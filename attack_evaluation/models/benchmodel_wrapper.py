@@ -31,9 +31,7 @@ class BenchModel(nn.Module):
 
         else:
             # prevents meaningful forward and backward without breaking computations graph and attack logic
-            sign = -1 if self.targeted else 1
-            one_hot = F.one_hot(self.targets if self.targeted else self.labels, num_classes=self.num_classes)
-            output = input.flatten(1).narrow(1, 0, 1) * 0 + sign * one_hot
+            output = input.flatten(1).narrow(1, 0, 1) + self.one_hot
 
         return output
 
@@ -77,6 +75,9 @@ class BenchModel(nn.Module):
         predictions = logits.argmax(dim=1)
         self.correct = predictions == labels
         self.ori_success = (predictions == targets) if targeted else (predictions != labels)
+
+        self.one_hot = F.one_hot(targets if targeted else labels, num_classes=self.num_classes)
+        self.one_hot.mul_(-1 if targeted else 1)  # add or subtract the one-hot labels depending on mode
 
         # init metrics
         self.reset_counters()
