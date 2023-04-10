@@ -8,10 +8,10 @@ from torch.nn import functional as F
 
 
 class BenchModel(nn.Module):
-    def __init__(self, model: nn.Module, enforce_box: bool = True, n_query_limit: Optional[int] = None):
+    def __init__(self, model: nn.Module, enforce_box: bool = True, num_max_propagations: Optional[int] = None):
         super(BenchModel, self).__init__()
         self.enforce_box = enforce_box
-        self.n_query_limit = n_query_limit
+        self.num_max_propagations = num_max_propagations
 
         self.model = model
         model.register_full_backward_hook(self.backward_hook)
@@ -48,17 +48,17 @@ class BenchModel(nn.Module):
 
     @property
     def is_out_of_query_budget(self) -> bool:
-        if self.n_query_limit is None:
+        if self.num_max_propagations is None:
             return False
 
-        return (self.num_forwards + self.num_backwards) >= self.n_query_limit
+        return (self.num_forwards + self.num_backwards) >= self.num_max_propagations
 
     @property
     def can_query(self) -> bool:
-        if self._benchmark_mode is False or self.n_query_limit is None:
+        if self._benchmark_mode is False or self.num_max_propagations is None:
             return True
 
-        return (self.num_forwards + self.num_backwards) < self.n_query_limit
+        return (self.num_forwards + self.num_backwards) < self.num_max_propagations
 
     def start_tracking(self, inputs: Tensor, labels: Tensor, targeted: bool, tracking_metric: Callable,
                        tracking_threat_model: str, targets: Optional[Tensor] = None) -> None:

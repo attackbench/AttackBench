@@ -19,7 +19,7 @@ def config():
     source = 'local'
     requires_grad = False  # if some model requires gradient computations in the forward pass
     enforce_box = True  # enforce box constraint by clamping to [0, 1] in model forward
-    n_query_limit = None
+    num_max_propagations = None  # maximum number of forward and backward propagations that the model allows
 
 
 @model_ingredient.named_config
@@ -177,8 +177,8 @@ _model_getters = {
 
 
 @model_ingredient.capture
-def get_model(source: str, requires_grad: bool, enforce_box: bool, n_query_limit: int) -> BenchModel:
+def get_model(source: str, requires_grad: bool, enforce_box: bool, num_max_propagations: int) -> BenchModel:
     model = _model_getters[source]()
     model.eval()
     model.requires_grad_(requires_grad)
-    return BenchModel(model, enforce_box=enforce_box, n_query_limit=n_query_limit)
+    return BenchModel(model, enforce_box=enforce_box, num_max_propagations=num_max_propagations)
