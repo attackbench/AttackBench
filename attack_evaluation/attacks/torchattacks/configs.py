@@ -15,17 +15,17 @@ def ta_apgd():
     source = 'torchattacks'
     threat_model = 'linf'
     targeted = False  # use a targeted objective for the untargeted attack
-    steps = 100
+    num_steps = 100
     epsilon = 8 / 255
     num_restarts = 1
     loss = 'ce'
     rho = 0.75
 
 
-def get_ta_apgd(threat_model: str, targeted: bool, steps: int, epsilon: float, num_restarts: int, loss: str,
+def get_ta_apgd(threat_model: str, targeted: bool, num_steps: int, epsilon: float, num_restarts: int, loss: str,
                 rho: float) -> Callable:
     apgd_func = APGDT if targeted else APGD
-    return partial(apgd_func, norm=threat_model.capitalize(), steps=steps, eps=epsilon, n_restarts=num_restarts,
+    return partial(apgd_func, norm=threat_model.capitalize(), steps=num_steps, eps=epsilon, n_restarts=num_restarts,
                    loss=loss, rho=rho)
 
 
@@ -34,18 +34,18 @@ def ta_apgd_minimal():
     source = 'torchattacks'
     threat_model = 'linf'
     targeted = False  # use a targeted objective for the untargeted attack
-    steps = 100
+    num_steps = 100
     num_restarts = 1
     loss = 'ce'
     rho = 0.75
 
 
-def get_ta_apgd_minimal(threat_model: str, targeted: bool, steps: int, num_restarts: int, loss: str, rho: float,
+def get_ta_apgd_minimal(threat_model: str, targeted: bool, num_steps: int, num_restarts: int, loss: str, rho: float,
                         init_eps: Optional[float] = None, search_steps: int = minimal_search_steps) -> Callable:
     init_eps = minimal_init_eps[threat_model] if init_eps is None else init_eps
     max_eps = 1 if threat_model == 'linf' else None
     apgd_func = APGDT if targeted else APGD
-    attack = partial(apgd_func, norm=threat_model.capitalize(), steps=steps, n_restarts=num_restarts,
+    attack = partial(apgd_func, norm=threat_model.capitalize(), steps=num_steps, n_restarts=num_restarts,
                      loss=loss, rho=rho)
     return partial(TorchattacksMinimalWrapper, attack=attack, init_eps=init_eps, search_steps=search_steps,
                    max_eps=max_eps, batched=True)
