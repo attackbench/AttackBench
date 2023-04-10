@@ -100,6 +100,19 @@ def adv_lib_apgd_minimal():
     use_rs = True
 
 
+def adv_lib_apgd_t_minimal():
+    name = 'apgd_t_minimal'
+    source = 'adv_lib'
+    threat_model = 'linf'
+    targeted = True  # use a targeted objective for the untargeted attack
+    num_steps = 100
+    num_restarts = 1
+    loss_function = 'dlr'
+    rho = 0.75
+    use_large_reps = False
+    use_rs = True
+
+
 def adv_lib_apgd_minimal_l1():
     name = 'apgd_minimal'
     source = 'adv_lib'
@@ -114,9 +127,9 @@ def adv_lib_apgd_minimal_l1():
 
 
 def get_adv_lib_apgd_minimal(threat_model: str, targeted: bool, num_steps: int, num_restarts: int, loss_function: str,
-                             rho: float, use_large_reps: bool, use_rs: bool,
+                             rho: float, use_large_reps: bool, use_rs: bool, num_targets: Optional[int] = None,
                              init_eps: Optional[float] = None, search_steps: int = minimal_search_steps) -> Callable:
-    attack_func = apgd_targeted if targeted else apgd
+    attack_func = partial(apgd_targeted, num_targets=num_targets) if targeted else apgd
     attack = partial(attack_func, norm=_norms[threat_model], n_iter=num_steps, n_restarts=num_restarts,
                      loss_function=loss_function, rho=rho, use_large_reps=use_large_reps, use_rs=use_rs)
 
