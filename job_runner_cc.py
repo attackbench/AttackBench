@@ -67,13 +67,18 @@ if __name__ == '__main__':
     slurm_script_dir = Path(args.job_dir) if args.job_dir is not None else result_dir
 
     # read config
-    with open(args.config, 'r') as f:
+    config_file = Path(args.config)
+    with open(config_file, 'r') as f:
         config = json.load(f)
     common_config_updates = config.pop('common')
     common_named_configs = common_config_updates.pop('named_configs', [])
 
     cartesian_config = config.pop('cartesian')
     ingredients = list(cartesian_config.keys())
+    for ingredient, ingredient_config in cartesian_config.items():  # replace sub-config files
+        if isinstance(ingredient_config, str) and (subconfig_file := (config_file.parent / ingredient_config)).exists():
+            with open(subconfig_file, 'r') as f:
+                cartesian_config[ingredient] = json.load(f)
     ingredient_named_configs = list(cartesian_config.values())
 
     for i, ingredient_combination in enumerate(product(*ingredient_named_configs)):
