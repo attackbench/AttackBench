@@ -178,7 +178,7 @@ _model_getters = {
 
 @model_ingredient.capture
 def get_model(source: str, requires_grad: bool, enforce_box: bool, num_max_propagations: int) -> BenchModel:
-    model = _model_getters[source]()
+    model = BenchModel(_model_getters[source](), enforce_box=enforce_box, num_max_propagations=num_max_propagations)
     model.eval()
     model.requires_grad_(requires_grad)
-    return BenchModel(model, enforce_box=enforce_box, num_max_propagations=num_max_propagations)
+    return model
