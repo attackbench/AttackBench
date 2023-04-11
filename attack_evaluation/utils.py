@@ -49,6 +49,7 @@ def run_attack(model: BenchModel,
         try:
             adv_inputs = attack(model=model, inputs=inputs, labels=labels, targeted=targeted, targets=targets)
         except:
+            warnings.warn(f'Error running batch for {attack}')
             adv_inputs = inputs
 
         model.end_tracking()
