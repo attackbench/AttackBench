@@ -76,9 +76,12 @@ if __name__ == '__main__':
     cartesian_config = config.pop('cartesian')
     ingredients = list(cartesian_config.keys())
     for ingredient, ingredient_config in cartesian_config.items():  # replace sub-config files
-        if isinstance(ingredient_config, str) and (subconfig_file := (config_file.parent / ingredient_config)).exists():
-            with open(subconfig_file, 'r') as f:
-                cartesian_config[ingredient] = json.load(f)
+        if isinstance(ingredient_config, str) and ingredient_config.lower().endswith('.json'):
+            if (subconfig_file := (config_file.parent / ingredient_config)).exists():
+                with open(subconfig_file, 'r') as f:
+                    cartesian_config[ingredient] = json.load(f)
+            else:  # catch erroneous config file name
+                raise ValueError(f'Configuration file {subconfig_file} does not exist.')
     ingredient_named_configs = list(cartesian_config.values())
 
     for i, ingredient_combination in enumerate(product(*ingredient_named_configs)):
