@@ -3,6 +3,7 @@ import json
 import math
 import os
 from collections import defaultdict
+from copy import deepcopy
 from importlib import resources
 from itertools import product
 from pathlib import Path
@@ -120,8 +121,11 @@ if __name__ == '__main__':
         if args.time == 'benchmark':
             run = ex.run(config_updates=config_updates, named_configs=named_configs,
                          options={'--loglevel': 'ERROR', '--queue': True})
+            dataset = run.config['model']['dataset']
+            run_num_samples = run.config['dataset']['num_samples']
+
             bench_batch_size = max(1, run.config['dataset']['batch_size'] // 4)
-            bench_config_updates = config_updates.copy()
+            bench_config_updates = deepcopy(config_updates)
             bench_config_updates['dataset']['batch_size'] = bench_batch_size
             bench_config_updates['dataset']['num_samples'] = 3 * bench_batch_size
             try:
@@ -133,8 +137,6 @@ if __name__ == '__main__':
 
             times = run.info['times']
             time_per_batch = np.median(times)
-            dataset = run.config['model']['dataset']
-            run_num_samples = run.config['dataset']['num_samples']
             num_samples = run_num_samples if run_num_samples is not None else dataset_lengths[dataset]
             num_batches = math.ceil(min(num_samples, dataset_lengths[dataset]) / bench_batch_size)
             total_time = max(args.min_time, math.ceil(time_per_batch * num_batches * 1.1))  # add 10%
