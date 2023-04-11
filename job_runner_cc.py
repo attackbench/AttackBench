@@ -2,6 +2,7 @@ import argparse
 import json
 import math
 import os
+from collections import defaultdict
 from importlib import resources
 from itertools import product
 from pathlib import Path
@@ -40,6 +41,8 @@ if __name__ == '__main__':
 
     # location args
     parser.add_argument('--result-dir', '-r', type=str, required=True, help='Directory where the results are saved')
+    parser.add_argument('--job-dir', '-j', type=str, default=None,
+                        help='Directory to store slurm scripts before submitting. Default to result-dir')
 
     # slurm args
     parser.add_argument('--account', type=str, default=None, help='Account allocation to use')
@@ -54,43 +57,42 @@ if __name__ == '__main__':
     parser.add_argument('--submit', action='store_true', help='Submit the job to slurm')
 
     # benchmark args
-    parser.add_argument('--models', type=str, default='all', nargs='+',
-                        choices=available_models + ['all'], help='Victim model')
-    parser.add_argument('--threat-models', type=str, default='all', nargs='+',
-                        choices=available_threat_models + ['all'], help='Threat model for which to run the attacks')
-    parser.add_argument('--libraries', '--lib', type=str, default='all', nargs='+',
-                        choices=available_libraries + ['all'], help='Attack library')
-    parser.add_argument('--attacks', type=str, default='all', nargs='+',
-                        choices=available_attacks + ['all'], help='Attacks to run')
-    parser.add_argument('--batch-size', type=int, default=128, help='Batch size')
-    parser.add_argument('--num-samples', type=int, default=None, help='Number of samples for SubDataset.')
-    parser.add_argument('--seed', type=int, default=42, help='Seed for the experiments')
+    parser.add_argument('--config', type=str, required=True, help='Config file for the experiments to run')
 
     args = parser.parse_args()
 
     # exp setup
     exp_dir = Path(os.path.dirname(os.path.realpath(__file__)))
     result_dir = Path(args.result_dir)
+    slurm_script_dir = Path(args.job_dir) if args.job_dir is not None else result_dir
 
-    # replace 'all' args
-    potential_all_args = ['models', 'threat_models', 'libraries', 'attacks']
-    available_all_args = [available_models, available_threat_models, available_libraries, available_attacks]
-    for arg_name, available_args in zip(potential_all_args, available_all_args):
-        if 'all' in getattr(args, arg_name):
-            setattr(args, arg_name, available_args)
+    # read config
+    with open(args.config, 'r') as f:
+        config = json.load(f)
+    common_config_updates = config.pop('common')
+    common_named_configs = common_config_updates.pop('named_configs', [])
 
-    combinations = product(args.models, args.threat_models, args.libraries, args.attacks)
-    for (model, threat_model, library, attack) in combinations:
+    cartesian_config = config.pop('cartesian')
+    ingredients = list(cartesian_config.keys())
+    ingredient_named_configs = list(cartesian_config.values())
 
-        attack_named_config = attack_configs[threat_model][library]
-        attack_name = f'{attack_named_config["prefix"]}_{attack}'
+    for i, ingredient_combination in enumerate(product(*ingredient_named_configs)):
 
-        if attack not in attack_configs[threat_model][library]['attacks']:
-            continue  # skip if attack is not available for threat model and library
+        # generate combination specific named configs and config updates
+        named_configs = []
+        config_updates = defaultdict(dict)
+        for ingredient, name in zip(ingredients, ingredient_combination):
+            named_configs.append(f'{ingredient}.{name}')
+            if isinstance(cartesian_config[ingredient], dict):
+                config_updates[ingredient] = cartesian_config[ingredient][name]
 
-        dataset = ex.ingredients[1].named_configs[model]()['dataset']
-        result_path = result_dir / dataset / threat_model / model / f'batch_size_{args.batch_size}' / attack_name
-        result_path.mkdir(parents=True, exist_ok=True)
+        # merge with common named configs and config updates
+        named_configs.extend(common_named_configs)
+        for key, value in common_config_updates.items():
+            if isinstance(value, dict):
+                config_updates[key] = value | config_updates[key]
+            else:
+                config_updates[key] = value
 
         lines = [
             '#!/bin/bash',
@@ -108,24 +110,29 @@ if __name__ == '__main__':
             lines.append(f'#SBATCH --account={args.account}')
 
         if args.time == 'benchmark':
-            named_configs = (f'model.{model}', f'attack.{attack_name}')
-            config_updates = {'attack': {'threat_model': threat_model},
-                              'dataset': {'batch_size': args.batch_size, 'num_samples': 3 * args.batch_size}}
+            run = ex.run(config_updates=config_updates, named_configs=named_configs,
+                         options={'--loglevel': 'ERROR', '--queue': True})
+            bench_batch_size = max(1, run.config['dataset']['batch_size'] // 4)
+            bench_config_updates = config_updates.copy()
+            bench_config_updates['dataset']['batch_size'] = bench_batch_size
+            bench_config_updates['dataset']['num_samples'] = 3 * bench_batch_size
             try:
                 run = ex.run(config_updates=config_updates, named_configs=named_configs,
                              options={'--loglevel': 'ERROR'})
             except:
-                print(f'Skipping {threat_model} | {model} | {library} | {attack} (crashed).')
+                print(f'Skipping {named_configs} | {config_updates} (crashed during benchmark).')
                 continue
 
             times = run.info['times']
             time_per_batch = np.median(times)
-            num_samples = dataset_lengths[dataset] if args.num_samples is not None else dataset_lengths[dataset]
-            num_batches = math.ceil(min(num_samples, dataset_lengths[dataset]) / args.batch_size)
+            dataset = run.config['model']['dataset']
+            run_num_samples = run.config['dataset']['num_samples']
+            num_samples = run_num_samples if run_num_samples is not None else dataset_lengths[dataset]
+            num_batches = math.ceil(min(num_samples, dataset_lengths[dataset]) / bench_batch_size)
             total_time = max(args.min_time, math.ceil(time_per_batch * num_batches * 1.1))  # add 10%
             hours, minutes, seconds = total_time // 3600, (total_time % 3600) // 60, total_time % 60
             time_string = f'{hours:02d}:{minutes:02d}:{seconds:02d}'
-            print(f'Running {threat_model} | {model} | {library} | {attack} for {total_time}s = {time_string}')
+            print(f'Running {named_configs} | {config_updates} for {total_time}s = {time_string}')
             lines.append(f'#SBATCH --time={time_string}')
         else:
             lines.append(f'#SBATCH --time={args.time}')
@@ -134,14 +141,18 @@ if __name__ == '__main__':
         if args.environment is not None:
             lines.append(f'source {args.environment}/bin/activate')
 
-        job_file = result_path / f'{threat_model}-{model}-{library}-{attack}.job'
-        command = f'python -m attack_evaluation.run -F {result_dir} with ' \
-                  f'seed={args.seed} ' \
-                  f'dataset.num_samples={args.num_samples} ' \
-                  f'dataset.batch_size={args.batch_size} ' \
-                  f'model.{model} ' \
-                  f'attack.{attack_name} ' \
-                  f'attack.threat_model={threat_model}'
+        job_file = slurm_script_dir / f'{Path(args.config).stem}_{i:04d}.job'
+        config_updates_commands = []
+        stack = config_updates
+        while stack:
+            key, value = stack.popitem()
+            if isinstance(value, dict):
+                for sub_key, sub_value in value.items():
+                    stack[f'{key}.{sub_key}'] = sub_value
+            else:
+                config_updates_commands.append(f'{key}={value}')
+
+        command = f'python -m attack_evaluation.run -F {result_dir} with {" ".join(named_configs)} {" ".join(config_updates_commands)}'
         lines.append(command)
 
         with open(job_file, 'w') as fh:
