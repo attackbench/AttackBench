@@ -141,7 +141,6 @@ if __name__ == '__main__':
         if args.environment is not None:
             lines.append(f'source {args.environment}/bin/activate')
 
-        job_file = slurm_script_dir / f'{Path(args.config).stem}_{i:04d}.job'
         config_updates_commands = []
         stack = config_updates
         while stack:
@@ -155,6 +154,7 @@ if __name__ == '__main__':
         command = f'python -m attack_evaluation.run -F {result_dir} with {" ".join(named_configs)} {" ".join(config_updates_commands)}'
         lines.append(command)
 
+        job_file = slurm_script_dir / f'{Path(args.config).stem}_{i:04d}.job'
         with open(job_file, 'w') as fh:
             fh.write('\n'.join(lines))
 
