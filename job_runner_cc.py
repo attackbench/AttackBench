@@ -125,7 +125,7 @@ if __name__ == '__main__':
             bench_config_updates['dataset']['batch_size'] = bench_batch_size
             bench_config_updates['dataset']['num_samples'] = 3 * bench_batch_size
             try:
-                run = ex.run(config_updates=config_updates, named_configs=named_configs,
+                run = ex.run(config_updates=bench_config_updates, named_configs=named_configs,
                              options={'--loglevel': 'ERROR'})
             except:
                 print(f'Skipping {named_configs} | {config_updates} (crashed during benchmark).')
