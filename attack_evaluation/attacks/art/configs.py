@@ -85,9 +85,9 @@ def art_bim_minimal():
     num_steps = 100
 
 
-def get_art_bim_minimal(threat_model: str, epsilon: float, step_size: float, num_steps: int,
+def get_art_bim_minimal(threat_model: str, step_size: float, num_steps: int,
                         init_eps: Optional[float] = None, search_steps: int = minimal_search_steps) -> Callable:
-    attack = partial(BasicIterativeMethod, eps=epsilon, eps_step=step_size, max_iter=num_steps)
+    attack = partial(BasicIterativeMethod, eps_step=step_size, max_iter=num_steps)
     init_eps = minimal_init_eps[threat_model] if init_eps is None else init_eps
     max_eps = 1 if threat_model == 'linf' else None
     return ArtMinimalWrapper(attack=attack, init_eps=init_eps, max_eps=max_eps, search_steps=search_steps)
