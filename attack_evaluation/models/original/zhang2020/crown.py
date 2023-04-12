@@ -1,21 +1,26 @@
-import requests
-import tarfile
 import os
+import tarfile
+
+import requests
+from adv_lib.utils import normalize_model
+from torch import nn
+
 from .model_defs_gowal import IBP_large, model_cnn_4layer
 from .utils import load_crown_dict
 
-_pretrained_model_configs = {'Zhang2020CrownLarge': dict(prefix='_dm-large',
-                                                         model_path="cifar_dm-large_8_255/IBP_large_best.pth",
-                                                         model_class="IBP_large",
-                                                         model_params={"in_ch": 3, "in_dim": 32, "linear_size": 512}),
-                             'Zhang2020CrownSmall': dict(prefix="",
-                                                         model_path="cifar_crown_0.03137/cifar_8_small/cnn_4layer_linear_512_width_1_best.pth",
-                                                         model_class="model_cnn_4layer",
-                                                         model_params={"in_ch": 3, "in_dim": 32, "width": 1,
-                                                                       "linear_size": 512})}
+_pretrained_model_configs = {
+    'Zhang2020CrownLarge': dict(prefix='_dm-large',
+                                model_path="cifar_dm-large_8_255/IBP_large_best.pth",
+                                model_class="IBP_large",
+                                model_params={"in_ch": 3, "in_dim": 32, "linear_size": 512}),
+    'Zhang2020CrownSmall': dict(prefix="",
+                                model_path="cifar_crown_0.03137/cifar_8_small/cnn_4layer_linear_512_width_1_best.pth",
+                                model_class="model_cnn_4layer",
+                                model_params={"in_ch": 3, "in_dim": 32, "width": 1, "linear_size": 512})
+}
 
 
-def download_model(dataset='cifar10', model='stutz_2020'):
+def download_model(model: str, dataset: str = 'cifar10') -> None:
     pretrained_config = _pretrained_model_configs[model]
 
     url = f"https://download.huan-zhang.com/models/crown-ibp/models_crown-ibp{pretrained_config['prefix']}.tar.gz"
@@ -24,7 +29,7 @@ def download_model(dataset='cifar10', model='stutz_2020'):
     file.extractall(path="./models/checkpoints/")
 
 
-def load_crown_model(dataset='cifar10', model='stutz2020', threat_model='Linf'):
+def load_crown_model(model: str, dataset: str = 'cifar10', threat_model: str = 'Linf') -> nn.Module:
     assert dataset in ['cifar10']  # available ['mnist']
 
     config = _pretrained_model_configs[model]
@@ -41,5 +46,4 @@ def load_crown_model(dataset='cifar10', model='stutz2020', threat_model='Linf'):
 
     model_dict = load_crown_dict(model_file + config['model_path'])
     net.load_state_dict(model_dict)
-    return net
-
+    return normalize_model(net, mean=(0.4914, 0.4822, 0.4465), std=(0.2023, 0.1994, 0.2010))
