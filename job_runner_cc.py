@@ -58,6 +58,12 @@ if __name__ == '__main__':
     parser.add_argument('--submit', action='store_true', help='Submit the job to slurm')
 
     # benchmark args
+    parser.add_argument('--num-batches', '--nb', type=int, default=3,
+                        help='Number of batches to evaluate for time benchmark')
+    parser.add_argument('--reduce-batches', type=int, default=4,
+                        help='Use a smaller batch-size to quickly evaluate run-time')
+
+    # benchmark args
     parser.add_argument('--config', type=str, required=True, help='Config file for the experiments to run')
 
     args = parser.parse_args()
@@ -124,10 +130,10 @@ if __name__ == '__main__':
             dataset = run.config['model']['dataset']
             run_num_samples = run.config['dataset']['num_samples']
 
-            bench_batch_size = max(1, run.config['dataset']['batch_size'] // 4)
+            bench_batch_size = max(1, run.config['dataset']['batch_size'] // args.reduce_batches)
             bench_config_updates = deepcopy(config_updates)
             bench_config_updates['dataset']['batch_size'] = bench_batch_size
-            bench_config_updates['dataset']['num_samples'] = 3 * bench_batch_size
+            bench_config_updates['dataset']['num_samples'] = args.num_batches * bench_batch_size
             try:
                 run = ex.run(config_updates=bench_config_updates, named_configs=named_configs,
                              options={'--loglevel': 'ERROR'})
