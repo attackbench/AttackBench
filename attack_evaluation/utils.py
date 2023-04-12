@@ -25,7 +25,7 @@ def run_attack(model: BenchModel,
     targeted = True if targets is not None else False
     loader_length = len(loader)
 
-    accuracies, ori_success, adv_success, hashes, box_failures, = [], [], [], [], []
+    accuracies, ori_success, adv_success, hashes, box_failures, batch_failures = [], [], [], [], [], []
     forwards, backwards, times = [], [], []
     distances, best_optim_distances = defaultdict(list), defaultdict(list)
 
@@ -48,8 +48,10 @@ def run_attack(model: BenchModel,
 
         try:
             adv_inputs = attack(model=model, inputs=inputs, labels=labels, targeted=targeted, targets=targets)
+            batch_failures.append(False)
         except:
             warnings.warn(f'Error running batch for {attack}')
+            batch_failures.append(True)
             adv_inputs = inputs
 
         model.end_tracking()
@@ -95,6 +97,7 @@ def run_attack(model: BenchModel,
         'distances': dict(distances),
         'best_optim_distances': dict(best_optim_distances),
         'box_failures': box_failures,
+        'batch_failures': batch_failures,
     }
 
     if return_adv:
