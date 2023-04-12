@@ -141,8 +141,8 @@ if __name__ == '__main__':
                 print(f'Skipping {named_configs} | {config_updates} (crashed during benchmark).')
                 continue
 
-            times = run.info['times']
-            time_per_batch = np.median(times)
+            times = np.sort(np.asarray(run.info['times']))
+            time_per_batch = np.mean(times[1:-1])
             num_samples = run_num_samples if run_num_samples is not None else dataset_lengths[dataset]
             num_batches = math.ceil(min(num_samples, dataset_lengths[dataset]) / bench_batch_size)
             total_time = max(args.min_time, math.ceil(time_per_batch * num_batches * 1.1))  # add 10%
