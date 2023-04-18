@@ -145,7 +145,7 @@ if __name__ == '__main__':
             time_per_batch = np.mean(times[1:-1])
             num_samples = run_num_samples if run_num_samples is not None else dataset_lengths[dataset]
             num_batches = math.ceil(min(num_samples, dataset_lengths[dataset]) / bench_batch_size)
-            total_time = max(args.min_time, math.ceil(time_per_batch * num_batches * 1.1))  # add 10%
+            total_time = max(args.min_time, math.ceil(time_per_batch * num_batches * 1.2))  # add 20%
             hours, minutes, seconds = total_time // 3600, (total_time % 3600) // 60, total_time % 60
             time_string = f'{hours:02d}:{minutes:02d}:{seconds:02d}'
             print(f'Running {named_configs} | {config_updates} for {total_time}s = {time_string}')
