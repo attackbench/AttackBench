@@ -42,12 +42,14 @@ def run_attack(model: BenchModel,
             hashes.append(input_hash)
 
         inputs, labels = inputs.to(device), labels.to(device)  # move data to device
+        attack_inputs, attack_labels = inputs.clone(), labels.clone()  # ensure no in-place modification
         # start tracking of the batch
         model.start_tracking(inputs=inputs, labels=labels, targeted=targeted, targets=targets,
                              tracking_metric=_default_metrics[threat_model], tracking_threat_model=threat_model)
 
         try:
-            adv_inputs = attack(model=model, inputs=inputs, labels=labels, targeted=targeted, targets=targets)
+            adv_inputs = attack(model=model, inputs=attack_inputs, labels=attack_labels,
+                                targeted=targeted, targets=targets)
             batch_failures.append(False)
         except:
             warnings.warn(f'Error running batch for {attack}')
