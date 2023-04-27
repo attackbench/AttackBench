@@ -111,6 +111,8 @@ class BenchModel(nn.Module):
 
     def start_tracking(self, inputs: Tensor, labels: Tensor, targeted: bool, tracking_metric: Callable,
                        tracking_threat_model: str, targets: Optional[Tensor] = None) -> None:
+        assert len(inputs) == len(labels)
+        if targets is not None: assert len(inputs) == len(targets)
         self.inputs = inputs
         self.labels = labels
         self.batch_size = len(inputs)
