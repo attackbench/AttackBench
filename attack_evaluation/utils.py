@@ -57,6 +57,7 @@ def run_attack(model: BenchModel,
             adv_inputs = inputs
 
         model.end_tracking()
+        adv_inputs.detach_()
         times.append(model.elapsed_time)
         forwards.extend(model.num_forwards.cpu().tolist())
         backwards.extend(model.num_backwards.cpu().tolist())
@@ -83,7 +84,7 @@ def run_attack(model: BenchModel,
         adv_success.extend(success.cpu().tolist())
 
         for metric, metric_func in metrics.items():
-            distances[metric].extend(metric_func(adv_inputs, inputs).detach().cpu().tolist())
+            distances[metric].extend(metric_func(adv_inputs, inputs).cpu().tolist())
             best_optim_distances[metric].extend(model.min_dist[metric].cpu().tolist())
 
     data = {
