@@ -1,4 +1,4 @@
-import warnings
+from functools import wraps
 from typing import Callable, Optional, Tuple
 
 import torch
@@ -19,46 +19,95 @@ class BenchModel(nn.Module):
         self._benchmark_mode = False
 
     def forward(self, input: Tensor) -> Tensor:
-        if self.can_query:
-            if self.enforce_box:
-                input = input.clamp(min=0, max=1)
+        if self.enforce_box:
+            input = input.clamp(min=0, max=1)
 
-            output = self.model(input)
+        if not self._benchmark_mode:
+            return self.model(input)
 
-            if self._benchmark_mode:
-                self.num_forwards += 1
-                self.track_optimization(input=input, output=output)
+        self.match_input(input=input)
+        query_mask = self.can_query_mask()
 
+        if query_mask.any():
+            if query_mask.all():
+                output = self.model(input)  # allow all samples to query
+            else:
+                output = self.one_hot[self._indices].float()  # start from wrong prediction
+                output[query_mask] = self.model(input[query_mask])  # replace outputs for samples that can be queried
         else:
             # prevents meaningful forward and backward without breaking computations graph and attack logic
-            output = input.flatten(1).narrow(1, 0, 1) + self.one_hot
+            output = input.flatten(1).narrow(1, 0, 1) + self.one_hot[self._indices]
+
+        if self._benchmark_mode:
+            self.add_queries(query_mask=query_mask, counter=self.num_forwards)
+            self.track_optimization(input=input, output=output)
 
         return output
 
     def backward_hook(self, module, grad_input: Tuple[Tensor], grad_output: Tuple[Tensor]) -> Optional[Tuple[Tensor]]:
-        if self.can_query:
+        if not self._benchmark_mode:
+            return
+
+        query_mask = self.can_query_mask()
+        if query_mask.any():
             if self._benchmark_mode:
-                self.num_backwards += 1
+                self.add_queries(query_mask=query_mask, counter=self.num_backwards)
+            zero_mask = ~query_mask
+            if zero_mask.any():
+                for g in grad_input:
+                    g[zero_mask] = 0
+            return grad_input
         else:
             return tuple(torch.zeros_like(g) for g in grad_input)
 
     def reset_counters(self):
-        self.num_forwards = 0
-        self.num_backwards = 0
+        self.num_forwards = torch.zeros_like(self.labels, dtype=torch.long)
+        self.num_backwards = torch.zeros_like(self.labels, dtype=torch.long)
+
+    def add_queries(self, query_mask: Tensor, counter: Tensor) -> None:
+        counter.index_add_(dim=0, index=self._indices, source=query_mask.to(counter.dtype))
 
     @property
     def is_out_of_query_budget(self) -> bool:
         if self.num_max_propagations is None:
             return False
 
-        return (self.num_forwards + self.num_backwards) >= self.num_max_propagations
+        return ((self.num_forwards + self.num_backwards) >= self.num_max_propagations).all()
 
-    @property
-    def can_query(self) -> bool:
-        if self._benchmark_mode is False or self.num_max_propagations is None:
-            return True
+    def timeit(func):
 
-        return (self.num_forwards + self.num_backwards) < self.num_max_propagations
+        @wraps(func)
+        def timeit_wrapper(self, *args, **kwargs):
+            torch.cuda.synchronize()
+            self._self_start_event.record()
+            result = func(self, *args, **kwargs)
+            self._self_end_event.record()
+            torch.cuda.synchronize()
+            self._self_time += self._self_start_event.elapsed_time(self._self_end_event) / 1000
+            return result
+
+        return timeit_wrapper
+
+    @timeit
+    def match_input(self, input: Tensor) -> None:
+        input_view = input.view(-1, 1, *self.inputs.shape[1:])  # ensure correct shape
+        original_inputs = self.inputs.unsqueeze(0)
+        pairwise_distances = self.tracking_metric(input_view, original_inputs, dim=2)
+        self._indices = pairwise_distances.argmin(dim=1)
+
+    @timeit
+    def can_query_mask(self) -> Tensor:
+        if not self._benchmark_mode or self.num_max_propagations is None:
+            return torch.ones_like(self._indices, dtype=torch.bool)
+
+        total_queries = self.num_forwards[self._indices] + self.num_backwards[self._indices]
+        unique, inverse, counts = self._indices.unique(return_inverse=True, return_counts=True)
+        if (counts > 1).any():
+            for u, c in zip(unique, counts):
+                mask = self._indices == u
+                total_queries[mask] += torch.arange(c, dtype=total_queries.dtype, device=total_queries.device)
+
+        return total_queries < self.num_max_propagations
 
     def start_tracking(self, inputs: Tensor, labels: Tensor, targeted: bool, tracking_metric: Callable,
                        tracking_threat_model: str, targets: Optional[Tensor] = None) -> None:
@@ -91,8 +140,11 @@ class BenchModel(nn.Module):
         # timing objects
         self._start_event = torch.cuda.Event(enable_timing=True)
         self._end_event = torch.cuda.Event(enable_timing=True)
+        self._self_start_event = torch.cuda.Event(enable_timing=True)
+        self._self_end_event = torch.cuda.Event(enable_timing=True)
         self._benchmark_mode = True
         self._elapsed_time = None
+        self._self_time = 0
         torch.cuda.synchronize()
         self.start_timing()
 
@@ -100,26 +152,33 @@ class BenchModel(nn.Module):
         self.stop_timing()
         self._benchmark_mode = False
 
+    @timeit
     def track_optimization(self, input: Tensor, output: Tensor) -> None:
-        if (bs := len(input)) != self.batch_size:
-            warnings.warn(f'Number of inputs ({bs}) different from tracked ({self.batch_size}) -> cannot track.')
-            return
-
         if self.is_out_of_query_budget:
             self.stop_timing()
             print('Tracking off. Out of query budget and time already set.')
         else:
             predictions = output.argmax(dim=1)
-            success = (predictions == self.targets) if self.targeted else (predictions != self.labels)
+            success = (predictions == self.targets[self._indices]) if self.targeted else (
+                    predictions != self.labels[self._indices])
 
             if success.any():
-                current_distances = self.tracking_metric(input.detach()[success], self.inputs[success])
-                better_distance = current_distances < self.min_dist[self.tracking_threat_model][success]
-                success.masked_scatter_(success, better_distance)  # cannot use [] indexing with self
-                if success.any():
-                    modified_inputs, original_inputs = input.detach()[success], self.inputs[success]
-                    for metric, metric_func in self.metrics.items():
-                        self.min_dist[metric][success] = metric_func(modified_inputs, original_inputs, dim=1)
+                input = input.detach()
+                distances = torch.full_like(self._indices, float('inf'), dtype=torch.float)
+                distances[success] = self.tracking_metric(self.inputs[self._indices][success], input[success], dim=1)
+                better_distance = distances < self.min_dist[self.tracking_threat_model][self._indices]
+                success.logical_and_(better_distance)
+
+                if success.any():  # update self.min_dist
+                    success_indices = self._indices[success]
+                    for index in success_indices.unique():
+                        index_mask = self._indices == index
+                        index_distances = distances[index_mask]
+                        best_distances_index = index_distances.argmin()
+
+                        for metric, metric_func in self.metrics.items():
+                            self.min_dist[metric][index] = metric_func(self.inputs[index],
+                                                                       input[index_mask][best_distances_index], dim=0)
 
     def start_timing(self) -> None:
         self._start_event.record()
@@ -135,6 +194,7 @@ class BenchModel(nn.Module):
         if self._elapsed_time is None:
             self._end_event.record()
             torch.cuda.synchronize()
-            return self._start_event.elapsed_time(self._end_event) / 1000
+            time = self._start_event.elapsed_time(self._end_event) / 1000
         else:
-            return self._elapsed_time
+            time = self._elapsed_time
+        return time - self._self_time

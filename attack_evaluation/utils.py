@@ -58,8 +58,8 @@ def run_attack(model: BenchModel,
 
         model.end_tracking()
         times.append(model.elapsed_time)
-        forwards.append(model.num_forwards)
-        backwards.append(model.num_backwards)
+        forwards.extend(model.num_forwards.cpu().tolist())
+        backwards.extend(model.num_backwards.cpu().tolist())
 
         # original inputs
         accuracies.extend(model.correct.cpu().tolist())
