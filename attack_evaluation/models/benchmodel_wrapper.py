@@ -1,3 +1,4 @@
+import warnings
 from functools import wraps
 from typing import Callable, Optional, Tuple
 
@@ -36,11 +37,11 @@ class BenchModel(nn.Module):
                 output[query_mask] = self.model(input[query_mask])  # replace outputs for samples that can be queried
         else:
             # prevents meaningful forward and backward without breaking computations graph and attack logic
-            output = input.flatten(1).narrow(1, 0, 1) + self.one_hot[self._indices]
+            output = input.flatten(1).narrow(1, 0, 1) * 0 + self.one_hot[self._indices].mul_(self.num_classes)
 
         if self._benchmark_mode:
             self.add_queries(query_mask=query_mask, counter=self.num_forwards)
-            self.track_optimization(input=input, output=output)
+            self.track_optimization(input=input, output=output, query_mask=query_mask)
 
         return output
 
@@ -155,32 +156,35 @@ class BenchModel(nn.Module):
         self._benchmark_mode = False
 
     @timeit
-    def track_optimization(self, input: Tensor, output: Tensor) -> None:
-        if self.is_out_of_query_budget:
+    def track_optimization(self, input: Tensor, output: Tensor, query_mask: Tensor) -> None:
+        if not query_mask.any():
             self.stop_timing()
-            print('Tracking off. Out of query budget and time already set.')
-        else:
-            predictions = output.argmax(dim=1)
-            success = (predictions == self.targets[self._indices]) if self.targeted else (
-                    predictions != self.labels[self._indices])
+            warnings.warn(f'Out of query budget ({self.num_max_propagations}) => stop timer.')
 
-            if success.any():
-                input = input.detach()
-                distances = torch.full_like(self._indices, float('inf'), dtype=torch.float)
-                distances[success] = self.tracking_metric(self.inputs[self._indices][success], input[success], dim=1)
-                better_distance = distances < self.min_dist[self.tracking_threat_model][self._indices]
-                success.logical_and_(better_distance)
+        predictions = output.argmax(dim=1)
+        success = (predictions == self.targets[self._indices]) if self.targeted else (
+                predictions != self.labels[self._indices])
 
-                if success.any():  # update self.min_dist
-                    success_indices = self._indices[success]
-                    for index in success_indices.unique():
-                        index_mask = self._indices == index
-                        index_distances = distances[index_mask]
-                        best_distances_index = index_distances.argmin()
+        if success.any():
+            input = input.detach()
+            distances = torch.full_like(self._indices, float('inf'), dtype=torch.float)
+            distances[success] = self.tracking_metric(self.inputs[self._indices][success], input[success], dim=1)
+            better_distance = distances < self.min_dist[self.tracking_threat_model][self._indices]
+            success.logical_and_(better_distance)
 
-                        for metric, metric_func in self.metrics.items():
-                            self.min_dist[metric][index] = metric_func(self.inputs[index],
-                                                                       input[index_mask][best_distances_index], dim=0)
+            if success.any():  # update self.min_dist
+                success_indices = self._indices[success]
+                input_indices = torch.arange(len(input), dtype=torch.long, device=input.device)
+                unique = success_indices.unique()
+                for u in unique:  # find index of best adv for each original sample
+                    indices_mask = self._indices == u
+                    best_distance_index = input_indices[indices_mask][distances[indices_mask].argmin()]
+                    indices_mask[best_distance_index] = False  # switch success to False for all but best input
+                    success[indices_mask] = False
+
+                mask = torch.zeros_like(self.labels, dtype=torch.bool).index_fill_(dim=0, index=unique, value=True)
+                for metric, metric_func in self.metrics.items():
+                    self.min_dist[metric][mask] = metric_func(self.inputs[mask], input[success], dim=1)
 
     def start_timing(self) -> None:
         self._start_event.record()
