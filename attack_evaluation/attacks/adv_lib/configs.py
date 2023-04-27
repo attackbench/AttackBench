@@ -372,7 +372,7 @@ def adv_lib_vfga():
     name = 'vfga'
     source = 'adv_lib'
     threat_model = 'l0'
-    num_steps = None
+    num_steps = 1000
     n_samples = 10
     large_memory = False
 
