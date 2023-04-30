@@ -34,7 +34,7 @@ class BenchModel(nn.Module):
                 output = self.model(input)  # allow all samples to query
             else:
                 output = self.one_hot[self._indices].float()  # start from wrong prediction
-                output[query_mask] = self.model(input[query_mask])  # replace outputs for samples that can be queried
+                output[query_mask] = self.model(input)[query_mask]  # replace outputs for samples that can be queried
         else:
             # prevents meaningful forward and backward without breaking computations graph and attack logic
             output = input.flatten(1).narrow(1, 0, 1) * 0 + self.one_hot[self._indices].mul_(self.num_classes)
