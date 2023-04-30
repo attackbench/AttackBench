@@ -69,7 +69,7 @@ def ch_hsja():
     name = 'hsja'
     source = 'cleverhans'
     threat_model = 'l2'  # available: l2, linf
-    steps = 64
+    num_steps = 64
     initial_num_evals = 100
     max_num_evals = 10000
     stepsize_search = "geometric_progression"
@@ -78,17 +78,17 @@ def ch_hsja():
     batch_size = 128
 
 
-def get_ch_hsja(threat_model: str, steps: int, initial_num_evals: int, max_num_evals: int, stepsize_search: int,
+def get_ch_hsja(threat_model: str, num_steps: int, initial_num_evals: int, max_num_evals: int, stepsize_search: int,
                 gamma: float, constraint: int, batch_size: int) -> Callable:
     return partial(hop_skip_jump_attack, norm=_norms[threat_model], initial_num_evals=initial_num_evals,
-                   max_num_evals=max_num_evals, stepsize_search=stepsize_search, num_iterations=steps,
+                   max_num_evals=max_num_evals, stepsize_search=stepsize_search, num_iterations=num_steps,
                    gamma=gamma, constraint=constraint, batch_size=batch_size, clip_min=0, clip_max=1)
 
 
 def ch_spsa():
     name = 'spsa'
     source = 'cleverhans'
-    steps = 100
+    num_steps = 100
     threat_model = 'linf'
     eps = 0.3
     early_stop_loss_threshold = None
@@ -98,9 +98,9 @@ def ch_spsa():
     spsa_iters = 1
 
 
-def get_ch_spsa(threat_model: str, steps, eps: float, early_stop_loss_threshold: float, lr: float, delta: float,
-                spsa_samples: int, spsa_iters: int) -> Callable:
-    return partial(spsa, norm=_norms[threat_model], nb_iter=steps, eps=eps, learning_rate=lr, delta=delta,
+def get_ch_spsa(threat_model: str, num_steps: int, eps: float, early_stop_loss_threshold: float, lr: float,
+                delta: float, spsa_samples: int, spsa_iters: int) -> Callable:
+    return partial(spsa, norm=_norms[threat_model], nb_iter=num_steps, eps=eps, learning_rate=lr, delta=delta,
                    spsa_iters=spsa_iters, early_stop_loss_threshold=early_stop_loss_threshold,
                    spsa_samples=spsa_samples, clip_min=0, clip_max=1, sanity_checks=False)
 
@@ -111,11 +111,11 @@ def ch_pgd():
     threat_model = 'l2'  # available: np.inf, 1 or 2.
     eps = 10.0
     eps_iter = 1.0
-    steps = 20
+    num_steps = 20
 
 
-def get_ch_pgd(threat_model: str, eps: float, eps_iter: float, steps: int) -> Callable:
-    return partial(projected_gradient_descent, norm=_norms[threat_model], nb_iter=steps, eps=eps, eps_iter=eps_iter,
+def get_ch_pgd(threat_model: str, eps: float, eps_iter: float, num_steps: int) -> Callable:
+    return partial(projected_gradient_descent, norm=_norms[threat_model], nb_iter=num_steps, eps=eps, eps_iter=eps_iter,
                    clip_min=0, clip_max=1, sanity_checks=False)
 
 
@@ -124,12 +124,12 @@ def ch_pgd_minimal():
     source = 'cleverhans'
     threat_model = 'linf'  # available: np.inf, 1 or 2.
     eps_iter = 1.0
-    steps = 40 # default was 20
+    num_steps = 40 # default was 20
 
 
-def get_ch_pgd_minimal(threat_model: str, eps_iter: float, steps: int,
+def get_ch_pgd_minimal(threat_model: str, eps_iter: float, num_steps: int,
                        init_eps: Optional[float] = None, search_steps: int = minimal_search_steps) -> Callable:
-    attack = partial(projected_gradient_descent, norm=_norms[threat_model], nb_iter=steps, eps_iter=eps_iter,
+    attack = partial(projected_gradient_descent, norm=_norms[threat_model], nb_iter=num_steps, eps_iter=eps_iter,
                      clip_min=0, clip_max=1, sanity_checks=False)
     init_eps = minimal_init_eps[threat_model] if init_eps is None else init_eps
     max_eps = 1 if threat_model == 'linf' else None
