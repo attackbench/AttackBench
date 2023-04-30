@@ -41,7 +41,7 @@ def load_crown_model(model: str, dataset: str = 'cifar10', threat_model: str = '
         model_file = "./models/checkpoints/crown-ibp_models/"
 
     if not os.path.exists(model_file):
-        download_model(dataset, model)
+        download_model(model=model, dataset=dataset)
     assert os.path.exists(model_file)
 
     model_dict = load_crown_dict(model_file + config['model_path'])
