@@ -68,7 +68,7 @@ def ta_cw_l2():
     source = 'torchattacks'
     threat_model = 'l2'
     num_steps = 1000
-    c = 0.0001
+    c = 1
     kappa = 0
     step_size = 0.01
 
