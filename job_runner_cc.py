@@ -91,7 +91,12 @@ if __name__ == '__main__':
                 raise ValueError(f'Configuration file {subconfig_file} does not exist.')
     ingredient_named_configs = list(cartesian_config.values())
 
-    for i, ingredient_combination in enumerate(product(*ingredient_named_configs)):
+    # check if some jobs already exist to shift start ids
+    start = 0
+    if (job_files := list(slurm_script_dir.glob('*.job'))):
+        start = max([int(f.stem.split('_')[-1]) for f in job_files]) + 1
+
+    for i, ingredient_combination in enumerate(product(*ingredient_named_configs), start=start):
 
         # generate combination specific named configs and config updates
         named_configs = []
