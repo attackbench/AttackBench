@@ -157,7 +157,7 @@ class BenchModel(nn.Module):
 
     @timeit
     def track_optimization(self, input: Tensor, output: Tensor, query_mask: Tensor) -> None:
-        if not query_mask.any():
+        if self.is_out_of_query_budget:
             self.stop_timing()
             warnings.warn(f'Out of query budget ({self.num_max_propagations}) => stop timer.')
 
