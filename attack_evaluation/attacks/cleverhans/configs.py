@@ -30,12 +30,12 @@ def ch_cw_l2():
     clip_max = 1
     initial_const = 1e-02
     binary_search_steps = 5
-    steps = 100  # 1000
+    num_steps = 100  # 1000
 
 
 def get_ch_cw(lr: float, confidence: float, clip_min: float, clip_max: float, initial_const: float,
-              binary_search_steps: int, steps: int) -> Callable:
-    return partial(carlini_wagner_l2, max_iterations=steps, lr=lr, confidence=confidence, clip_max=clip_max,
+              binary_search_steps: int, num_steps: int) -> Callable:
+    return partial(carlini_wagner_l2, max_iterations=num_steps, lr=lr, confidence=confidence, clip_max=clip_max,
                    clip_min=clip_min, initial_const=initial_const, binary_search_steps=binary_search_steps)
 
 
