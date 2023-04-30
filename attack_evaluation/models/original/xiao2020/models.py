@@ -318,6 +318,7 @@ class SparseResNet(nn.Module):
         super(SparseResNet, self).__init__()
         self.in_planes = 64
         self.use_relu = use_relu
+        self.relu = nn.ReLU()
 
         self.conv1 = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, bias=bias)
         self.bn1 = nn.BatchNorm2d(64)
@@ -330,9 +331,6 @@ class SparseResNet(nn.Module):
         self.layer4 = self._make_layer(block, 512, num_blocks[3], stride=2, sparsity=sparsities[3],
                                        sparse_func=sparse_func, bias=bias)
         self.linear = nn.Linear(512 * block.expansion, num_classes)
-
-        self.relu = nn.ReLU()
-
         self.activation = {}
 
     def get_activation(self, name):
@@ -380,11 +378,10 @@ class SparseResNet_ImageNet(nn.Module):
                                        sparse_func=sparse_func, bias=bias)
         self.layer4 = self._make_layer(block, 512, num_blocks[3], stride=2, sparsity=sparsities[3],
                                        sparse_func=sparse_func, bias=bias)
+        self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         self.linear = nn.Linear(512 * block.expansion, num_classes)
 
         self.sp = sparse_func_dict[sparse_func](sparsities[0])
-
-        self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
 
         self.activation = {}
 
@@ -422,6 +419,7 @@ class ResNet(nn.Module):
     def __init__(self, block, num_blocks, num_classes=10):
         super(ResNet, self).__init__()
         self.in_planes = 64
+        self.relu = nn.ReLU()
 
         self.conv1 = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, bias=False)
         self.bn1 = nn.BatchNorm2d(64)
@@ -430,8 +428,6 @@ class ResNet(nn.Module):
         self.layer3 = self._make_layer(block, 256, num_blocks[2], stride=2)
         self.layer4 = self._make_layer(block, 512, num_blocks[3], stride=2)
         self.linear = nn.Linear(512 * block.expansion, num_classes)
-
-        self.relu = nn.ReLU()
 
         self.activation = {}
 
