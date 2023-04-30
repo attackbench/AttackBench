@@ -1,5 +1,6 @@
 import hashlib
 import random
+import traceback
 import warnings
 from collections import defaultdict
 from typing import Callable, Dict, Optional, Union
@@ -51,8 +52,9 @@ def run_attack(model: BenchModel,
             adv_inputs = attack(model=model, inputs=attack_inputs, labels=attack_labels,
                                 targeted=targeted, targets=targets)
             batch_failures.append(False)
-        except:
+        except Exception:
             warnings.warn(f'Error running batch for {attack}')
+            traceback.print_exc()
             batch_failures.append(True)
             adv_inputs = inputs
 
