@@ -100,8 +100,8 @@ def main(cpu: bool,
     file_observers = [obs for obs in _run.observers if isinstance(obs, FileStorageObserver)]
     save_dir = file_observers[0].dir if len(file_observers) else None
 
-    attack_data = run_attack(model=model, loader=loader, attack=attack, metrics=metrics,
-                             threat_model=threat_model, return_adv=save_adv and save_dir is not None)
+    attack_data = run_attack(model=model, loader=loader, attack=attack, metrics=metrics, threat_model=threat_model,
+                             return_adv=save_adv and save_dir is not None, debug=_run.debug)
 
     if save_adv and save_dir is not None:
         torch.save(attack_data, Path(save_dir) / f'attack_data.pt')

@@ -21,7 +21,8 @@ def run_attack(model: BenchModel,
                targets: Optional[Union[int, Tensor]] = None,
                metrics: Dict[str, Callable] = _default_metrics,
                threat_model: str = 'l2',
-               return_adv: bool = False) -> dict:
+               return_adv: bool = False,
+               debug: bool = False) -> dict:
     device = next(model.parameters()).device
     targeted = True if targets is not None else False
     loader_length = len(loader)
@@ -48,15 +49,19 @@ def run_attack(model: BenchModel,
         model.start_tracking(inputs=inputs, labels=labels, targeted=targeted, targets=targets,
                              tracking_metric=_default_metrics[threat_model], tracking_threat_model=threat_model)
 
-        try:
+        if debug:
             adv_inputs = attack(model=model, inputs=attack_inputs, labels=attack_labels,
                                 targeted=targeted, targets=targets)
-            batch_failures.append(False)
-        except Exception:
-            warnings.warn(f'Error running batch for {attack}')
-            traceback.print_exc()
-            batch_failures.append(True)
-            adv_inputs = inputs
+        else:
+            try:
+                adv_inputs = attack(model=model, inputs=attack_inputs, labels=attack_labels,
+                                    targeted=targeted, targets=targets)
+                batch_failures.append(False)
+            except Exception:
+                warnings.warn(f'Error running batch for {attack}')
+                traceback.print_exc()
+                batch_failures.append(True)
+                adv_inputs = inputs
 
         model.end_tracking()
         adv_inputs.detach_()
