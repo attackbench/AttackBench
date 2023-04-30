@@ -1,3 +1,4 @@
+import warnings
 from functools import partial
 from typing import Callable, Optional
 
@@ -86,6 +87,7 @@ def ta_deepfool():
 
 
 def get_ta_deepfool(num_steps: int, overshoot: float) -> Callable:
+    warnings.warn('TorchAttacks DeepFool non-functional for batches containing a sample for which label == num_classes')
     return partial(DeepFool, steps=num_steps, overshoot=overshoot)
 
 
