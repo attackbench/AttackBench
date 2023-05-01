@@ -80,11 +80,11 @@ class BenchModel(nn.Module):
         @wraps(func)
         def timeit_wrapper(self, *args, **kwargs):
             torch.cuda.synchronize()
-            self._self_start_event.record()
+            self._bench_start_event.record()
             result = func(self, *args, **kwargs)
-            self._self_end_event.record()
+            self._bench_end_event.record()
             torch.cuda.synchronize()
-            self._self_time += self._self_start_event.elapsed_time(self._self_end_event) / 1000
+            self._bench_time += self._bench_start_event.elapsed_time(self._bench_end_event) / 1000
             return result
 
         return timeit_wrapper
@@ -144,13 +144,13 @@ class BenchModel(nn.Module):
             dists.masked_fill_(self.ori_success, 0)  # replace minimum distances with 0 for already adversarial inputs
 
         # timing objects
-        self._start_event = torch.cuda.Event(enable_timing=True)
-        self._end_event = torch.cuda.Event(enable_timing=True)
-        self._self_start_event = torch.cuda.Event(enable_timing=True)
-        self._self_end_event = torch.cuda.Event(enable_timing=True)
+        self._attack_start_event = torch.cuda.Event(enable_timing=True)
+        self._attack_end_event = torch.cuda.Event(enable_timing=True)
+        self._bench_start_event = torch.cuda.Event(enable_timing=True)  # to account for BenchModel time spent tracking
+        self._bench_end_event = torch.cuda.Event(enable_timing=True)
         self._benchmark_mode = True
         self._elapsed_time = None
-        self._self_time = 0
+        self._bench_time = 0
         torch.cuda.synchronize()
         self.start_timing()
 
@@ -190,20 +190,20 @@ class BenchModel(nn.Module):
                     self.min_dist[metric][mask] = metric_func(self.inputs[mask], input[success], dim=1)
 
     def start_timing(self) -> None:
-        self._start_event.record()
+        self._attack_start_event.record()
 
     def stop_timing(self) -> None:
-        self._end_event.record()
+        self._attack_end_event.record()
         torch.cuda.synchronize()
-        self._elapsed_time = self._start_event.elapsed_time(
-            self._end_event) / 1000  # times for cuda Events are in milliseconds
+        self._elapsed_time = self._attack_start_event.elapsed_time(
+            self._attack_end_event) / 1000  # times for cuda Events are in milliseconds
 
     @property
     def elapsed_time(self) -> float:
         if self._elapsed_time is None:
-            self._end_event.record()
+            self._attack_end_event.record()
             torch.cuda.synchronize()
-            time = self._start_event.elapsed_time(self._end_event) / 1000
+            time = self._attack_start_event.elapsed_time(self._attack_end_event) / 1000
         else:
             time = self._elapsed_time
-        return time - self._self_time
+        return time - self._bench_time
