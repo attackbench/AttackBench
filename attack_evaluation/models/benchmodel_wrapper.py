@@ -102,7 +102,10 @@ class BenchModel(nn.Module):
             return torch.ones_like(self._indices, dtype=torch.bool)
 
         total_queries = self.num_forwards[self._indices] + self.num_backwards[self._indices]
-        unique, inverse, counts = self._indices.unique(return_inverse=True, return_counts=True)
+        unique, counts = self._indices.unique(return_counts=True)
+        # an attack can query several times a single sample => need to generate a mask that will only allow querying the
+        # first occurences of a samples up to the num_max_propagations limit
+        # e.g. indices = [0, 0, 0, 1] => total_queries = [0, 1, 2, 0]
         if (counts > 1).any():
             for u, c in zip(unique, counts):
                 mask = self._indices == u
