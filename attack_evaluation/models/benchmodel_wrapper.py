@@ -104,7 +104,7 @@ class BenchModel(nn.Module):
         total_queries = self.num_forwards[self._indices] + self.num_backwards[self._indices]
         unique, counts = self._indices.unique(return_counts=True)
         # an attack can query several times a single sample => need to generate a mask that will only allow querying the
-        # first occurences of a samples up to the num_max_propagations limit
+        # first occurrences of a samples up to the num_max_propagations limit
         # e.g. indices = [0, 0, 0, 1] => total_queries = [0, 1, 2, 0]
         if (counts > 1).any():
             for u, c in zip(unique, counts):
