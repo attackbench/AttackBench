@@ -45,7 +45,7 @@
   "fb_fmn": {
     "num_steps": 1000
   },
-  "fb_pbg_minimal": {
+  "fb_pgd_minimal": {
     "num_steps": 99,
     "search_steps": 10
   },
