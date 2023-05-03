@@ -43,10 +43,6 @@
     "num_steps": 13,
     "search_steps": 10
   },
-  "art_bim_minimal": {
-    "num_steps": 90,
-    "search_steps": 10
-  },
   "art_cw_l2": {
     "num_steps": 10
   },
