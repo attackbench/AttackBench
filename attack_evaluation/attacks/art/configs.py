@@ -220,7 +220,7 @@ def get_art_fgm_minimal(threat_model: str, step_size: float, num_random_init: in
 def art_jsma():
     name = 'jsma'
     source = 'art'
-    threat_model = 'l1'
+    threat_model = 'l0'
     theta = 0.1
     gamma = 1.0
 
