@@ -72,6 +72,7 @@ if __name__ == '__main__':
     exp_dir = Path(os.path.dirname(os.path.realpath(__file__)))
     result_dir = Path(args.result_dir)
     slurm_script_dir = Path(args.job_dir) if args.job_dir is not None else result_dir
+    slurm_script_dir.mkdir(parents=True, exist_ok=True)
 
     # read config
     config_file = Path(args.config)
