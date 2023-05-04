@@ -5,17 +5,10 @@
   "adv_lib_pdpgd": {
     "num_steps": 1000
   },
-  "art_apgd_minimal": {
-    "num_steps": 13,
-    "search_steps": 10
-  },
   "adv_lib_vfga": {
     "num_steps": 90
   },
   "fb_bb": {
     "num_steps": 500
-  },
-  "fb_fmn": {
-    "num_steps": 1000
   }
 }
