@@ -2,7 +2,7 @@
   "common": {
     "named_configs": [],
     "attack": {
-      "threat_model": "l2"
+      "threat_model": "l1"
     },
     "dataset": {
       "batch_size": 128
