@@ -3,11 +3,11 @@ import json
 import os
 import pathlib
 
-from read import read_results
+from read import read_results, read_distances
 from utils import Scenario
 
 
-def compile_scenario(path: pathlib.Path, scenario: Scenario, recompile_all: bool = False) -> None:
+def compile_scenario(path: pathlib.Path, scenario: Scenario, distance_type: str, recompile_all: bool = False) -> None:
     # find completed experiment results
     scenario_path = path / scenario.dataset / scenario.threat_model / scenario.model.lower()
     info_files = list(scenario_path.glob(os.path.join('**', 'info.json')))
@@ -23,7 +23,7 @@ def compile_scenario(path: pathlib.Path, scenario: Scenario, recompile_all: bool
 
     # compile best distances
     for info_file in info_files:
-        hash_distances = read_results(info_file=info_file)[1]
+        hash_distances = read_distances(info_file=info_file, distance_type=distance_type)[1]
         for hash, distance in hash_distances.items():
             best_distance = best_distances.get(hash, float('inf'))
             if distance < best_distance:

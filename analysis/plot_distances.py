@@ -29,6 +29,8 @@ if __name__ == '__main__':
     parser.add_argument('--batch_size', '-bs', type=int, default=None, help="Batch size for which to plot the results")
     parser.add_argument('--info-files', '--if', type=str, nargs='+', default=None,
                         help='List of info files to plot from.')
+    parser.add_argument('--distance_type', '-dist', type=str, default='best', choices=['best', 'actual'],
+                        help='Define distances to plot results')
     parser.add_argument('--suffix', '-s', type=str, default=None, help='Suffix for the name of the plot')
 
     args = parser.parse_args()
@@ -36,6 +38,8 @@ if __name__ == '__main__':
     # check that result directory exists
     result_path = pathlib.Path(args.dir)
     assert result_path.exists()
+
+    distance_type = args.distance_type
 
     to_plot = defaultdict(list)
     if args.info_files is not None:
@@ -52,22 +56,23 @@ if __name__ == '__main__':
         info_files = result_path.glob(info_files_paths)
 
     for info_file in info_files:
-        scenario, hash_distances = read_distances(info_file)
+        scenario, hash_distances = read_distances(info_file, distance_type=distance_type)
         to_plot[scenario].append((info_file.parent, hash_distances))
 
     for scenario in to_plot.keys():
         best_distances_file = result_path / f'{scenario.dataset}-{scenario.threat_model}-{scenario.model}-{scenario.batch_size}.json'
         if not best_distances_file.exists():
+            print("Compiling ", scenario)
             warnings.warn(f'Best distances files {best_distances_file} does not exist for scenario {scenario}.')
             warnings.warn(f'Compiling best distances file for scenario {scenario}')
-            compile_scenario(path=result_path, scenario=scenario)
+            compile_scenario(path=result_path, scenario=scenario, distance_type=distance_type)
 
         with open(best_distances_file, 'r') as f:
             data = json.load(f)
         best_distances = list(data.values())
 
         # plot best distances
-        fig, ax = plt.subplots(figsize=(5, 4), layout='constrained')
+        fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(5, 4), layout='constrained')
         ax.set_title(' - '.join(scenario), pad=10)
 
         distances, counts = np.unique(best_distances, return_counts=True)
@@ -80,6 +85,7 @@ if __name__ == '__main__':
         best_area = np.trapz(robust_acc, distances)
         plot_xlim = max_dist * 1.5
 
+        attacks_to_plot = {}
         for attack_folder, hash_distances in sorted(to_plot[scenario]):
             adv_distances = np.array(list(hash_distances.values()))
             distances, counts = np.unique(adv_distances, return_counts=True)
@@ -97,6 +103,7 @@ if __name__ == '__main__':
             optimality = 1 - (area - best_area) / (clean_acc * max_dist - best_area)
 
             attack_label = attack_folder.relative_to(attack_folder.parents[1]).as_posix()
+            attacks_to_plot[attack_label] = {'dist': distances, 'area': area, 'robust_acc': robust_acc}
             ax.plot(distances, robust_acc, linewidth=1, linestyle='--', label=f'{attack_label}: {optimality:.2%}')
 
         ax.grid(True, linestyle='--', c='lightgray', which='major')
@@ -121,3 +128,5 @@ if __name__ == '__main__':
             parts.append(args.suffix)
         fig_name = result_path / f'{"-".join(parts)}.pdf'
         fig.savefig(fig_name)
+        fig.show()
+        plt.close()

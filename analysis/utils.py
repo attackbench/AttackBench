@@ -2,7 +2,7 @@ from collections import namedtuple
 
 import numpy as np
 
-Scenario = namedtuple('Scenario', ['dataset', 'batch_size', 'attack', 'library', 'threat_model', 'model'])
+Scenario = namedtuple('Scenario', ['dataset', 'batch_size', 'threat_model', 'model'])
 
 _MAX_GAIN = 2.1
 

@@ -9,6 +9,7 @@ from utils import Scenario
 
 
 def read_distances(info_file: Union[Path, str],
+                   distance_type: str = 'best',
                    already_adv_distance: float = 0,
                    worst_case_distance: float = float('inf')) -> Tuple[Scenario, Mapping[str, float]]:
     info_file = Path(info_file)
@@ -19,7 +20,7 @@ def read_distances(info_file: Union[Path, str],
         config = json.load(f)
 
     # extract main configs
-    dataset = config['dataset']['name']
+    dataset = config['model']['dataset']
     batch_size = str(config['dataset']['batch_size'])
     model = config['model']['name']
     threat_model = config['attack']['threat_model']
@@ -32,7 +33,7 @@ def read_distances(info_file: Union[Path, str],
 
     # get hashes and distances for the adversarial examples
     hashes = info['hashes']
-    distances = np.array(info['distances'][threat_model])
+    distances = np.array(info['best_optim_distances' if distance_type == 'best' else 'distances'][threat_model])
     ori_success = np.array(info['ori_success'])
     adv_success = np.array(info['adv_success'])
 
@@ -45,12 +46,15 @@ def read_distances(info_file: Union[Path, str],
     distances[ori_success] = already_adv_distance
 
     # store results
-    scenario = Scenario(dataset=dataset, batch_size=batch_size, attack=attack, library=lib, threat_model=threat_model,
-                        model=model)
-    return scenario, {hash: distance for (hash, distance) in zip(hashes, distances)}
+    #scenario = Scenario(dataset=dataset, batch_size=batch_size, attack=attack, library=lib, threat_model=threat_model,
+    #                    model=model)
+    scenario = Scenario(dataset=dataset, batch_size=batch_size, threat_model=threat_model, model=model)
+    hash_distances = {hash: distance for (hash, distance) in zip(hashes, distances)}
+    return scenario, hash_distances
 
 
 def read_results(info_file: Union[Path, str],
+                 distance_type: str = 'best',
                  already_adv_distance: float = 0,
                  worst_case_distance: float = float('inf')) -> Tuple[Scenario, Mapping[str, float]]:
     info_file = Path(info_file)
@@ -61,7 +65,7 @@ def read_results(info_file: Union[Path, str],
         config = json.load(f)
 
     # extract main configs
-    dataset = config['dataset']['name']
+    dataset = config['model']['dataset']
     batch_size = str(config['dataset']['batch_size'])
     model = config['model']['name']
     threat_model = config['attack']['threat_model']
@@ -74,6 +78,7 @@ def read_results(info_file: Union[Path, str],
 
     # get distances for the adversarial examples wrt the given threat model
     info['distances'] = np.array(info['distances'][threat_model])
+    info['distances'] = np.array(info['best_optim_distances' if distance_type == 'best' else 'distances'][threat_model])
     for key in info.keys():
         info[key] = np.array(info[key])
 
