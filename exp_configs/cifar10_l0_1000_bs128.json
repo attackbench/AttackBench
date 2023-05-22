@@ -1,0 +1,19 @@
+{
+  "common": {
+    "named_configs": [],
+    "attack": {
+      "threat_model": "l0"
+    },
+    "dataset": {
+      "batch_size": 128
+    },
+    "model": {
+      "num_max_propagations": 2000
+    },
+    "seed": 42
+  },
+  "cartesian": {
+    "attack": "l0_1000_attacks.json",
+    "model": "cifar10_models.json"
+  }
+}

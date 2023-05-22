@@ -34,10 +34,6 @@
     "num_steps": 100,
     "search_steps": 10
   },
-  "art_bim_minimal": {
-    "num_steps": 98,
-    "search_steps": 10
-  },
   "art_bb": {
     "num_steps": 658
   },
