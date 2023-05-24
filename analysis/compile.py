@@ -3,7 +3,7 @@ import json
 import os
 import pathlib
 
-from read import read_results, read_distances
+from read import read_distances
 from utils import Scenario
 
 

@@ -5,7 +5,7 @@ from typing import Mapping, Tuple, Union
 
 import numpy as np
 
-from utils import Scenario
+from utils import Scenario, get_model_key
 
 
 def read_distances(info_file: Union[Path, str],
@@ -22,10 +22,9 @@ def read_distances(info_file: Union[Path, str],
     # extract main configs
     dataset = config['model']['dataset']
     batch_size = str(config['dataset']['batch_size'])
-    model = config['model']['name']
     threat_model = config['attack']['threat_model']
-    attack = config['attack']['name']
-    lib = config['attack']['source']
+    model = get_model_key(config['model']['name'])
+
 
     # read info file
     with open(info_file, 'r') as f:
@@ -53,8 +52,7 @@ def read_distances(info_file: Union[Path, str],
     return scenario, hash_distances
 
 
-def read_results(info_file: Union[Path, str],
-                 distance_type: str = 'best',
+def read_info(info_file: Union[Path, str],
                  already_adv_distance: float = 0,
                  worst_case_distance: float = float('inf')) -> Tuple[Scenario, Mapping[str, float]]:
     info_file = Path(info_file)
@@ -67,20 +65,17 @@ def read_results(info_file: Union[Path, str],
     # extract main configs
     dataset = config['model']['dataset']
     batch_size = str(config['dataset']['batch_size'])
-    model = config['model']['name']
+    model = get_model_key(config['model']['name'])
     threat_model = config['attack']['threat_model']
-    attack = config['attack']['name']
-    lib = config['attack']['source']
 
     # read info file
     with open(info_file, 'r') as f:
         info = json.load(f)
 
     # get distances for the adversarial examples wrt the given threat model
-    info['distances'] = np.array(info['distances'][threat_model])
-    info['distances'] = np.array(info['best_optim_distances' if distance_type == 'best' else 'distances'][threat_model])
     for key in info.keys():
-        info[key] = np.array(info[key])
+        if isinstance(info[key], list):
+            info[key] = np.array(info[key])
 
     ori_success = info['ori_success']
     adv_success = info['adv_success']
@@ -90,10 +85,12 @@ def read_results(info_file: Union[Path, str],
     #    warnings.warn(f'{n} already adversarial clean samples have non zero perturbations in {info_file}.')
 
     # replace distances with inf for failed attacks and 0 for already adv clean samples
-    info['distances'][~adv_success] = worst_case_distance
-    info['distances'][ori_success] = already_adv_distance
+    for distance_type in ['distances', 'best_optim_distances']:
+        info[distance_type] = np.array(info[distance_type][threat_model])
+        info[distance_type][~adv_success] = worst_case_distance
+        info[distance_type][ori_success] = already_adv_distance
+    info['adv_valid_success'] = adv_success & (~ori_success)
 
     # store results
-    scenario = Scenario(dataset=dataset, batch_size=batch_size, attack=attack, library=lib, threat_model=threat_model,
-                        model=model)
+    scenario = Scenario(dataset=dataset, batch_size=batch_size, threat_model=threat_model, model=model)
     return scenario, info

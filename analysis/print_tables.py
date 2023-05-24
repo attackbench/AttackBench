@@ -9,8 +9,10 @@ import numpy as np
 from matplotlib import pyplot as plt, ticker
 
 from compile import compile_scenario
-from read import read_distances
+from read import read_distances, read_info
 from utils import top_k_attacks
+
+from tabulate import tabulate
 
 threat_model_labels = {
     'l0': r'$\ell_0$',
@@ -58,9 +60,11 @@ if __name__ == '__main__':
         info_files = result_path.glob(info_files_paths)
 
     for info_file in info_files:
-        scenario, hash_distances = read_distances(info_file, distance_type=distance_type)
-        to_plot[scenario].append((info_file.parent, hash_distances))
+        scenario, info = read_info(info_file)
+        to_plot[scenario].append((info_file.parent, info))
 
+    Table = [['Dataset', 'B', 'Threat', 'Model', 'Attack', '$\ell_p$', '$\ell_p^\star$', 'ASR', 'Optimality', '#F', '#B',
+              'BoxFailure', 'isOptimal']]
     for scenario in to_plot.keys():
         print(scenario)
         best_distances_file = result_path / f'{scenario.dataset}-{scenario.threat_model}-{scenario.model}-{scenario.batch_size}.json'
@@ -74,33 +78,22 @@ if __name__ == '__main__':
             data = json.load(f)
         best_distances = list(data.values())
 
-        # plot best distances
-        fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(5, 4), layout='constrained')
-        ax.set_title(' - '.join(scenario), pad=10)
-
         distances, counts = np.unique(best_distances, return_counts=True)
         robust_acc = 1 - counts.cumsum() / len(best_distances)
-        ax.plot(distances, robust_acc, linestyle='-', label=f'Best distances', c='k', linewidth=1)
 
         # get quantities for optimality calculation
         clean_acc = np.count_nonzero(best_distances) / len(best_distances)
         max_dist = np.amax(distances)
         best_area = np.trapz(robust_acc, distances)
-        plot_xlim = max_dist * 1.5
 
         attacks_to_plot = {}
-        for attack_folder, hash_distances in sorted(to_plot[scenario]):
-            adv_distances = np.array(list(hash_distances.values()))
+        for attack_folder, info in sorted(to_plot[scenario]):
+            adv_distances = info['best_optim_distances'] if distance_type == 'best' else info['distances']
             distances, counts = np.unique(adv_distances, return_counts=True)
             robust_acc = 1 - counts.cumsum() / len(adv_distances)
 
             distances_clipped, counts = np.unique(adv_distances.clip(min=None, max=max_dist), return_counts=True)
             robust_acc_clipped = 1 - counts.cumsum() / len(adv_distances)
-
-            if distances[-1] == np.inf:
-                distances[-1] = plot_xlim
-                robust_acc[-1] = robust_acc[-2]
-                robust_acc_clipped[-1] = robust_acc_clipped[-2]
 
             area = np.trapz(robust_acc_clipped, distances_clipped)
             optimality = 1 - (area - best_area) / (clean_acc * max_dist - best_area)
@@ -109,35 +102,22 @@ if __name__ == '__main__':
             attacks_to_plot[attack_label] = {'distances': distances, 'area': area, 'robust_acc': robust_acc,
                                              'optimality': optimality}
 
+            adv_valid_success = info['adv_valid_success']
+            median_dist = np.median(info['distances'][adv_valid_success])
+            median_best_dist = np.median(info['distances'][adv_valid_success])
+            is_dist_optimal = np.equal(info['best_optim_distances'], info['distances']).all()
+            ASR = info['ASR']
+            avg_n_forwards = int(np.mean(info['num_forwards']))
+            avg_n_backwards = int(np.mean(info['num_backwards']))
+            has_box_failures = np.any(info['box_failures'])
+            row = list(scenario) + [attack_label, median_dist, median_best_dist, ASR, optimality, avg_n_forwards,
+                                    avg_n_backwards, has_box_failures, is_dist_optimal]
+            Table.append(row)
             # ax.plot(distances, robust_acc, linewidth=1, linestyle='--', label=f'{attack_label}: {optimality:.2%}')
 
         for attack_label in top_k_attacks(attacks_to_plot, k=args.K):
             atk = attacks_to_plot[attack_label]
-            ax.plot(atk['distances'], atk['robust_acc'], linewidth=1, linestyle='--',
-                    label=f'{attack_label}: {atk["optimality"]:.2%}')
+            # ax.plot(atk['distances'], atk['robust_acc'], linewidth=1, linestyle='--',
+            #        label=f'{attack_label}: {atk["optimality"]:.2%}')
 
-        ax.grid(True, linestyle='--', c='lightgray', which='major')
-        ax.yaxis.set_major_formatter(ticker.PercentFormatter(1))
-        ax.set_xlim(left=0, right=plot_xlim)
-        ax.set_ylim(bottom=0, top=1)
-        ax.spines['top'].set_visible(False)
-        ax.spines['right'].set_visible(False)
-
-        ax.set_ylabel('Robust Accuracy (%)')
-        ax.set_xlabel(f'Perturbation Size {threat_model_labels[scenario.threat_model]}')
-
-        ax.annotate(text=f'Clean accuracy: {clean_acc:.2%}', xy=(0, clean_acc),
-                    xytext=(ax.get_xlim()[1] / 2, clean_acc), ha='left', va='center',
-                    arrowprops={'arrowstyle': '-', 'linestyle': '--'})
-
-        ax.legend(loc='center right', labelspacing=.1, handletextpad=0.5)
-
-        library = args.library or "all"
-        parts = [scenario.dataset, scenario.threat_model, scenario.model, scenario.batch_size, library]
-        if args.suffix:
-            parts.append(args.suffix)
-        fig_name = result_path / f'{"-".join(parts)}.pdf'
-        fig.savefig(fig_name)
-        fig.show()
-        plt.close()
     print(tabulate(Table, headers="firstrow", missingval="-", tablefmt="rst", floatfmt="0.2f"))

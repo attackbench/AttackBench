@@ -1,10 +1,22 @@
 from collections import namedtuple
 
 import numpy as np
+import json
 
 Scenario = namedtuple('Scenario', ['dataset', 'batch_size', 'threat_model', 'model'])
 
 _MAX_GAIN = 2.1
+
+
+def top_k_attacks(attacks_to_plot: dict, k: int = None):
+    # {k: v['area'] for k, v in sorted(attacks_to_plot.items(), reverse=True, key=lambda item: item[1]['area'])}
+    return [k for k, v in sorted(attacks_to_plot.items(), reverse=False, key=lambda item: item[1]['area'])][:k]
+
+
+def get_model_key(model):
+    with open('exp_configs/cifar10_models_key.json', 'r') as f:
+        models_dict = json.load(f)
+    return models_dict[model]
 
 
 def complementarity(atk1: np.ndarray, atk2: np.ndarray) -> float:
