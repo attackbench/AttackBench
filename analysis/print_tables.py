@@ -21,6 +21,9 @@ threat_model_labels = {
     'linf': r'$\ell_{\infty}$',
 }
 
+ROUND = lambda x: np.around(x, 3)
+TOLERANCE = 1e-06
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser('Plot results')
 
@@ -53,6 +56,7 @@ if __name__ == '__main__':
     else:
         dataset = args.dataset or '*'
         threat_model = args.threat_model or '*'
+        threat_model_lst = threat_model_labels.keys() if threat_model == '*' else [threat_model]
         model = args.model or '*'
         library = f'{args.library}_*/**' if args.library else '**'
         batch_size = f'batch_size_{args.batch_size}' if args.batch_size else '*'
@@ -63,13 +67,16 @@ if __name__ == '__main__':
         scenario, info = read_info(info_file)
         to_plot[scenario].append((info_file.parent, info))
 
-    Table = [['Dataset', 'B', 'Threat', 'Model', 'Attack', '$\ell_p$', '$\ell_p^\star$', 'ASR', 'Optimality', '#F', '#B',
-              'BoxFailure', 'isOptimal']]
+    Table = {}
+    for key in threat_model_lst:
+        Table[key] = [
+            ['Dataset', 'BatchSize', 'Threat', 'Model', 'Attack', '$\ell_p$', '$\ell_p^\star$', 'ASR', 'Optimality',
+             '#Forwards', '#Backwards',
+             'hasBoxFailure', 'isOutputOptimal']]
     for scenario in to_plot.keys():
-        print(scenario)
         best_distances_file = result_path / f'{scenario.dataset}-{scenario.threat_model}-{scenario.model}-{scenario.batch_size}.json'
         if not best_distances_file.exists():
-            print("Compiling ", scenario)
+            # print("Compiling ", scenario)
             warnings.warn(f'Best distances files {best_distances_file} does not exist for scenario {scenario}.')
             warnings.warn(f'Compiling best distances file for scenario {scenario}')
             compile_scenario(path=result_path, scenario=scenario, distance_type=distance_type)
@@ -99,25 +106,26 @@ if __name__ == '__main__':
             optimality = 1 - (area - best_area) / (clean_acc * max_dist - best_area)
 
             attack_label = attack_folder.relative_to(attack_folder.parents[1]).as_posix()
-            attacks_to_plot[attack_label] = {'distances': distances, 'area': area, 'robust_acc': robust_acc,
-                                             'optimality': optimality}
+            attack_label = attack_label.split('/')[0]
 
             adv_valid_success = info['adv_valid_success']
             median_dist = np.median(info['distances'][adv_valid_success])
             median_best_dist = np.median(info['distances'][adv_valid_success])
-            is_dist_optimal = np.equal(info['best_optim_distances'], info['distances']).all()
+            is_dist_optimal = np.isclose(info['best_optim_distances'], info['distances'], rtol=TOLERANCE).all()
+
             ASR = info['ASR']
             avg_n_forwards = int(np.mean(info['num_forwards']))
             avg_n_backwards = int(np.mean(info['num_backwards']))
             has_box_failures = np.any(info['box_failures'])
-            row = list(scenario) + [attack_label, median_dist, median_best_dist, ASR, optimality, avg_n_forwards,
-                                    avg_n_backwards, has_box_failures, is_dist_optimal]
-            Table.append(row)
-            # ax.plot(distances, robust_acc, linewidth=1, linestyle='--', label=f'{attack_label}: {optimality:.2%}')
+            row = list(scenario) + [attack_label, ROUND(median_dist), ROUND(median_best_dist), ROUND(ASR), ROUND(optimality),
+                                    avg_n_forwards, avg_n_backwards, has_box_failures, is_dist_optimal]
+            attacks_to_plot[attack_label] = {'row': row, 'optimality': optimality, 'area': area}
 
         for attack_label in top_k_attacks(attacks_to_plot, k=args.K):
             atk = attacks_to_plot[attack_label]
-            # ax.plot(atk['distances'], atk['robust_acc'], linewidth=1, linestyle='--',
-            #        label=f'{attack_label}: {atk["optimality"]:.2%}')
+            Table[scenario.threat_model].append(atk['row'])
 
-    print(tabulate(Table, headers="firstrow", missingval="-", tablefmt="rst", floatfmt="0.2f"))
+    for key in threat_model_lst:
+        np.savetxt(f"output_{key}.csv", Table[key], delimiter=",", fmt='%s')
+        print(tabulate(Table[key], headers="firstrow", missingval="-", tablefmt="rst", floatfmt="0.2f"))
+        print()
