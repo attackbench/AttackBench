@@ -12,17 +12,12 @@ from compile import compile_scenario
 from read import read_distances, read_info
 from utils import top_k_attacks
 
-from tabulate import tabulate
-
 threat_model_labels = {
     'l0': r'$\ell_0$',
     'l1': r'$\ell_1$',
     'l2': r'$\ell_2$',
     'linf': r'$\ell_{\infty}$',
 }
-
-ROUND = lambda x: np.around(x, 3)
-TOLERANCE = 1e-04
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser('Plot results')
@@ -67,12 +62,7 @@ if __name__ == '__main__':
         scenario, info = read_info(info_file)
         to_plot[scenario].append((info_file.parent, info))
 
-    Table = {}
-    for key in threat_model_lst:
-        Table[key] = [
-            ['Dataset', 'BatchSize', 'Threat', 'Model', 'Attack', '$\ell_p$', '$\ell_p^\star$', 'ASR', 'Optimality',
-             '#Forwards', '#Backwards',
-             'hasBoxFailure', 'isOutputOptimal']]
+    attack_models_optimality = defaultdict(dict)
     for scenario in to_plot.keys():
         best_distances_file = result_path / f'{scenario.dataset}-{scenario.threat_model}-{scenario.model}-{scenario.batch_size}.json'
         if not best_distances_file.exists():
@@ -93,7 +83,6 @@ if __name__ == '__main__':
         max_dist = np.amax(distances)
         best_area = np.trapz(robust_acc, distances)
 
-        attacks_to_plot = {}
         for attack_folder, info in sorted(to_plot[scenario]):
             adv_distances = info['best_optim_distances'] if distance_type == 'best' else info['distances']
             distances, counts = np.unique(adv_distances, return_counts=True)
@@ -108,24 +97,36 @@ if __name__ == '__main__':
             attack_label = attack_folder.relative_to(attack_folder.parents[1]).as_posix()
             attack_label = attack_label.split('/')[0]
 
-            adv_valid_success = info['adv_valid_success']
-            median_dist = np.median(info['distances'][adv_valid_success])
-            median_best_dist = np.median(info['distances'][adv_valid_success])
-            is_dist_optimal = np.allclose(info['best_optim_distances'], info['distances'], rtol=TOLERANCE)
+            attack_models_optimality[attack_label][scenario.model] = optimality
 
-            ASR = info['ASR']
-            avg_n_forwards = int(np.mean(info['num_forwards']))
-            avg_n_backwards = int(np.mean(info['num_backwards']))
-            has_box_failures = np.any(info['box_failures'])
-            row = list(scenario) + [attack_label, ROUND(median_dist), ROUND(median_best_dist), ROUND(ASR), ROUND(optimality),
-                                    avg_n_forwards, avg_n_backwards, has_box_failures, is_dist_optimal]
-            attacks_to_plot[attack_label] = {'row': row, 'optimality': optimality, 'area': area}
+    for attack_label in attack_models_optimality.keys():
+        print(attack_models_optimality[attack_label])
 
-        for attack_label in top_k_attacks(attacks_to_plot, k=args.K):
-            atk = attacks_to_plot[attack_label]
-            Table[scenario.threat_model].append(atk['row'])
+        labels = list(attack_models_optimality[attack_label].keys())
+        markers = np.linspace(0, 1, 5)
 
-    for key in threat_model_lst:
-        np.savetxt(f"output_{key}.csv", Table[key], delimiter=",", fmt='%s')
-        print(tabulate(Table[key], headers="firstrow", missingval="-", tablefmt="rst", floatfmt="0.2f"))
-        print()
+
+        def make_radar_chart(attack_label, stats, attribute_labels=labels, plot_markers=markers):
+            labels = np.array(attribute_labels)
+
+            angles = np.linspace(0, 2 * np.pi, len(labels), endpoint=False)
+            stats = np.concatenate((stats, [stats[0]]))
+            angles = np.concatenate((angles, [angles[0]]))
+            labels = np.concatenate((labels, [labels[0]]))
+
+            fig = plt.figure()
+            ax = fig.add_subplot(111, polar=True)
+            ax.plot(angles, stats, 'o-', linewidth=3)
+            ax.fill(angles, stats, alpha=0.25)
+            ax.set_thetagrids(angles * 180 / np.pi, labels, fontsize=13)
+            ax.legend(loc='center right', labelspacing=.1, handletextpad=0.5)
+            fig_name = result_path / f"attack_{attack_label}.pdf"
+            plt.yticks(plot_markers)
+            ax.set_title(attack_label, pad=10)
+            ax.grid(True)
+            fig.savefig(fig_name, bbox_inches='tight')
+            plt.show()
+
+            return plt.show()
+
+        make_radar_chart(attack_label, list(attack_models_optimality[attack_label].values()))

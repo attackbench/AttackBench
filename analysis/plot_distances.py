@@ -140,4 +140,3 @@ if __name__ == '__main__':
         fig.savefig(fig_name)
         fig.show()
         plt.close()
-    print(tabulate(Table, headers="firstrow", missingval="-", tablefmt="rst", floatfmt="0.2f"))
