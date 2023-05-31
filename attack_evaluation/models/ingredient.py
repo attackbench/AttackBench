@@ -89,6 +89,38 @@ def chen_2020():
 
 
 @model_ingredient.named_config
+def debenedetti_2022():
+    name = 'Debenedetti2022Light_XCiT-S12'
+    source = 'robustbench'
+    dataset = 'imagenet'
+    threat_model = 'Linf'
+
+
+@model_ingredient.named_config
+def salman_2020():
+    name = 'Salman2020Do_50_2'
+    source = 'robustbench'
+    dataset = 'imagenet'
+    threat_model = 'Linf'
+
+
+@model_ingredient.named_config
+def wong_2020():
+    name = 'Wong2020Fast'
+    source = 'robustbench'
+    dataset = 'imagenet'
+    threat_model = 'Linf'
+
+
+@model_ingredient.named_config
+def standard_imagenet():
+    name = 'Standard_R50'
+    source = 'robustbench'
+    dataset = 'imagenet'
+    threat_model = 'Linf'
+
+
+@model_ingredient.named_config
 def stutz_2020():
     name = 'Stutz2020CCAT'
     source = 'original'

@@ -7,7 +7,6 @@ from adv_lib.utils.attack_utils import _default_metrics
 from torch import Tensor, nn
 from torch.nn import functional as F
 
-
 class BenchModel(nn.Module):
     def __init__(self, model: nn.Module, enforce_box: bool = True, num_max_propagations: Optional[int] = None):
         super(BenchModel, self).__init__()
