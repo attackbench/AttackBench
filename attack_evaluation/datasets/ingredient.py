@@ -5,7 +5,8 @@ import numpy as np
 from sacred import Ingredient
 from torch.utils.data import DataLoader, Subset
 from torchvision import transforms
-from torchvision.datasets import CIFAR10, MNIST, ImageFolder, VisionDataset
+from torchvision.datasets import CIFAR10, MNIST, VisionDataset
+from .utils import ImageNetKaggle
 
 dataset_ingredient = Ingredient('dataset')
 
@@ -38,8 +39,8 @@ def get_imagenet(root: str) -> VisionDataset:
         transforms.CenterCrop(224),
         transforms.ToTensor()
     ])
-    data_path = Path(root) / 'imagenet' / 'val'
-    dataset = ImageFolder(root=data_path, transform=transform)
+    data_path = Path(root) / 'imagenet-data'# / 'val'
+    dataset = ImageNetKaggle(root=data_path, split='val', transform=transform)#ImageNet(root=data_path, transform=transform)
     return dataset
 
 
@@ -64,7 +65,6 @@ def get_loader(dataset: str, batch_size: int, num_samples: Optional[int] = None,
         if not random_subset:
             data = Subset(data, indices=list(range(num_samples)))
         else:
-            # TODO: Check if seed always the same
             indices = np.random.choice(len(data), replace=False, size=num_samples)
             data = Subset(data, indices=indices)
     loader = DataLoader(dataset=data, batch_size=batch_size)
