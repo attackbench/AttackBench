@@ -6,7 +6,7 @@ from sacred import Ingredient
 from torch.utils.data import DataLoader, Subset
 from torchvision import transforms
 from torchvision.datasets import CIFAR10, MNIST, VisionDataset
-from .utils import ImageNetKaggle
+from .utils import load_imagenet
 
 dataset_ingredient = Ingredient('dataset')
 
@@ -32,6 +32,7 @@ def get_cifar10(root: str) -> VisionDataset:
     dataset = CIFAR10(root=root, train=False, transform=transform, download=True)
     return dataset
 
+
 @dataset_ingredient.capture
 def get_imagenet(root: str) -> VisionDataset:
     transform = transforms.Compose([
@@ -39,8 +40,9 @@ def get_imagenet(root: str) -> VisionDataset:
         transforms.CenterCrop(224),
         transforms.ToTensor()
     ])
-    data_path = Path(root) / 'imagenet-data'# / 'val'
-    dataset = ImageNetKaggle(root=data_path, split='val', transform=transform)#ImageNet(root=data_path, transform=transform)
+    data_path = Path(root) / 'imagenet-data'
+    dataset = load_imagenet(root=data_path, split='val', transform=transform, n_samples=5000)
+    print("Dataset size: ", len(dataset))
     return dataset
 
 
@@ -69,4 +71,3 @@ def get_loader(dataset: str, batch_size: int, num_samples: Optional[int] = None,
             data = Subset(data, indices=indices)
     loader = DataLoader(dataset=data, batch_size=batch_size)
     return loader
-

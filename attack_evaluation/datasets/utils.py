@@ -1,5 +1,5 @@
 import os
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, Subset
 from PIL import Image
 import json
 import numpy as np
@@ -8,12 +8,12 @@ from pathlib import Path
 
 
 class ImageNetKaggle(Dataset):
-    def __init__(self, root, split='val', transform=None, subset_size=5000):
+    def __init__(self, root, split='val', transform=None):
         self.samples = []
         self.targets = []
         self.transform = transform
         self.syn_to_class = {}
-        self.subset_size = subset_size
+        self.split = split
 
         with open(os.path.join(root, "imagenet_class_index.json"), "rb") as f:
             json_file = json.load(f)
@@ -22,15 +22,9 @@ class ImageNetKaggle(Dataset):
         with open(os.path.join(root, "ILSVRC2012_val_labels.json"), "rb") as f:
             self.val_to_syn = json.load(f)
         samples_dir = os.path.join(root, "ILSVRC/Data/CLS-LOC", split)
-        samples_lst = os.listdir(samples_dir)
+        self.samples_lst = os.listdir(samples_dir)
 
-        if self.subset_size is not None:
-            subset_path = Path(os.path.dirname(subsets.__file__)) / f'imagenet-{subset_size}-{split}.txt'
-            if not subset_path.exists():
-                prepare_imagenet_subset(root, split=split, n_samples=subset_size)
-            samples_lst = np.loadtxt(subset_path, dtype=str)
-
-        for entry in samples_lst:
+        for entry in self.samples_lst:
             if split == "train":
                 syn_id = entry
                 target = self.syn_to_class[syn_id]
@@ -64,3 +58,16 @@ def prepare_imagenet_subset(root, split='val', n_samples=5000):
     subset = np.random.choice(data_list, replace=False, size=n_samples)
     subset_dir = Path(os.path.dirname(subsets.__file__))
     np.savetxt(subset_dir / f'imagenet-{n_samples}-{split}.txt', subset, fmt='%s')
+
+
+def load_imagenet(root: str, split: str = 'val', transform=None, n_samples: int = 5000):
+    data = ImageNetKaggle(root=root, split='val', transform=transform)
+    if n_samples is None:
+        return data
+
+    subset_names_file = Path(os.path.dirname(subsets.__file__)) / f'imagenet-{n_samples}-{split}.txt'
+    if not subset_names_file.exists():
+        prepare_imagenet_subset(root, split=data.split, n_samples=n_samples)
+    subset_names = np.loadtxt(subset_names_file, dtype=str)
+    subset_indices = [i for i, file in enumerate(data.samples_lst) if file in subset_names]
+    return Subset(dataset=data, indices=subset_indices)
