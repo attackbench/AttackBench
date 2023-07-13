@@ -180,10 +180,11 @@ def adv_lib_ddn():
     num_steps = 1000
     init_norm = 1
     gamma = 0.05
+    levels = 255
 
 
-def get_adv_lib_ddn(num_steps: int, gamma: float, init_norm: float) -> Callable:
-    return partial(ddn, steps=num_steps, γ=gamma, init_norm=init_norm)
+def get_adv_lib_ddn(num_steps: int, gamma: float, init_norm: float, levels: Optional[int] = None) -> Callable:
+    return partial(ddn, steps=num_steps, γ=gamma, init_norm=init_norm, levels=levels)
 
 
 def adv_lib_fab():
