@@ -2,7 +2,7 @@
   "common": {
     "named_configs": [],
     "attack": {
-      "threat_model": "linf"
+      "threat_model": "l1"
     },
     "dataset": {
       "batch_size": 64
