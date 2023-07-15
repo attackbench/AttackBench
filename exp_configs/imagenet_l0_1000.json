@@ -5,7 +5,7 @@
       "threat_model": "linf"
     },
     "dataset": {
-      "batch_size": 128
+      "batch_size": 64
     },
     "model": {
       "num_max_propagations": 2000
