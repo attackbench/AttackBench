@@ -8,9 +8,6 @@
   "adv_lib_vfga": {
     "num_steps": 90
   },
-  "fb_bb": {
-    "num_steps": 500
-  },
   "original_fmn": {
     "num_steps": 1000
   }
