@@ -8,7 +8,7 @@ dependencies:
   - matplotlib=3.5.1
   - pip
   - python=3.9
-  - pytorch=1.21.1
+  - pytorch=1.12.1
   - torchvision=0.13.1
   - cleverhans=4.0.0
   - pip:
