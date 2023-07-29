@@ -5,7 +5,8 @@
       "threat_model": "l1"
     },
     "dataset": {
-      "batch_size": 32
+      "batch_size": 32,
+      "num_samples": 5000
     },
     "model": {
       "num_max_propagations": 2000

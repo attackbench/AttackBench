@@ -1,10 +1,13 @@
-import os
-from torch.utils.data import Dataset, Subset
-from PIL import Image
 import json
-import numpy as np
-from . import subsets
+import os
 from pathlib import Path
+from typing import Optional, Union
+
+import numpy as np
+from PIL import Image
+from torch.utils.data import Dataset, Subset
+
+from . import subsets
 
 
 class ImageNetKaggle(Dataset):
@@ -50,7 +53,7 @@ class ImageNetKaggle(Dataset):
         return x, self.targets[idx]
 
 
-def prepare_imagenet_subset(root, split='val', n_samples=5000):
+def prepare_imagenet_subset(root, split='val', n_samples: int = 5000):
     samples_dir = os.path.join(root, "ILSVRC/Data/CLS-LOC", split)
     data_list = np.array(os.listdir(samples_dir))
 
@@ -60,7 +63,10 @@ def prepare_imagenet_subset(root, split='val', n_samples=5000):
     np.savetxt(subset_dir / f'imagenet-{n_samples}-{split}.txt', subset, fmt='%s')
 
 
-def load_imagenet(root: str, split: str = 'val', transform=None, n_samples: int = 5000):
+def load_imagenet(root: Union[str, Path],
+                  split: str = 'val',
+                  transform=None,
+                  n_samples: Optional[int] = 5000) -> Dataset:
     data = ImageNetKaggle(root=root, split='val', transform=transform)
     if n_samples is None:
         return data

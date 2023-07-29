@@ -1,12 +1,13 @@
-from typing import Optional
 from pathlib import Path
+from typing import Optional
 
 import numpy as np
 from sacred import Ingredient
-from torch.utils.data import DataLoader, Subset
+from torch.utils.data import DataLoader, Dataset, Subset
 from torchvision import transforms
-from torchvision.datasets import CIFAR10, MNIST, VisionDataset
-from .utils import load_imagenet
+from torchvision.datasets import CIFAR10, MNIST
+
+from .imagenet import load_imagenet
 
 dataset_ingredient = Ingredient('dataset')
 
@@ -20,28 +21,28 @@ def config():
 
 
 @dataset_ingredient.capture
-def get_mnist(root: str) -> VisionDataset:
+def get_mnist(root: str) -> Dataset:
     transform = transforms.ToTensor()
     dataset = MNIST(root=root, train=False, transform=transform, download=True)
     return dataset
 
 
 @dataset_ingredient.capture
-def get_cifar10(root: str) -> VisionDataset:
+def get_cifar10(root: str) -> Dataset:
     transform = transforms.ToTensor()
     dataset = CIFAR10(root=root, train=False, transform=transform, download=True)
     return dataset
 
 
 @dataset_ingredient.capture
-def get_imagenet(root: str) -> VisionDataset:
+def get_imagenet(root: str, num_samples: Optional[int] = None) -> Dataset:
     transform = transforms.Compose([
         transforms.Resize(256),
         transforms.CenterCrop(224),
         transforms.ToTensor()
     ])
     data_path = Path(root) / 'imagenet-data'
-    dataset = load_imagenet(root=data_path, split='val', transform=transform, n_samples=5000)
+    dataset = load_imagenet(root=data_path, split='val', transform=transform, n_samples=num_samples)
     print("Dataset size: ", len(dataset))
     return dataset
 
@@ -63,7 +64,7 @@ def get_loader(dataset: str, batch_size: int, num_samples: Optional[int] = None,
                random_subset: bool = True) -> DataLoader:
     data = get_dataset(dataset=dataset)
 
-    if num_samples is not None:
+    if num_samples is not None and num_samples < len(data):
         if not random_subset:
             data = Subset(data, indices=list(range(num_samples)))
         else:
