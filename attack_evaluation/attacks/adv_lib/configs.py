@@ -183,6 +183,16 @@ def adv_lib_ddn():
     levels = 255
 
 
+def adv_lib_ddn_NQ():
+    name = 'ddn'
+    source = 'adv_lib'
+    threat_model = 'l2'
+    num_steps = 1000
+    init_norm = 1
+    gamma = 0.05
+    levels = None
+
+
 def get_adv_lib_ddn(num_steps: int, gamma: float, init_norm: float, levels: Optional[int] = None) -> Callable:
     return partial(ddn, steps=num_steps, γ=gamma, init_norm=init_norm, levels=levels)
 
