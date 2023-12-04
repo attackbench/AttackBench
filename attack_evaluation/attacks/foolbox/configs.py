@@ -1,6 +1,6 @@
 from functools import partial
 from typing import Callable, Optional
-
+from .bb_adv_init import dataset_BB_attack
 from foolbox.attacks import (
     L0BrendelBethgeAttack,
     L1BrendelBethgeAttack,
@@ -45,6 +45,16 @@ def fb_bb():
     momentum = 0.8
     num_binary_search_steps = 10
 
+def fb_bb_adv():
+    name = 'bb'
+    source = 'foolbox'
+    threat_model = 'linf'  # available: 'l0', 'l1', 'l2', 'linf'
+    num_steps = 1
+    step_size = 0.001
+    lr_decay = 0.5
+    lr_num_decay = 20
+    momentum = 0.8
+    num_binary_search_steps = 10
 
 _bb_attacks = {
     'l0': L0BrendelBethgeAttack,
@@ -57,6 +67,11 @@ _bb_attacks = {
 def get_fb_bb(threat_model: str, num_steps: int, step_size: float, lr_decay: float, lr_num_decay: float,
               momentum: float, num_binary_search_steps: int) -> Callable:
     return partial(_bb_attacks[threat_model], steps=num_steps, lr=step_size, lr_decay=lr_decay,
+                   lr_num_decay=lr_num_decay, momentum=momentum, binary_search_steps=num_binary_search_steps)
+
+def get_fb_bb_adv(threat_model: str, num_steps: int, step_size: float, lr_decay: float, lr_num_decay: float,
+              momentum: float, num_binary_search_steps: int) -> Callable:
+    return partial(dataset_BB_attack, bb_attack=_bb_attacks[threat_model], steps=num_steps, lr=step_size, lr_decay=lr_decay,
                    lr_num_decay=lr_num_decay, momentum=momentum, binary_search_steps=num_binary_search_steps)
 
 

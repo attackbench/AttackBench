@@ -6,6 +6,7 @@ from .deepfool import deepfool_attack
 from .fast_adaptive_boundary import fab_attack
 from .fast_minimum_norm import fmn_attack
 from .trust_region import tr_attack
+from .sigma_zero import sigma_zero
 from .. import minimal_init_eps, minimal_search_steps
 
 _prefix = 'original'
@@ -216,3 +217,18 @@ def original_tr_adaptive():
 
 def get_original_tr(threat_model: str, adaptive: bool, epsilon: float, c: int, num_steps: int) -> Callable:
     return partial(tr_attack, threat_model=threat_model, adaptive=adaptive, eps=epsilon, c=c, iter=num_steps)
+
+
+def original_sigma_zero():
+    name = 'sigma_zero'
+    source = 'original'
+    threat_model = 'l0'  # available: 'l0', 'l1', 'l2', 'linf'
+    num_steps = 100
+    lr = 1.0
+    sigma = 1e-3
+    thr_0 = 0.3
+    thr_lr = 0.01
+    binary_search_steps = 10
+
+def get_original_sigma_zero(num_steps: int, lr: float, sigma: float, thr_0: float, thr_lr: float) -> Callable:
+    return partial(sigma_zero, steps=num_steps, lr=lr, sigma=sigma, thr_0=thr_0, thr_lr=thr_lr)

@@ -4,15 +4,13 @@ channels:
   - defaults
   - conda-forge
 dependencies:
-  - cudatoolkit=11.6
   - matplotlib=3.5.1
-  - pip
+  - pip=21.2.4
   - python=3.9
   - pytorch=1.12.1
   - torchvision=0.13.1
   - cleverhans=4.0.0
   - pip:
-    - h5py==3.8.0
     - adversarial-robustness-toolbox==1.14.0
     - foolbox==3.3.3
     - git+https://github.com/RobustBench/robustbench.git
