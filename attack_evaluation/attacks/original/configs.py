@@ -7,6 +7,7 @@ from .fast_adaptive_boundary import fab_attack
 from .fast_minimum_norm import fmn_attack
 from .trust_region import tr_attack
 from .sigma_zero import sigma_zero
+from .pgd_lzero import PGD0_minimal
 from .. import minimal_init_eps, minimal_search_steps
 
 _prefix = 'original'
@@ -232,3 +233,20 @@ def original_sigma_zero():
 
 def get_original_sigma_zero(num_steps: int, lr: float, sigma: float, thr_0: float, thr_lr: float) -> Callable:
     return partial(sigma_zero, steps=num_steps, lr=lr, sigma=sigma, thr_0=thr_0, thr_lr=thr_lr)
+
+
+def original_pgd0_minimal():
+    name = 'pgd0_minimal'
+    source = 'original'
+    threat_model = 'l0'
+    search_steps = 10
+    n_restarts = 1
+    num_steps = 100
+    step_size = 120000.0 /255.0
+    kappa = -1
+    epsilon = -1
+    init_eps = 100
+
+
+def get_original_pgd0_minimal(num_steps, step_size, kappa, epsilon, init_eps, n_restarts, search_steps: int = minimal_search_steps) -> Callable:
+    return partial(PGD0_minimal, search_steps=search_steps, num_steps=num_steps, step_size=step_size,kappa=kappa, epsilon=epsilon, init_eps=init_eps, n_restarts=n_restarts)
