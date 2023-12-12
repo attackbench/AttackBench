@@ -5,9 +5,9 @@ from .auto_pgd import apgd_attack, apgd_minimal_wrapper, apgd_t_attack
 from .deepfool import deepfool_attack
 from .fast_adaptive_boundary import fab_attack
 from .fast_minimum_norm import fmn_attack
-from .trust_region import tr_attack
-from .sigma_zero import sigma_zero
 from .pgd_lzero import PGD0_minimal
+from .sigma_zero import sigma_zero
+from .trust_region import tr_attack
 from .. import minimal_init_eps, minimal_search_steps
 
 _prefix = 'original'
