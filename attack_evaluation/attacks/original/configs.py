@@ -231,8 +231,11 @@ def original_sigma_zero():
     thr_lr = 0.01
     binary_search_steps = 10
 
-def get_original_sigma_zero(num_steps: int, lr: float, sigma: float, thr_0: float, thr_lr: float) -> Callable:
-    return partial(sigma_zero, steps=num_steps, lr=lr, sigma=sigma, thr_0=thr_0, thr_lr=thr_lr)
+
+def get_original_sigma_zero(threat_model: str, num_steps: int, lr: float, sigma: float, thr_0: float, thr_lr: float,
+                            binary_search_steps: int) -> Callable:
+    return partial(sigma_zero, steps=num_steps, lr=lr, sigma=sigma, thr_0=thr_0, thr_lr=thr_lr,
+                   binary_search_steps=binary_search_steps)
 
 
 def original_pgd0_minimal():
