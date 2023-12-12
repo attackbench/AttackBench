@@ -242,14 +242,15 @@ def original_pgd0_minimal():
     name = 'pgd0_minimal'
     source = 'original'
     threat_model = 'l0'
-    search_steps = 10
     n_restarts = 1
     num_steps = 100
-    step_size = 120000.0 /255.0
+    step_size = 120000 / 255
     kappa = -1
     epsilon = -1
-    init_eps = 100
 
 
-def get_original_pgd0_minimal(num_steps, step_size, kappa, epsilon, init_eps, n_restarts, search_steps: int = minimal_search_steps) -> Callable:
-    return partial(PGD0_minimal, search_steps=search_steps, num_steps=num_steps, step_size=step_size,kappa=kappa, epsilon=epsilon, init_eps=init_eps, n_restarts=n_restarts)
+def get_original_pgd0_minimal(threat_model: str, num_steps, step_size, kappa, epsilon, n_restarts,
+                              init_eps: Optional[int] = None, search_steps: int = minimal_search_steps) -> Callable:
+    init_eps = minimal_init_eps[threat_model] if init_eps is None else init_eps
+    return partial(PGD0_minimal, search_steps=search_steps, num_steps=num_steps, step_size=step_size, kappa=kappa,
+                   epsilon=epsilon, init_eps=init_eps, n_restarts=n_restarts)
