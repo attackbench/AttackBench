@@ -4,7 +4,7 @@ import torch.nn as nn
 
 class Flatten(nn.Module):
     def forward(self, x):
-        return x.view(x.shape[0], -1)
+        return x.flatten(start_dim=1)
 
 
 class SparsifyBase(nn.Module):
@@ -62,7 +62,7 @@ class Sparsify2D(SparsifyBase):
     def forward(self, x):
         layer_size = x.shape[2] * x.shape[3]
         k = int(self.sr * layer_size)
-        tmpx = x.view(x.shape[0], x.shape[1], -1)
+        tmpx = x.flatten(start_dim=2)
         topval = tmpx.topk(k, dim=2)[0][:, :, -1]
         topval = topval.expand(x.shape[2], x.shape[3], x.shape[0], x.shape[1]).permute(2, 3, 0, 1)
         comp = (x >= topval).to(x)
@@ -80,9 +80,9 @@ class Sparsify2D_vol(SparsifyBase):
         size = x.shape[1] * x.shape[2] * x.shape[3]
         k = int(self.sr * size)
 
-        tmpx = x.view(x.shape[0], -1)
+        tmpx = x.flatten(start_dim=1)
         topval = tmpx.topk(k, dim=1)[0][:, -1]
-        topval = topval.repeat(tmpx.shape[1], 1).permute(1, 0).view_as(x)
+        topval = topval.repeat(tmpx.shape[1], 1).permute(1, 0).reshape_as(x)
         comp = (x >= topval).to(x)
         return comp * x
 
@@ -96,9 +96,9 @@ class Sparsify2D_kactive(SparsifyBase):
 
     def forward(self, x):
         k = self.k
-        tmpx = x.view(x.shape[0], -1)
+        tmpx = x.flatten(start_dim=1)
         topval = tmpx.topk(k, dim=1)[0][:, -1]
-        topval = topval.repeat(tmpx.shape[1], 1).permute(1, 0).view_as(x)
+        topval = topval.repeat(tmpx.shape[1], 1).permute(1, 0).reshape_as(x)
         comp = (x >= topval).to(x)
         return comp * x
 
@@ -112,7 +112,7 @@ class Sparsify2D_abs(SparsifyBase):
         layer_size = x.shape[2] * x.shape[3]
         k = int(self.sr * layer_size)
         absx = torch.abs(x)
-        tmpx = absx.view(absx.shape[0], absx.shape[1], -1)
+        tmpx = absx.flatten(start_dim=2)
         topval = tmpx.topk(k, dim=2)[0][:, :, -1]
         topval = topval.expand(absx.shape[2], absx.shape[3], absx.shape[0], absx.shape[1]).permute(2, 3, 0, 1)
         comp = (absx >= topval).to(x)
@@ -128,7 +128,7 @@ class Sparsify2D_invabs(SparsifyBase):
         layer_size = x.shape[2] * x.shape[3]
         k = int(self.sr * layer_size)
         absx = torch.abs(x)
-        tmpx = absx.view(absx.shape[0], absx.shape[1], -1)
+        tmpx = absx.flatten(start_dim=2)
         topval = tmpx.topk(k, dim=2, largest=False)[0][:, :, -1]
         topval = topval.expand(absx.shape[2], absx.shape[3], absx.shape[0], absx.shape[1]).permute(2, 3, 0, 1)
         comp = (absx >= topval).to(x)
@@ -358,7 +358,7 @@ class SparseResNet(nn.Module):
         out = self.layer3(out)
         out = self.layer4(out)
         out = F.avg_pool2d(out, 4)
-        out = out.view(out.size(0), -1)
+        out = out.flatten(start_dim=1)
         out = self.linear(out)
         return out
 
@@ -410,7 +410,7 @@ class SparseResNet_ImageNet(nn.Module):
         out = self.layer3(out)
         out = self.layer4(out)
         out = self.avgpool(out)
-        out = out.view(out.size(0), -1)
+        out = out.flatten(start_dim=1)
         out = self.linear(out)
         return out
 
@@ -455,7 +455,7 @@ class ResNet(nn.Module):
         out = self.layer3(out)
         out = self.layer4(out)
         out = F.avg_pool2d(out, 4)
-        out = out.view(out.size(0), -1)
+        out = out.flatten(start_dim=1)
         out = self.linear(out)
         return out
 

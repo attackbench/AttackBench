@@ -1,58 +1,36 @@
-import numpy as np
-from torchattacks import SparseFool
-
-from typing import Optional
+# Adapted from https://github.com/fra31/sparse-imperceivable-attacks/blob/master/pgd_attacks_pt.py
 from functools import partial
+from typing import Optional
 
+import numpy as np
 import torch
 from torch import Tensor, nn
-from foolbox.attacks.ead import EADAttack
 
-from foolbox.attacks.dataset_attack import DatasetAttack
-import foolbox as fb
 
 class BinarySearchMinimalWrapperL0:
     def __init__(self, model: nn.Module, attack: partial, init_eps: float, search_steps: int,
-                 max_eps: Optional[float] = None, batched: bool = False, device: str = "cpu"):
+                 max_eps: Optional[float] = None):
         self.attack = partial(attack, model=model)
         self.model = model
         self.init_eps = init_eps
         self.search_steps = search_steps
         self.max_eps = max_eps
-        self.batched = batched
         self.targeted = False
-        self.MAX_ADV_FEATURES = 1000
-        self.device = device
-
-    def set_mode_targeted_by_function(self):
-        self.attack.set_mode_targeted_by_function()
-        self.targeted = True
 
     def __call__(self, inputs: Tensor, labels: Tensor) -> Tensor:
         batch_size = len(inputs)
-        batch_view = lambda tensor: tensor.view(batch_size, *[1] * (inputs.ndim - 1))
         adv_inputs = inputs.clone()
-        eps_low = inputs.new_zeros(batch_size, dtype=int).to(self.device)
-        best_eps = torch.full_like(eps_low, self.MAX_ADV_FEATURES if self.max_eps is None else 2 * self.max_eps,
-                                   dtype=int).to(self.device)
-        found_high = torch.full_like(eps_low, False, dtype=torch.bool).to(self.device)
+        eps_low = inputs.new_zeros(batch_size, dtype=torch.long)
+        best_eps = torch.full_like(eps_low, torch.iinfo(torch.long).max if self.max_eps is None else 2 * self.max_eps)
+        found_high = torch.full_like(eps_low, False, dtype=torch.bool)
 
-        logits = self.model(inputs)
-        preds = logits.argmax(dim=1)
-        is_adv = (preds != labels) if self.targeted else (preds != labels)
-
-        eps = torch.full_like(eps_low, self.init_eps, dtype=int).to(self.device)
+        eps = torch.full_like(eps_low, self.init_eps)
         for i in range(self.search_steps):
-            if self.batched:
-                self.attack.eps = batch_view(eps)
-                adv_inputs_run = self.attack(inputs=inputs, labels=labels)
-            else:
-                adv_inputs_run = inputs.clone()
-                for eps_ in torch.unique(eps):
-                    if eps_.item() > 0:
-                        mask = (eps == eps_).to(self.device)
-                        eps_i = int(eps_.item())
-                        adv_inputs_run[mask] = self.attack(inputs=inputs[mask], labels=labels[mask], epsilon=eps_i)
+            adv_inputs_run = inputs.clone()
+            for eps_ in torch.unique(eps):
+                if eps_.item() > 0:
+                    mask = eps == eps_
+                    adv_inputs_run[mask] = self.attack(inputs=inputs[mask], labels=labels[mask], epsilon=eps_.item())
 
             logits = self.model(adv_inputs_run)
             preds = logits.argmax(dim=1)
@@ -65,7 +43,9 @@ class BinarySearchMinimalWrapperL0:
             eps_low = torch.where(better_adv, eps_low, eps)
             best_eps = torch.where(better_adv, eps, best_eps)
 
-            eps = torch.where(found_high | ((2 * eps_low) >= best_eps), (eps_low + best_eps) // 2, 2 * eps_low)
+            eps = torch.where(found_high | ((2 * eps_low) >= best_eps),
+                              torch.div(eps_low + best_eps, 2, rounding_mode='floor'),
+                              2 * eps_low)
         return adv_inputs
 
 
@@ -207,8 +187,18 @@ def PGD0(model, inputs, labels, epsilon, attack_args):
     return x_torch
 
 
-def PGD0_minimal(model: torch.nn.Module, inputs: Tensor, labels: Tensor, search_steps: int = 10, num_steps: int = 100, step_size: float = 120000.0 /255.0,
-                kappa: float = -1, epsilon: float = -1, init_eps:int = 100, n_restarts: int = 1):
+def PGD0_minimal(model: torch.nn.Module,
+                 inputs: Tensor,
+                 labels: Tensor,
+                 search_steps: int = 10,
+                 num_steps: int = 100,
+                 step_size: float = 120000.0 / 255.0,
+                 kappa: float = -1,
+                 epsilon: float = -1,
+                 init_eps: int = 100,
+                 n_restarts: int = 1,
+                 targets: Optional[Tensor] = None,
+                 targeted: bool = False) -> Tensor:
     attack_args = {
         'type_attack': 'L0',
         'n_restarts': n_restarts,
@@ -218,8 +208,6 @@ def PGD0_minimal(model: torch.nn.Module, inputs: Tensor, labels: Tensor, search_
         'epsilon': epsilon,
     }
     pgd0 = partial(PGD0, attack_args=attack_args)
-    pgd_minimal = BinarySearchMinimalWrapperL0(model=model, attack=pgd0, init_eps=init_eps, search_steps=search_steps,
-                                               device=inputs.get_device())
+    pgd_minimal = BinarySearchMinimalWrapperL0(model=model, attack=pgd0, init_eps=init_eps, search_steps=search_steps)
     adv_examples = pgd_minimal(inputs=inputs, labels=labels)
     return adv_examples
-

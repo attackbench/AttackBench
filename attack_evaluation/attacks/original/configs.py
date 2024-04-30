@@ -5,11 +5,10 @@ from .auto_pgd import apgd_attack, apgd_minimal_wrapper, apgd_t_attack
 from .deepfool import deepfool_attack
 from .fast_adaptive_boundary import fab_attack
 from .fast_minimum_norm import fmn_attack
-from .trust_region import tr_attack
-from .sigma_zero import sigma_zero
 from .pgd_lzero import PGD0_minimal
+from .sigma_zero import sigma_zero
+from .trust_region import tr_attack
 from .. import minimal_init_eps, minimal_search_steps
-from autoattack import AutoAttack
 
 _prefix = 'original'
 
@@ -225,49 +224,33 @@ def original_sigma_zero():
     name = 'sigma_zero'
     source = 'original'
     threat_model = 'l0'  # available: 'l0', 'l1', 'l2', 'linf'
-    num_steps = 1000
+    num_steps = 100
     lr = 1.0
     sigma = 1e-3
     thr_0 = 0.3
     thr_lr = 0.01
     binary_search_steps = 10
 
-def get_original_sigma_zero(num_steps: int, lr: float, sigma: float, thr_0: float, thr_lr: float) -> Callable:
-    return partial(sigma_zero, steps=num_steps, lr=lr, sigma=sigma, thr_0=thr_0, thr_lr=thr_lr)
+
+def get_original_sigma_zero(threat_model: str, num_steps: int, lr: float, sigma: float, thr_0: float, thr_lr: float,
+                            binary_search_steps: int) -> Callable:
+    return partial(sigma_zero, steps=num_steps, lr=lr, sigma=sigma, thr_0=thr_0, thr_lr=thr_lr,
+                   binary_search_steps=binary_search_steps)
+
 
 def original_pgd0_minimal():
     name = 'pgd0_minimal'
     source = 'original'
     threat_model = 'l0'
-    search_steps = 10
     n_restarts = 1
     num_steps = 100
-    step_size = 120000.0 /255.0
+    step_size = 120000 / 255
     kappa = -1
     epsilon = -1
-    init_eps = 100
 
 
-def get_original_pgd0_minimal(num_steps, step_size, kappa, epsilon, init_eps, n_restarts, search_steps: int = minimal_search_steps) -> Callable:
-    return partial(PGD0_minimal, search_steps=search_steps, num_steps=num_steps, step_size=step_size,kappa=kappa, epsilon=epsilon, init_eps=init_eps, n_restarts=n_restarts)
-
-
-
-def original_auto_attack_l2():
-    name = 'auto_attack'
-    source = 'original'
-    threat_model = 'l2'
-    epsilon = 0.5
-    norm = 'L2'
-
-
-def original_auto_attack_linf():
-    name = 'auto_attack'
-    source = 'original'
-    threat_model = 'linf'
-    epsilon = 8 / 255
-    norm = 'Linf'
-
-
-def get_original_auto_attack(epsilon: float, norm: str) -> Callable:
-    return partial(AutoAttack, epsilon=epsilon, norm=norm)
+def get_original_pgd0_minimal(threat_model: str, num_steps, step_size, kappa, epsilon, n_restarts,
+                              init_eps: Optional[int] = None, search_steps: int = minimal_search_steps) -> Callable:
+    init_eps = minimal_init_eps[threat_model] if init_eps is None else init_eps
+    return partial(PGD0_minimal, search_steps=search_steps, num_steps=num_steps, step_size=step_size, kappa=kappa,
+                   epsilon=epsilon, init_eps=init_eps, n_restarts=n_restarts)

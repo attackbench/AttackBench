@@ -1,8 +1,10 @@
+from typing import Optional
+
 import torch
-from adv_lib.utils.losses import difference_of_logits
 import torch.optim.lr_scheduler as lr_scheduler
-from foolbox.attacks.dataset_attack import DatasetAttack
+from adv_lib.utils.losses import difference_of_logits
 from foolbox import PyTorchModel
+from foolbox.attacks.dataset_attack import DatasetAttack
 from torch import Tensor
 
 
@@ -59,6 +61,7 @@ def delta_init(model, inputs, labels, device, starting_point=None, binary_search
 
     return delta
 
+
 def sigma_zero(model: torch.nn.Module,
                inputs: Tensor,
                labels: Tensor,
@@ -70,6 +73,7 @@ def sigma_zero(model: torch.nn.Module,
                verbose: bool = False,
                starting_point=None,
                binary_search_steps: int = 10,
+               targets: Optional[Tensor] = None,
                targeted: bool = False,
                grad_norm=torch.inf) -> Tensor:
     clamp = lambda tensor: tensor.data.add_(inputs.data).clamp_(min=0, max=1).sub_(inputs.data)

@@ -4,13 +4,11 @@ import math
 import os
 from collections import defaultdict
 from copy import deepcopy
-from importlib import resources
 from itertools import product
 from pathlib import Path
 
 import numpy as np
 
-import attack_evaluation
 from attack_evaluation.run import ex
 
 dataset_lengths = {
@@ -21,23 +19,6 @@ dataset_lengths = {
 }
 
 if __name__ == '__main__':
-    all_named_configs = list(ex.gather_named_configs())
-    available_models = [name.removeprefix('model.') for name, config in all_named_configs if name.startswith('model.')]
-
-    with resources.open_text(attack_evaluation, 'attacks.json') as f:
-        attack_configs = json.load(f)
-
-    available_libraries, available_threat_models, available_attacks = [], [], []
-    for threat_model, libraries in attack_configs.items():
-        available_threat_models.append(threat_model)
-        for library, attacks in libraries.items():
-            available_libraries.append(library)
-            for attack in attacks['attacks']:
-                available_attacks.append(attack)
-
-    available_libraries = sorted(list(set(available_libraries)))
-    available_attacks = sorted(list(set(available_attacks)))
-
     parser = argparse.ArgumentParser(description='Compute Canada Slurm runner for attack benchmark')
 
     # location args
