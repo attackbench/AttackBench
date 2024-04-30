@@ -3,11 +3,19 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+.DS_Store
 # Pycharm 
-.idea
+.idea/
+
+# Model Zoo
+*.pth
+
+# project
+figs/
 
 # C extensions
 *.so
+*.pdf
 
 # Distribution / packaging
 .Python
@@ -134,3 +142,4 @@ dmypy.json
 # resources folders
 /results/
 /data/
+/models/

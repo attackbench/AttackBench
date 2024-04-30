@@ -1,0 +1,128 @@
+{
+  "adv_lib_alma_l2": {
+    "num_steps": 1000
+  },
+  "adv_lib_apgd_minimal": {
+    "num_steps": 98,
+    "search_steps": 10
+  },
+  "adv_lib_apgd_t_minimal": {
+    "num_steps": 20,
+    "search_steps": 10,
+    "num_targets": 5
+  },
+  "adv_lib_cw_l2": {
+    "num_steps": 111
+  },
+  "adv_lib_ddn": {
+    "num_steps": 1000
+  },
+  "adv_lib_fab": {
+    "num_steps": 180
+  },
+  "adv_lib_fmn": {
+    "num_steps": 1000
+  },
+  "adv_lib_pdgd": {
+    "num_steps": 1000
+  },
+  "adv_lib_pdpgd": {
+    "num_steps": 1000
+  },
+  "adv_lib_pgd_minimal": {
+    "num_steps": 99,
+    "search_steps": 10
+  },
+  "adv_lib_tr": {
+    "num_steps": 663
+  },
+  "adv_lib_tr_adaptive": {
+    "num_steps": 497
+  },
+  "art_apgd_minimal": {
+    "num_steps": 13,
+    "search_steps": 10
+  },
+  "art_cw_l2": {
+    "num_steps": 10
+  },
+  "art_deepfool": {
+    "num_steps": 1000
+  },
+  "art_fgm_minimal": {},
+  "art_pgd_minimal": {
+    "num_steps": 98,
+    "search_steps": 10
+  },
+  "ch_cw_l2": {
+    "num_steps": 200
+  },
+  "ch_fgm_minimal": {},
+  "dr_pgd_minimal": {
+    "num_steps": 39,
+    "search_steps": 10
+  },
+  "dr_fgm_minimal": {},
+  "fb_bb": {
+    "num_steps": 225
+  },
+  "fb_cw_l2": {
+    "num_steps": 111
+  },
+  "fb_ddn": {
+    "num_steps": 1000
+  },
+  "fb_deepfool": {
+    "num_steps": 111
+  },
+  "fb_fmn": {
+    "num_steps": 1000
+  },
+  "fb_pgd_minimal": {
+    "num_steps": 99,
+    "search_steps": 10
+  },
+  "fb_fgm_minimal": {},
+  "fb_bim_minimal": {
+    "num_steps": 99,
+    "search_steps": 10
+  },
+  "original_apgd_minimal": {
+    "num_steps": 98,
+    "search_steps": 10
+  },
+  "original_apgd_t_minimal": {
+    "num_steps": 22,
+    "search_steps": 10,
+    "num_target_classes": 5
+  },
+  "original_deepfool": {
+    "num_steps": 1000
+  },
+  "original_fab": {
+    "num_steps": 163
+  },
+  "original_fmn": {
+    "num_steps": 1000
+  },
+  "original_tr": {
+    "num_steps": 663
+  },
+  "original_tr_adaptive": {
+    "num_steps": 497
+  },
+  "ta_apgd_minimal": {
+    "num_steps": 98,
+    "search_steps": 10
+  },
+  "ta_cw_l2": {
+    "num_steps": 1000
+  },
+  "ta_fab": {
+    "num_steps": 163
+  },
+  "ta_pgd_l2_minimal": {
+    "num_steps": 99,
+    "search_steps": 10
+  }
+}

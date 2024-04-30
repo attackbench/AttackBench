@@ -1,0 +1,20 @@
+{
+  "common": {
+    "named_configs": [],
+    "attack": {
+      "threat_model": "l0"
+    },
+    "dataset": {
+      "batch_size": 32,
+      "num_samples": 5000
+    },
+    "model": {
+      "num_max_propagations": 2000
+    },
+    "seed": 42
+  },
+  "cartesian": {
+    "attack": "l0_1000_attacks.json",
+    "model": "imagenet_models.json"
+  }
+}

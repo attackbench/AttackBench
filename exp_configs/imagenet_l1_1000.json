@@ -1,0 +1,59 @@
+{
+  "common": {
+    "named_configs": [],
+    "attack": {
+      "threat_model": "l1"
+    },
+    "dataset": {
+      "batch_size": 32,
+      "num_samples": 5000
+    },
+    "model": {
+      "num_max_propagations": 2000
+    },
+    "seed": 42
+  },
+  "cartesian": {
+    "attack": {
+      "adv_lib_alma_l1": {
+        "num_steps": 1000
+      },
+      "adv_lib_apgd_minimal": {
+        "num_steps": 96,
+        "search_steps": 10,
+        "use_large_reps": true
+      },
+      "adv_lib_apgd_t_minimal": {
+        "num_steps": 19,
+        "search_steps": 10,
+        "num_targets": 5,
+        "use_large_reps": true
+      },
+      "adv_lib_fmn": {
+        "num_steps": 1000
+      },
+      "adv_lib_pdpgd": {
+        "num_steps": 1000
+      },
+      "fb_ead": {
+        "num_steps": 74
+      },
+      "fb_fmn": {
+        "num_steps": 1000
+      },
+      "original_apgd_minimal_l1": {
+        "num_steps": 96,
+        "search_steps": 10
+      },
+      "original_apgd_t_minimal_l1": {
+        "num_steps": 22,
+        "search_steps": 10,
+        "num_target_classes": 5
+      },
+      "original_fmn": {
+        "num_steps": 1000
+      }
+    },
+    "model": "imagenet_models.json"
+  }
+}

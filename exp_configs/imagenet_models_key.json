@@ -1,0 +1,6 @@
+{
+  "Standard_R50": "standard_imagenet",
+  "Wong2020Fast": "wong_2020",
+  "Salman2020Do_50_2": "salman_2020",
+  "Debenedetti2022Light_XCiT-S12": "debenedetti_2022"
+}

@@ -1,108 +1,54 @@
+import inspect
+import sys
+from collections import defaultdict
 from functools import partial
 from typing import Callable
 
-from adv_lib.attacks import alma as alma_attack, ddn as ddn_attack, fmn as fmn_adv_lib_attack
 from sacred import Ingredient
 
-from .adversarial_library import adv_lib_wrapper
-from .original.fast_minimum_norm import fmn_attack
-from .foolbox.foolbox_attacks import foolbox_attack
+from .adv_lib import configs as adv_lib_configs
+from .art import configs as art_configs
+from .cleverhans import configs as cleverhans_configs
+from .deeprobust import configs as deeprobust_configs
+from .foolbox import configs as foolbox_configs
+from .original import configs as original_configs
+from .torchattacks import configs as torchattacks_configs
+
 attack_ingredient = Ingredient('attack')
 
-
-@attack_ingredient.named_config
-def alma():
-    name = 'alma'
-    origin = 'adv_lib'  # available: ['adv_lib']
-    distance = 'l2'
-    steps = 1000
-    alpha = 0.9
-    init_lr_distance = 1
-
-
-@attack_ingredient.named_config
-def ddn():
-    name = 'ddn'
-    origin = 'adv_lib'  # available: ['adv_lib']
-    steps = 1000
-    init_norm = 1
-    gamma = 0.05
-
-
-@attack_ingredient.named_config
-def fmn():
-    name = 'fmn'
-    origin = 'original'  # available: ['original', 'adv_lib']
-    norm = 2
-    steps = 1000
-    max_stepsize = 1
-    gamma = 0.05
-
-
-@attack_ingredient.named_config
-def foolbox():
-    # Use default config from foolbox. By default pgd with l2 is executed.
-    name = 'pgd'
-    origin = 'foolbox'  # available: ['foolbox']
-    norm = 2
-    epsilon = 0.3
-
-
-@attack_ingredient.capture
-def get_alma(distance: float, steps: int, alpha: float, init_lr_distance: float) -> Callable:
-    return partial(alma_attack, distance=distance, num_steps=steps, α=alpha, init_lr_distance=init_lr_distance)
-
-
-@attack_ingredient.capture
-def get_ddn(steps: int, gamma: float, init_norm: float) -> Callable:
-    return partial(ddn_attack, steps=steps, γ=gamma, init_norm=init_norm)
-
-
-@attack_ingredient.capture
-def get_fmn(norm: float, steps: int, max_stepsize: float, gamma: float) -> Callable:
-    return partial(fmn_attack, norm=norm, steps=steps, max_stepsize=max_stepsize, gamma=gamma)
-
-
-@attack_ingredient.capture
-def get_adv_lib_fmn(norm: float, steps: int, max_stepsize: float, gamma: float) -> Callable:
-    return partial(fmn_adv_lib_attack, norm=norm, steps=steps, α_init=max_stepsize, γ_init=gamma)
-
-
-@attack_ingredient.capture
-def get_foolbox(name: str, norm: float, epsilon: float) -> Callable:
-    return partial(foolbox_attack, name=name, norm=norm, eps=epsilon)
-
-
-_original = {
-    'fmn': get_fmn,
+library_modules = {
+    'adv_lib': adv_lib_configs,
+    'art': art_configs,
+    'cleverhans': cleverhans_configs,
+    'deeprobust': deeprobust_configs,
+    'foolbox': foolbox_configs,
+    'original': original_configs,
+    'torchattacks': torchattacks_configs,
 }
+library_getters = defaultdict(dict)
+
+for module_name, module in library_modules.items():
+    # gather function defined in <library>.configs modules
+    module_funcs = inspect.getmembers(sys.modules[module.__name__],
+                                      predicate=lambda f: inspect.isfunction(f) and f.__module__ == module.__name__)
+
+    for name, func in module_funcs:  # search for functions that are configs or getters
+        config_prefix = module._prefix + '_'
+        getter_prefix = 'get_' + config_prefix
+
+        if name.startswith(config_prefix):  # add function as named config
+            attack_ingredient.named_config(func)
+
+        elif name.startswith(getter_prefix):  # capture function and add it to the getters
+            library_getters[module_name][name.removeprefix(getter_prefix)] = attack_ingredient.capture(func)
 
 
 @attack_ingredient.capture
-def get_original_attack(name: str) -> Callable:
-    return _original[name]()
+def get_attack(source: str, name: str, threat_model: str) -> Callable:
+    attack = library_getters[source][name]()
+    wrapper = library_modules[source]._wrapper
 
-
-_adv_lib = {
-    'alma': get_alma,
-    'ddn': get_ddn,
-    'fmn': get_adv_lib_fmn,
-}
-
-
-@attack_ingredient.capture
-def get_adv_lib_attack(name: str) -> Callable:
-    attack = _adv_lib[name]()
-    return partial(adv_lib_wrapper, attack=attack)
-
-
-_libraries = {
-    'original': get_original_attack,
-    'adv_lib': get_adv_lib_attack,
-    'foolbox': get_foolbox
-}
-
-@attack_ingredient.capture
-def get_attack(origin: str) -> Callable:
-    return _libraries[origin]()
-
+    if isinstance(attack, dict):
+        return partial(wrapper, **attack)
+    else:
+        return partial(wrapper, attack=attack)

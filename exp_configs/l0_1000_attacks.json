@@ -1,0 +1,14 @@
+{
+  "adv_lib_fmn": {
+    "num_steps": 1000
+  },
+  "adv_lib_pdpgd": {
+    "num_steps": 1000
+  },
+  "adv_lib_vfga": {
+    "num_steps": 90
+  },
+  "original_fmn": {
+    "num_steps": 1000
+  }
+}

@@ -408,20 +408,20 @@ def project_onto_l1_ball(x: ep.Tensor, eps: ep.Tensor):
 
 
 _fmn_attacks = {
-    0: L0FMNAttack,
-    1: L1FMNAttack,
-    2: L2FMNAttack,
-    'inf': LInfFMNAttack,
+    'l0': L0FMNAttack,
+    'l1': L1FMNAttack,
+    'l2': L2FMNAttack,
+    'linf': LInfFMNAttack,
 }
 
 
 def fmn_attack(model: nn.Module,
                inputs: Tensor,
                labels: Tensor,
+               threat_model: str,
                targets: Optional[Tensor] = None,
-               targeted: bool = False,
-               norm: float = 2, **kwargs) -> Tensor:
-    attack = _fmn_attacks[norm](**kwargs)
+               targeted: bool = False, **kwargs) -> Tensor:
+    attack = _fmn_attacks[threat_model](**kwargs)
     fb_model = PyTorchModel(model=model, bounds=(0, 1))
     if targeted:
         criterion = TargetedMisclassification(targets)

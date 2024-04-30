@@ -1,0 +1,122 @@
+{
+  "l0": {
+    "adversarial_lib": {
+      "prefix": "adv_lib",
+      "attacks": ["fmn", "pdpgd_l0", "vfga"]
+    },
+    "art": {
+      "prefix": "art",
+      "attacks": ["bb", "jsma"]
+    },
+    "cleverhans":{
+      "prefix": "ch",
+      "attacks": []
+    },
+    "deeprobust":{
+      "prefix": "dr",
+      "attacks": []
+    },
+    "foolbox": {
+      "prefix": "fb",
+      "attacks": ["bb", "fmn"]
+    },
+    "original": {
+      "prefix": "original",
+      "attacks": ["fmn"]
+    },
+    "torch_attacks": {
+      "prefix": "ta",
+      "attacks": ["sparsefool"]
+    }
+  },
+  "l1": {
+    "adversarial_lib": {
+      "prefix": "adv_lib",
+      "attacks": ["alma_l1", "apgd_minimal_l1", "fab", "fmn", "pdpgd"]
+    },
+    "art": {
+      "prefix": "art",
+      "attacks": ["apgd_minimal", "fgm_minimal", "bb", "ead", "pgd_minimal"]
+    },
+    "cleverhans":{
+      "prefix": "ch",
+      "attacks": ["fgm_minimal", "pgd_minimal"]
+    },
+    "deeprobust":{
+      "prefix": "dr",
+      "attacks": []
+    },
+    "foolbox": {
+      "prefix": "fb",
+      "attacks": ["bim_minimal", "bb", "ead", "fgm_minimal", "fmn", "pgd_minimal"]
+    },
+    "original": {
+      "prefix": "original",
+      "attacks": ["apgd_minimal_l1", "apgd_t_minimal_l1", "fab", "fmn"]
+    },
+    "torch_attacks": {
+      "prefix": "ta",
+      "attacks": ["fab"]
+    }
+  },
+    "l2": {
+    "adversarial_lib": {
+      "prefix": "adv_lib",
+      "attacks": ["alma_l2", "apgd_minimal", "cw_l2", "ddn", "fab", "fmn", "pdgd", "pdpgd", "tr", "tr_adaptive"]
+    },
+    "art": {
+      "prefix": "art",
+      "attacks": ["apgd_minimal", "bb", "cw_l2", "deepfool", "fgm_minimal", "pgd_minimal"]
+    },
+    "cleverhans":{
+      "prefix": "ch",
+      "attacks": ["cw_l2", "fgm_minimal", "pgd_minimal"]
+    },
+    "deeprobust":{
+      "prefix": "dr",
+      "attacks": ["cw_l2", "deepfool", "fgm_minimal", "pgd_minimal"]
+    },
+    "foolbox": {
+      "prefix": "fb",
+      "attacks": ["bb", "cw_l2", "dataset", "ddn", "deepfool", "fmn", "pgd_minimal", "fgm_minimal", "bim_minimal"]
+    },
+    "original": {
+      "prefix": "original",
+      "attacks": ["apgd_minimal", "apgd_t_minimal", "deepfool", "fab", "fmn", "tr", "tr_adaptive"]
+    },
+    "torch_attacks": {
+      "prefix": "ta",
+      "attacks": ["cw_l2", "apgd_minimal", "deepfool", "fab", "pgd_l2_minimal"]
+    }
+  },
+  "linf": {
+    "adversarial_lib": {
+      "prefix": "adv_lib",
+      "attacks": ["apgd_minimal", "cw_linf", "fab", "fmn", "pdpgd", "pgd_minimal", "tr", "tr_adaptive"]
+    },
+    "art": {
+      "prefix": "art",
+      "attacks": ["apgd_minimal", "bim_minimal", "bb", "cw_linf", "fgm_minimal", "pgd_minimal"]
+    },
+    "cleverhans":{
+      "prefix": "ch",
+      "attacks": ["fgm_minimal", "pgd_minimal"]
+    },
+    "deeprobust":{
+      "prefix": "dr",
+      "attacks": ["fgm_minimal", "pgd_minimal"]
+    },
+    "foolbox": {
+      "prefix": "fb",
+      "attacks": ["bb", "bim_minimal", "deepfool", "fmn", "pgd_minimal", "fgm_minimal"]
+    },
+    "original": {
+      "prefix": "original",
+      "attacks": ["apgd_minimal", "apgd_t_minimal", "fab", "fmn_linf", "tr", "tr_adaptive"]
+    },
+    "torch_attacks": {
+      "prefix": "ta",
+      "attacks": ["fgsm", "pgd", "apgd"]
+    }
+  }
+}

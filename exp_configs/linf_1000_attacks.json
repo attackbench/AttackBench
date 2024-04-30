@@ -1,0 +1,106 @@
+{
+  "adv_lib_apgd_minimal": {
+    "num_steps": 98,
+    "search_steps": 10
+  },
+  "adv_lib_apgd_t_minimal": {
+    "num_steps": 20,
+    "search_steps": 10,
+    "num_targets": 5
+  },
+  "adv_lib_cw_linf": {
+    "num_steps": 40
+  },
+  "adv_lib_fab": {
+    "num_steps": 181
+  },
+  "adv_lib_fmn_linf": {
+    "num_steps": 1000
+  },
+  "adv_lib_pdpgd": {
+    "num_steps": 1000
+  },
+  "adv_lib_pgd_minimal": {
+    "num_steps": 99,
+    "search_steps": 10
+  },
+  "adv_lib_tr": {
+    "num_steps": 1000
+  },
+  "adv_lib_tr_adaptive": {
+    "num_steps": 1000
+  },
+  "art_apgd_minimal": {
+    "num_steps": 100,
+    "search_steps": 10
+  },
+  "art_bb": {
+    "num_steps": 658
+  },
+  "art_cw_linf": {
+    "num_steps": 29
+  },
+  "art_fgm_minimal": {},
+  "art_pgd_minimal": {
+    "num_steps": 98,
+    "search_steps": 10
+  },
+  "ch_fgm_minimal": {},
+  "dr_pgd_minimal": {
+    "num_steps": 99,
+    "search_steps": 10
+  },
+  "dr_fgm_minimal": {},
+  "fb_bb": {
+    "num_steps": 700
+  },
+  "fb_deepfool": {
+    "num_steps": 1000
+  },
+  "fb_fmn": {
+    "num_steps": 1000,
+    "max_stepsize": 10
+  },
+  "fb_pgd_minimal": {
+    "num_steps": 99,
+    "search_steps": 10
+  },
+  "fb_fgm_minimal": {},
+  "fb_bim_minimal": {
+    "num_steps": 99,
+    "search_steps": 10
+  },
+  "original_apgd_minimal": {
+    "num_steps": 98,
+    "search_steps": 10
+  },
+  "original_apgd_t_minimal": {
+    "num_steps": 22,
+    "search_steps": 10,
+    "num_target_classes": 5
+  },
+  "original_fab": {
+    "num_steps": 166
+  },
+  "original_fmn_linf": {
+    "num_steps": 1000
+  },
+  "original_tr": {
+    "num_steps": 1000
+  },
+  "original_tr_adaptive": {
+    "num_steps": 1000
+  },
+  "ta_apgd_minimal": {
+    "num_steps": 98,
+    "search_steps": 10
+  },
+  "ta_fab": {
+    "num_steps": 166
+  },
+  "ta_fgsm_minimal": {},
+  "ta_pgd_minimal": {
+    "num_steps": 99,
+    "search_steps": 10
+  }
+}
