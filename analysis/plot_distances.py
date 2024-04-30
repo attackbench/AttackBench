@@ -19,6 +19,21 @@ threat_model_labels = {
     'linf': r'$\ell_{\infty}$',
 }
 
+models_title = {
+    # cifar models
+    'standard': 'Standard (C1)',
+    'zhang_2020_small': 'Zhang (C2)',
+    'stutz_2020': 'Stutz et al. (C3)',
+    'xiao_2020': 'Xiao (C4)',
+    'wang_2023_small': 'Wang et al. (C5)',
+
+    # imagenet models
+    'standard_imagenet': 'Standard (I1)',
+    'wong_2020': 'Standard (I2)',
+    'salman_2020': 'Standard (I3)',
+    'debenedetti_2022': 'Standard (I4)',
+}
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser('Plot results')
 
@@ -28,6 +43,7 @@ if __name__ == '__main__':
     parser.add_argument('--model', '-m', type=str, default=None, help='Model for which to plot results')
     parser.add_argument('--library', '-l', type=str, default=None, help='Library for which to plot results')
     parser.add_argument('--K', '-k', type=int, default=None, help='Top K attacks to show')
+    parser.add_argument('--only_distinct', '-od', type=bool, default=False, help='Show only distinct attacks')
     parser.add_argument('--batch_size', '-bs', type=int, default=None, help="Batch size for which to plot the results")
     parser.add_argument('--info-files', '--if', type=str, nargs='+', default=None,
                         help='List of info files to plot from.')
@@ -76,7 +92,7 @@ if __name__ == '__main__':
 
         # plot best distances
         fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(5, 4), layout='constrained')
-        ax.set_title(' - '.join(scenario), pad=10)
+        ax.set_title(f'{models_title[scenario.model]}', pad=4, fontsize=13)
 
         distances, counts = np.unique(best_distances, return_counts=True)
         robust_acc = 1 - counts.cumsum() / len(best_distances)
@@ -86,7 +102,7 @@ if __name__ == '__main__':
         clean_acc = np.count_nonzero(best_distances) / len(best_distances)
         max_dist = np.amax(distances)
         best_area = np.trapz(robust_acc, distances)
-        plot_xlim = max_dist * 1.5
+        plot_xlim = max_dist * 1.2
 
         attacks_to_plot = {}
         for attack_folder, hash_distances in sorted(to_plot[scenario]):
@@ -111,10 +127,13 @@ if __name__ == '__main__':
 
             # ax.plot(distances, robust_acc, linewidth=1, linestyle='--', label=f'{attack_label}: {optimality:.2%}')
 
-        for attack_label in top_k_attacks(attacks_to_plot, k=args.K):
+
+        for attack_label, name in top_k_attacks(attacks_to_plot, k=args.K, only_distinct=args.only_distinct):
+
             atk = attacks_to_plot[attack_label]
+
             ax.plot(atk['distances'], atk['robust_acc'], linewidth=1, linestyle='--',
-                    label=f'{attack_label}: {atk["optimality"]:.2%}')
+                    label=f'{name}: {atk["optimality"]:.2%}')
 
         ax.grid(True, linestyle='--', c='lightgray', which='major')
         ax.yaxis.set_major_formatter(ticker.PercentFormatter(1))
@@ -123,20 +142,22 @@ if __name__ == '__main__':
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
 
-        ax.set_ylabel('Robust Accuracy (%)')
-        ax.set_xlabel(f'Perturbation Size {threat_model_labels[scenario.threat_model]}')
+        ax.set_ylabel(f'Robust Accuracy $\\rho(\epsilon)$', fontsize=13)
+        ax.set_xlabel(f'Perturbation Size $\epsilon$ - {threat_model_labels[scenario.threat_model]}', fontsize=13)
 
-        ax.annotate(text=f'Clean accuracy: {clean_acc:.2%}', xy=(0, clean_acc),
-                    xytext=(ax.get_xlim()[1] / 2, clean_acc), ha='left', va='center',
-                    arrowprops={'arrowstyle': '-', 'linestyle': '--'})
+        #ax.annotate(text=f'Clean accuracy: {clean_acc:.2%}', xy=(0, clean_acc),
+        ax.annotate(text=f'$\\rho = {clean_acc:.2%}$', xy=(0, clean_acc),
+                    xytext=(ax.get_xlim()[1] / 12, clean_acc), ha='left', va='center',
+                    arrowprops={'arrowstyle': '-', 'linestyle': '--'}, fontsize=13)
 
-        ax.legend(loc='center right', labelspacing=.1, handletextpad=0.5)
+        ax.legend(loc='upper right', labelspacing=.1, handletextpad=.25, fontsize=13)
 
         library = args.library or "all"
         parts = [scenario.dataset, scenario.threat_model, scenario.model, scenario.batch_size, library]
         if args.suffix:
             parts.append(args.suffix)
-        fig_name = result_path / f'{"-".join(parts)}.pdf'
+        suffix = '_distinct' if args.only_distinct else ''
+        fig_name = result_path / f'{"-".join(parts)}{suffix}.pdf'
         fig.savefig(fig_name)
         fig.show()
         plt.close()

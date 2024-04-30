@@ -4,9 +4,9 @@ import os
 import pathlib
 import warnings
 from collections import defaultdict
+from scipy.stats import wilcoxon, ks_2samp
 
 import numpy as np
-from matplotlib import pyplot as plt, ticker
 
 from compile import compile_scenario
 from read import read_distances, read_info
@@ -21,8 +21,9 @@ threat_model_labels = {
     'linf': r'$\ell_{\infty}$',
 }
 
-ROUND = lambda x: np.around(x, 3)
+ROUND = lambda x: np.around(x, 4)
 TOLERANCE = 1e-04
+TEST_SIGNIFICANCE = 0.01
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser('Plot results')
@@ -70,9 +71,9 @@ if __name__ == '__main__':
     Table = {}
     for key in threat_model_lst:
         Table[key] = [
-            ['Dataset', 'BatchSize', 'Threat', 'Model', 'Attack', '$\ell_p$', '$\ell_p^\star$', 'ASR', 'Optimality',
-             '#Forwards', '#Backwards',
-             'hasBoxFailure', 'isOutputOptimal']]
+            ['Data', 'BatchSize', 'Threat', 'Model', 'Attack', '$\ell_p$', '$\ell_p^\star$', 'ASR', 'Optimality',
+             '#Forwards', '#Backwards', 'ExecTime',
+             'BoxFailure', 'isOutOptimal', 'T1', 'T2']]
     for scenario in to_plot.keys():
         best_distances_file = result_path / f'{scenario.dataset}-{scenario.threat_model}-{scenario.model}-{scenario.batch_size}.json'
         if not best_distances_file.exists():
@@ -113,19 +114,29 @@ if __name__ == '__main__':
             median_best_dist = np.median(info['distances'][adv_valid_success])
             is_dist_optimal = np.allclose(info['best_optim_distances'], info['distances'], rtol=TOLERANCE)
 
+            accept_h0_wilcoxon = 1 - (wilcoxon(adv_distances, best_distances, alternative='greater', zero_method='zsplit').pvalue < TEST_SIGNIFICANCE)
+            accept_h0_kstest = 1 - (ks_2samp(adv_distances, best_distances, alternative='less').pvalue < TEST_SIGNIFICANCE)
+
             ASR = info['ASR']
             avg_n_forwards = int(np.mean(info['num_forwards']))
             avg_n_backwards = int(np.mean(info['num_backwards']))
+            avg_exec_time = np.mean(info['times'])
             has_box_failures = np.any(info['box_failures'])
             row = list(scenario) + [attack_label, ROUND(median_dist), ROUND(median_best_dist), ROUND(ASR), ROUND(optimality),
-                                    avg_n_forwards, avg_n_backwards, has_box_failures, is_dist_optimal]
+                                    avg_n_forwards, avg_n_backwards, avg_exec_time, int(has_box_failures), int(is_dist_optimal),
+                                    int(accept_h0_wilcoxon), int(accept_h0_kstest)]
             attacks_to_plot[attack_label] = {'row': row, 'optimality': optimality, 'area': area}
 
         for attack_label in top_k_attacks(attacks_to_plot, k=args.K):
-            atk = attacks_to_plot[attack_label]
+            atk = attacks_to_plot[attack_label[0]]
             Table[scenario.threat_model].append(atk['row'])
 
     for key in threat_model_lst:
         np.savetxt(f"output_{key}.csv", Table[key], delimiter=",", fmt='%s')
-        print(tabulate(Table[key], headers="firstrow", missingval="-", tablefmt="rst", floatfmt="0.2f"))
+        print(tabulate(Table[key], headers="firstrow", missingval="-", tablefmt="rst", floatfmt="0.4f"))
+
+        content2 = tabulate(Table[key], headers="firstrow", missingval="-", floatfmt="0.4f", tablefmt="tsv")
+        text_file = open("output.csv", "w")
+        text_file.write(content2)
+        text_file.close()
         print()

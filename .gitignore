@@ -3,8 +3,12 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+.DS_Store
 # Pycharm 
-.idea
+.idea/
+
+# Model Zoo
+*.pth
 
 # project
 figs/

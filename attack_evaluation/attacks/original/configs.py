@@ -9,6 +9,7 @@ from .trust_region import tr_attack
 from .sigma_zero import sigma_zero
 from .pgd_lzero import PGD0_minimal
 from .. import minimal_init_eps, minimal_search_steps
+from autoattack import AutoAttack
 
 _prefix = 'original'
 
@@ -224,7 +225,7 @@ def original_sigma_zero():
     name = 'sigma_zero'
     source = 'original'
     threat_model = 'l0'  # available: 'l0', 'l1', 'l2', 'linf'
-    num_steps = 100
+    num_steps = 1000
     lr = 1.0
     sigma = 1e-3
     thr_0 = 0.3
@@ -233,7 +234,6 @@ def original_sigma_zero():
 
 def get_original_sigma_zero(num_steps: int, lr: float, sigma: float, thr_0: float, thr_lr: float) -> Callable:
     return partial(sigma_zero, steps=num_steps, lr=lr, sigma=sigma, thr_0=thr_0, thr_lr=thr_lr)
-
 
 def original_pgd0_minimal():
     name = 'pgd0_minimal'
@@ -250,3 +250,24 @@ def original_pgd0_minimal():
 
 def get_original_pgd0_minimal(num_steps, step_size, kappa, epsilon, init_eps, n_restarts, search_steps: int = minimal_search_steps) -> Callable:
     return partial(PGD0_minimal, search_steps=search_steps, num_steps=num_steps, step_size=step_size,kappa=kappa, epsilon=epsilon, init_eps=init_eps, n_restarts=n_restarts)
+
+
+
+def original_auto_attack_l2():
+    name = 'auto_attack'
+    source = 'original'
+    threat_model = 'l2'
+    epsilon = 0.5
+    norm = 'L2'
+
+
+def original_auto_attack_linf():
+    name = 'auto_attack'
+    source = 'original'
+    threat_model = 'linf'
+    epsilon = 8 / 255
+    norm = 'Linf'
+
+
+def get_original_auto_attack(epsilon: float, norm: str) -> Callable:
+    return partial(AutoAttack, epsilon=epsilon, norm=norm)
