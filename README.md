@@ -4,7 +4,7 @@ Antonio Emanuele Cinà $^\star$, Jérôme Rony $^\star$, Maura Pintor, Luca Deme
 
 **Leaderboard**: [https://attackbench.github.io/](https://attackbench.github.io/)
 
-**Paper:** []()
+**Paper:** [https://arxiv.org/pdf/2404.19460](https://arxiv.org/pdf/2404.19460)
 
 ## How it works
 
@@ -127,11 +127,18 @@ If you use the **AttackBench** leaderboards or implementation, then consider cit
 @article{CinaRony2024AttackBench,
   author = {Antonio Emanuele Cinà, Jérôme Rony, Maura Pintor, Luca Demetrio, Ambra Demontis, Battista Biggio, Ismail Ben Ayed, Fabio Roli },
   title = {AttackBench: Evaluating Gradient-based Attacks for Adversarial Examples},
-  journal = {ArXiv},
-  year = {2024},
+  booktitle={Proceedings of the AAAI Conference on Artificial Intelligence},
+  year = {2025},
 }
 ```
 
 ## Contact 
 Feel free to contact us about anything related to **`AttackBench`** by creating an issue, a pull request or 
 by email at `antonio.cina@unige.it`.
+
+## Acknowledgements
+AttackBench has been partially developed with the support of European Union’s [ELSA – European Lighthouse on Secure and Safe AI](https://elsa-ai.eu), Horizon Europe, grant agreement No. 101070617, and [Sec4AI4Sec - Cybersecurity for AI-Augmented Systems](https://www.sec4ai4sec-project.eu), Horizon Europe, grant agreement No. 101120393.
+
+<img src="_static/assets/logos/sec4AI4sec.png" alt="sec4ai4sec" style="width:70px;"/> &nbsp;&nbsp; 
+<img src="_static/assets/logos/elsa.jpg" alt="elsa" style="width:70px;"/> &nbsp;&nbsp; 
+<img src="_static/assets/logos/FundedbytheEU.png" alt="europe" style="width:240px;"/>
