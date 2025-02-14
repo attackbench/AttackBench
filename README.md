@@ -124,10 +124,10 @@ Tthe wrappers for all the implementations (including libraries) must have the fo
 If you use the **AttackBench** leaderboards or implementation, then consider citing our [paper]():
 
 ```bibtex
-@article{CinaRony2024AttackBench,
-  author = {Antonio Emanuele Cinà, Jérôme Rony, Maura Pintor, Luca Demetrio, Ambra Demontis, Battista Biggio, Ismail Ben Ayed, Fabio Roli },
+@inproceedings{cina2024attackbench,
+	author = {Cin{\`a}, A. E. and Rony, J. and Pintor, M. and Demetrio, L. and Demontis, A. and Biggio, B. and Ayed, I. B. and Roli, F.},
   title = {AttackBench: Evaluating Gradient-based Attacks for Adversarial Examples},
-  booktitle={Proceedings of the AAAI Conference on Artificial Intelligence},
+  booktitle={AAAI Conference on Artificial Intelligence},
   year = {2025},
 }
 ```
