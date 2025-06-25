@@ -131,7 +131,8 @@ If you use the **AttackBench** leaderboards or implementation, then consider cit
   volume={39},
   number={3},
   pages={2600--2608},
-  year={2025}
+  year={2025},
+  DOI={10.1609/aaai.v39i3.32263}
 }
 ```
 
